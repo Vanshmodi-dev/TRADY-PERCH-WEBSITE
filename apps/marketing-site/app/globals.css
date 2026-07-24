@@ -1,0 +1,61 @@
+@import "@trady-perch/tokens/css";
+@import "@trady-perch/motion/css";
+
+/* Minimal reset — restraint per IP3; nothing beyond what every page needs. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: dark; /* Design System Bible Ch.52 — dark-native only, no light theme. */
+}
+
+body {
+  background-color: var(--semantic-color-background-primary);
+  color: var(--semantic-color-text-primary);
+  font-family: var(--font-inter), var(--core-type-family-primary);
+  font-size: var(--core-type-body-size-desktop);
+  line-height: var(--core-type-body-line-height);
+  font-weight: var(--core-type-body-weight);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@media (max-width: 599px) {
+  body {
+    font-size: var(--core-type-body-size-mobile);
+  }
+}
+
+img,
+picture,
+video {
+  max-width: 100%;
+  display: block;
+}
+
+/* Ch.20 Header is position:fixed — clear it so content never renders
+   underneath. Interim fixed estimate (core.space.24 = 96px); refined against
+   the header's real measured height in Milestone 6 (Responsive refinement). */
+main {
+  padding-top: var(--core-space-24);
+}
+
+/* Chapter 3 — keyboard focus indicator uses the gold accent, always visible. */
+:focus-visible {
+  outline: 2px solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Only style :focus-visible, never remove focus outlines outright — Ch.42/53 accessibility floor. */
+:focus:not(:focus-visible) {
+  outline: none;
+}

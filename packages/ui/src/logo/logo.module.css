@@ -1,0 +1,41 @@
+/*
+ * No Logo/Wordmark lockup chapter exists yet (that governance lives in the
+ * unwritten Brand Identity Manual) — this is a disclosed, restrained
+ * interim treatment built entirely from existing tokens: the icon mark at
+ * Ch.11's 24px icon step, paired with the wordmark set in Ch.4's Label
+ * step (uppercase, +0.10em tracking, semibold), never a bespoke font
+ * treatment invented for this one component.
+ */
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--semantic-space-gap-icon-label);
+  text-decoration: none;
+  color: var(--semantic-color-text-primary);
+}
+
+.icon {
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+  display: block;
+}
+
+.wordmark {
+  font-size: var(--core-type-label-size-desktop);
+  font-weight: var(--core-type-label-weight);
+  line-height: var(--core-type-label-line-height);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Icon-mark-only below ~400px — a sub-breakpoint refinement (no Ch.8 range
+   is this narrow) specific to this component's own content-fitting need in
+   the header, where it competes with the primary CTA for space. The icon
+   alone still carries the accessible name via the Link's aria-label. */
+@media (max-width: 400px) {
+  .wordmark {
+    display: none;
+  }
+}

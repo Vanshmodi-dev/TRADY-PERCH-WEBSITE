@@ -1,0 +1,45 @@
+/*
+ * A 404 is "nothing exists at this URL," not a system failure — Design
+ * System Bible Ch.38's Empty State pattern (Em-3: calm styling, never Error
+ * colors/iconography), not Ch.47's Error pattern. Anatomy: Icon (48px,
+ * text.secondary) -> Headline (names what's missing, Em-1) -> supporting
+ * text -> single action button (Em-2).
+ */
+
+.notFound {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--semantic-space-gap-stack);
+  max-width: var(--core-container-width-content);
+  margin-inline: auto;
+  padding: var(--semantic-space-padding-section-lg) var(--semantic-space-padding-section-sm);
+}
+
+.icon {
+  width: var(--core-icon-size-48);
+  height: var(--core-icon-size-48);
+  color: var(--semantic-color-text-secondary);
+}
+
+.headline {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .headline {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.supportingText {
+  font-size: var(--core-type-body-size-desktop);
+  color: var(--semantic-color-text-secondary);
+  max-width: 60ch;
+}

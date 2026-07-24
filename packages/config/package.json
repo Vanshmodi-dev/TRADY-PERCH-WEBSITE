@@ -1,0 +1,21 @@
+{
+  "name": "@trady-perch/config",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Shared TypeScript, ESLint, Prettier, and performance-budget configuration for all Trady Perch apps and packages.",
+  "files": [
+    "tsconfig.base.json",
+    "eslint.base.mjs",
+    "prettier.base.mjs",
+    "performance-budget.json",
+    "vitest.base.mjs",
+    "vitest.setup.ts"
+  ],
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint": "./eslint.base.mjs",
+    "./prettier": "./prettier.base.mjs",
+    "./performance-budget.json": "./performance-budget.json",
+    "./vitest": "./vitest.base.mjs"
+  }
+}

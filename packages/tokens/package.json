@@ -1,0 +1,14 @@
+{
+  "name": "@trady-perch/tokens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Single source of truth for Trady Perch design tokens (Design System Bible Ch.2-11, 52), compiled to CSS custom properties and typed TS constants.",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "exports": {
+    ".": "./dist/tokens.ts",
+    "./css": "./dist/tokens.css"
+  }
+}

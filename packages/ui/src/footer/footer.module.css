@@ -1,0 +1,122 @@
+/*
+ * No dedicated Footer chapter exists in the Design System Bible (Ch.20
+ * governs the primary nav bar only). Built as a restrained, static content
+ * region (Ch.7's Structured Grid pattern) rather than force-fitting Ch.39's
+ * interactive state model where it doesn't apply — individual links inherit
+ * ordinary link hover/focus treatment; the footer container itself has no
+ * states of its own.
+ */
+
+.footer {
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  padding-block: var(--semantic-space-padding-section-lg);
+  padding-inline: var(--semantic-space-padding-section-sm);
+}
+
+@media (min-width: 1024px) {
+  .footer {
+    padding-inline: var(--semantic-space-padding-section-lg);
+  }
+}
+
+.inner {
+  max-width: var(--core-container-width-content);
+  margin-inline: auto;
+}
+
+.top {
+  display: grid;
+  gap: var(--semantic-space-gap-grid);
+  grid-template-columns: 1fr;
+  padding-bottom: var(--semantic-space-padding-section-sm);
+}
+
+@media (min-width: 600px) {
+  .top {
+    grid-template-columns: 1.5fr repeat(3, 1fr);
+  }
+}
+
+.brandColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+}
+
+.tagline {
+  font-size: var(--core-type-caption-size-desktop);
+  color: var(--semantic-color-text-secondary);
+  max-width: 32ch;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-related-items);
+}
+
+.columnHeading {
+  font-size: var(--core-type-label-size-desktop);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  color: var(--semantic-color-text-tertiary);
+}
+
+.columnLink {
+  font-size: var(--core-type-body-size-mobile);
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  width: fit-content;
+}
+.columnLink:hover {
+  color: var(--semantic-color-text-primary);
+}
+
+@media (min-width: 1024px) {
+  .columnLink {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  padding-top: var(--semantic-space-padding-section-sm);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+@media (min-width: 600px) {
+  .bottom {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.copyright {
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-tertiary);
+}
+
+.legalLinks {
+  display: flex;
+  gap: var(--semantic-space-gap-related-items);
+}
+
+.legalLink {
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-tertiary);
+  text-decoration: none;
+}
+.legalLink:hover {
+  color: var(--semantic-color-text-secondary);
+}
+
+@media (min-width: 1024px) {
+  .copyright,
+  .legalLink {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}

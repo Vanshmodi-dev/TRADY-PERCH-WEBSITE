@@ -1,0 +1,31 @@
+{
+  "$origin": "Product Implementation Constitution Chapter 36 — Performance Budgets. Values are the source's own first-canonical numbers; binding as written per IP2, acknowledged-provisional by the source itself.",
+  "coreWebVitals": {
+    "marketing-site": {
+      "largestContentfulPaintMs": 2000,
+      "interactionToNextPaintMs": 150,
+      "cumulativeLayoutShift": 0.05,
+      "timeToFirstByteMs": 400
+    },
+    "client-portal": {
+      "largestContentfulPaintMs": 2500,
+      "interactionToNextPaintMs": 200,
+      "cumulativeLayoutShift": 0.1,
+      "timeToFirstByteMs": 600
+    }
+  },
+  "bundleSizeCeilingsKb": {
+    "marketing-site": {
+      "perRouteJsGzip": 100,
+      "sharedVendorJsGzip": 150
+    },
+    "client-portal": {
+      "perRouteJsGzip": 180,
+      "sharedVendorJsGzip": 220
+    },
+    "packagesUiFullLibraryGzip": 80
+  },
+  "animation": {
+    "maxSimultaneousStandardTierOrAbove": 3
+  }
+}

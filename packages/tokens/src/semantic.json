@@ -1,0 +1,90 @@
+{
+  "color": {
+    "background": {
+      "primary": { "ref": "core.color.black.950" },
+      "secondary": { "ref": "core.color.black.900" }
+    },
+    "surface": {
+      "card": { "ref": "core.color.black.850" },
+      "cardHover": { "ref": "core.color.black.800" }
+    },
+    "text": {
+      "primary": { "ref": "core.color.white.050" },
+      "secondary": { "ref": "core.color.gray.400" },
+      "tertiary": { "ref": "core.color.gray.600" },
+      "success": { "ref": "core.color.emerald.500" },
+      "error": { "ref": "core.color.crimson.400" }
+    },
+    "accent": {
+      "primary": { "ref": "core.color.gold.500" },
+      "secondary": { "ref": "core.color.gold.300" },
+      "pressed": { "ref": "core.color.gold.600" }
+    },
+    "border": {
+      "default": {
+        "value": "rgba(245, 244, 241, 0.1)",
+        "_derivedFrom": "core.color.white.050 at core.opacity.100 — precomputed since the build pipeline does not perform generic alpha compositing"
+      },
+      "error": { "ref": "core.color.crimson.500" }
+    },
+    "focus": {
+      "ring": { "ref": "core.color.gold.500" }
+    }
+  },
+  "elevation": {
+    "card": { "ref": "core.shadow.resting" },
+    "cardHover": { "ref": "core.shadow.raised" },
+    "overlay": { "ref": "core.shadow.lifted" }
+  },
+  "surface": {
+    "glassNavFill": {
+      "value": "rgba(20, 20, 22, 0.72)",
+      "_derivedFrom": "core.color.black.900 at core.opacity.720, paired with core.blur.subtle as backdrop-filter at point of use"
+    },
+    "glassNavFillReceded": {
+      "value": "rgba(20, 20, 22, 0.55)",
+      "_derivedFrom": "Ch.20 §5 (Nv-4): recession reduces glass-nav's 72% opacity to \"approximately 55%\" while remaining above Ch.3 C-3's minimum contrast threshold for any text still visible against it."
+    },
+    "glassBackdropFill": {
+      "value": "rgba(11, 11, 13, 0.8)",
+      "_derivedFrom": "core.color.black.950 at core.opacity.800, paired with core.blur.pronounced as backdrop-filter at point of use"
+    },
+    "drawerBackdropFill": {
+      "value": "rgba(11, 11, 13, 0.4)",
+      "_derivedFrom": "Ch.24 §5 (Dw-2): a Drawer's dimmed backdrop is \"approximately 40%, no blur\" — lighter than Ch.23's Dialog backdrop, reflecting a Drawer's lower interruption level."
+    }
+  },
+  "space": {
+    "gap": {
+      "iconLabel": { "ref": "core.space.2" },
+      "relatedItems": { "ref": "core.space.4" },
+      "stack": { "ref": "core.space.6" },
+      "grid": { "ref": "core.space.8" }
+    },
+    "padding": {
+      "componentSm": { "ref": "core.space.4" },
+      "componentMd": { "ref": "core.space.6" },
+      "componentLg": { "ref": "core.space.8" },
+      "sectionSm": { "ref": "core.space.16" },
+      "sectionLg": { "ref": "core.space.24" },
+      "hero": { "ref": "core.space.32" },
+      "buttonBlockSm": {
+        "ref": "core.space.2",
+        "_derivedFrom": "INTERIM — Ch.18 §4 names padding.component-sm/md/lg as a button's padding without splitting inline vs. block; applied literally as padding-inline (matching the token's own name), with these buttonBlock* tokens covering the unaddressed block-padding axis so buttons keep sane proportions rather than becoming square."
+      },
+      "buttonBlockMd": { "ref": "core.space.3", "_derivedFrom": "INTERIM — see buttonBlockSm" },
+      "buttonBlockLg": { "ref": "core.space.4", "_derivedFrom": "INTERIM — see buttonBlockSm" }
+    },
+    "margin": {
+      "pageMax": { "ref": "core.space.48" }
+    }
+  },
+  "radius": {
+    "control": { "ref": "core.radius.md" },
+    "card": { "ref": "core.radius.lg" },
+    "pill": { "ref": "core.radius.full" }
+  },
+  "opacity": {
+    "disabled": { "ref": "core.opacity.400" }
+  }
+}

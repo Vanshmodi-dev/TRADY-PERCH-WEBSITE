@@ -1,0 +1,93 @@
+/* Ch.24 Drawers & Sheets. Anatomy: optional Backdrop -> Panel (Header, Body, optional Footer). */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--semantic-surface-drawer-backdrop-fill);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-duration-standard) var(--motion-easing-entrance);
+  z-index: 40;
+}
+.backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--semantic-color-background-secondary);
+  box-shadow: var(--semantic-elevation-overlay);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 41;
+  /*
+   * Entrance/exit timing asymmetry (Ch.24 §7: Standard/Entrance in, Quick/Exit
+   * out) is intentionally deferred to Milestone 5 (Interactive elements &
+   * animations) — this milestone (Global Layout/Nav/Footer) ships correct
+   * structural behavior (anchor, keyboard, focus trap) with a single
+   * transition config for both directions as an interim simplification.
+   */
+  transition:
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    opacity var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+.panel.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Ch.24 Dw-1 (anchor edge) x Dw-3 (content-determined size, not a fixed
+   default) — width/height cap here is a reasonable ceiling, not the size. */
+.right,
+.left {
+  height: 100%;
+  width: min(80vw, 360px);
+}
+.right {
+  right: 0;
+  transform: translateX(calc(100% * (1 - var(--motion-reduced, 0))));
+}
+.right.open {
+  transform: translateX(0);
+}
+.left {
+  left: 0;
+  transform: translateX(calc(-100% * (1 - var(--motion-reduced, 0))));
+}
+.left.open {
+  transform: translateX(0);
+}
+
+.bottom {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-height: 80vh;
+  transform: translateY(calc(100% * (1 - var(--motion-reduced, 0))));
+}
+.bottom.open {
+  transform: translateY(0);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--semantic-space-padding-component-md);
+  border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--semantic-space-padding-component-md);
+}
+
+.footer {
+  padding: var(--semantic-space-padding-component-md);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}

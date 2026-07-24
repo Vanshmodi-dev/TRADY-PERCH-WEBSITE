@@ -1,0 +1,22 @@
+{
+  "duration": {
+    "instant": "80ms",
+    "quick": "150ms",
+    "standard": "300ms",
+    "deliberate": "500ms",
+    "ceremonial": "1200ms"
+  },
+  "durationReduced": {
+    "_origin": "Design System Bible Ch.15 Mt-4 — every duration ships from creation with a paired reduced-motion companion. Applied automatically via a prefers-reduced-motion media query (Ag-3), never a per-component branch.",
+    "instant": "0ms",
+    "quick": "60ms",
+    "standard": "100ms",
+    "deliberate": "150ms",
+    "ceremonial": "0ms"
+  },
+  "easing": {
+    "entrance": "cubic-bezier(0.16, 1, 0.3, 1)",
+    "exit": "cubic-bezier(0.4, 0, 1, 1)",
+    "ceremonial": "cubic-bezier(0.19, 1, 0.22, 1)"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@trady-perch/marketing-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Trady Perch flagship marketing website. Product Implementation Constitution Ch.2 Surface 1 — static-first, the only app permitted to ship without an authenticated route.",
+  "scripts": {
+    "predev": "npm run build --workspace=@trady-perch/tokens && npm run build --workspace=@trady-perch/motion",
+    "dev": "next dev",
+    "prebuild": "npm run build --workspace=@trady-perch/tokens && npm run build --workspace=@trady-perch/motion",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.2.11",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "@trady-perch/tokens": "*",
+    "@trady-perch/motion": "*",
+    "@trady-perch/ui": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint-config-next": "^16.2.11"
+  }
+}

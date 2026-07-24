@@ -1,0 +1,241 @@
+/* Ch.20 Navigation Systems. Anatomy: Logo -> Primary Items (<=5) -> Primary CTA (structurally separate). */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--semantic-space-gap-grid);
+  padding-block: var(--core-space-4);
+  /* Component-level chrome padding, not section-level — section-sm (64px)
+     left too little room for the CTA to stay visible on narrow phones,
+     which is exactly what caused the Ch.20 Nv-3 mobile-CTA regression. */
+  padding-inline: var(--semantic-space-padding-component-md);
+  background-color: var(--semantic-surface-glass-nav-fill);
+  backdrop-filter: blur(var(--core-blur-subtle));
+  -webkit-backdrop-filter: blur(var(--core-blur-subtle));
+  border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  transition:
+    background-color var(--nav-transition-duration, var(--motion-duration-standard))
+      var(--motion-easing-entrance),
+    padding-block var(--nav-transition-duration, var(--motion-duration-standard))
+      var(--motion-easing-entrance);
+}
+
+/* Ch.20 Nv-4 — recede on downward scroll, never disappear entirely. */
+.header.receded {
+  background-color: var(--semantic-surface-glass-nav-fill-receded);
+  padding-block: var(--core-space-3);
+}
+
+@media (min-width: 1024px) {
+  .header {
+    padding-inline: var(--semantic-space-padding-section-lg);
+  }
+}
+
+.nav {
+  display: none;
+  align-items: center;
+  gap: var(--semantic-space-gap-grid);
+}
+
+@media (min-width: 1024px) {
+  .nav {
+    display: flex;
+  }
+}
+
+.navItem {
+  position: relative;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-1);
+  background: none;
+  border: none;
+  padding: var(--core-space-2) 0;
+  font-family: inherit;
+  font-size: var(--core-type-body-size-desktop);
+  font-weight: var(--core-type-body-weight);
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.navLink:hover {
+  color: var(--semantic-color-text-primary);
+}
+
+.navLink:hover::after,
+.navLink.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: var(--semantic-color-accent-primary);
+}
+
+/* Ch.20 §6: the current page's item shows a PERSISTENT underline, not
+   merely a hover-triggered one. */
+.navLink.active {
+  color: var(--semantic-color-text-primary);
+}
+
+.dropdownIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  transition: transform var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+.navItem.open .dropdownIcon {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--core-space-2);
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--core-space-2);
+  background-color: var(--semantic-color-background-secondary);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  border-radius: var(--semantic-radius-card);
+  box-shadow: var(--semantic-elevation-overlay);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(-1 * var(--core-space-1) * (1 - var(--motion-reduced, 0))));
+  /*
+   * Ch.20 §7 specifies distinct Entrance/Exit curves for open vs. close.
+   * Like Drawer (see drawer.module.css), a single transition config is used
+   * for both directions as an interim simplification, deferred to
+   * Milestone 5 (Interactive elements & animations).
+   */
+  transition:
+    opacity var(--motion-duration-quick) var(--motion-easing-entrance),
+    transform var(--motion-duration-quick) var(--motion-easing-entrance),
+    visibility var(--motion-duration-quick);
+}
+
+.navItem.open .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdownLink {
+  display: block;
+  padding: var(--core-space-2) var(--core-space-3);
+  border-radius: var(--core-radius-sm);
+  font-size: var(--core-type-body-size-desktop);
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+}
+.dropdownLink:hover {
+  color: var(--semantic-color-text-primary);
+  background-color: var(--semantic-color-surface-card);
+}
+
+.viewAllLink {
+  composes: dropdownLink;
+  margin-top: var(--core-space-1);
+  padding-top: var(--core-space-2);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  color: var(--semantic-color-accent-primary);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-gap-related-items);
+}
+
+.mobileMenuTrigger {
+  display: inline-flex;
+}
+
+@media (min-width: 1024px) {
+  .mobileMenuTrigger {
+    display: none;
+  }
+}
+
+/* Ch.20 Nv-3 / §9: the CTA is always present, even in a space-constrained
+   mobile bar — ordinary items collapse into the menu icon FIRST, never the
+   CTA. Two size-appropriate instances (not one hidden/shown pair) so the
+   compact mobile CTA doesn't fight the desktop CTA's padding via CSS overrides. */
+.ctaMobile {
+  display: inline-flex;
+}
+
+@media (min-width: 1024px) {
+  .ctaMobile {
+    display: none;
+  }
+}
+
+.ctaDesktop {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .ctaDesktop {
+    display: inline-flex;
+  }
+}
+
+.mobileNavList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobileNavLink {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  text-decoration: none;
+}
+
+.mobileDropdownGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+}
+
+.mobileDropdownLabel {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+}
+
+.mobileDropdownLinks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  padding-left: var(--core-space-4);
+}
+
+.mobileDropdownLinks a {
+  font-size: var(--core-type-body-size-mobile);
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+}
+
+.mobileCta {
+  margin-top: var(--core-space-4);
+}

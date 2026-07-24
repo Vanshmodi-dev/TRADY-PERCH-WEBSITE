@@ -1,0 +1,140 @@
+/* Ch.18 Buttons & Actions. Anatomy: Container -> Label -> optional Leading/Trailing Icon. */
+
+.button {
+  /* Anatomy: Container */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--semantic-space-gap-icon-label);
+  border-radius: var(--semantic-radius-control); /* core.radius.md = 10px, Ch.18 §4 */
+  border: var(--core-border-default) solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: inherit;
+  /* Ch.18 §9: tap target never falls below 44x44px, even at the sm size
+     step — a floor the box only grows beyond (lg), never shrinks under. */
+  min-height: 44px;
+  transition:
+    box-shadow var(--motion-duration-quick) var(--motion-easing-entrance),
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    border-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    color var(--motion-duration-quick) var(--motion-easing-entrance),
+    transform var(--motion-duration-instant, 80ms) linear;
+}
+
+/* Ch.39: Active — 98% scale compression, Instant tier. Not gated behind
+   --motion-reduced: Instant's reduced companion is 0ms (the transition
+   becomes an instant jump, not a removed transform) per Ch.15 Mt-4. */
+.button:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: scale(0.98);
+}
+
+/* --- Size axis (Ch.18 §4, independent of Emphasis per Ch.17 An-2) --- */
+.sm {
+  padding-inline: var(--semantic-space-padding-component-sm);
+  padding-block: var(--semantic-space-padding-button-block-sm);
+  font-size: var(--core-type-caption-size-desktop);
+  font-weight: var(--core-type-caption-weight);
+  line-height: var(--core-type-caption-line-height);
+}
+.md {
+  padding-inline: var(--semantic-space-padding-component-md);
+  padding-block: var(--semantic-space-padding-button-block-md);
+  font-size: var(--core-type-body-size-desktop);
+  font-weight: var(--core-type-body-weight);
+  line-height: var(--core-type-body-line-height);
+}
+.lg {
+  padding-inline: var(--semantic-space-padding-component-lg);
+  padding-block: var(--semantic-space-padding-button-block-lg);
+  font-size: var(--core-type-body-large-size-desktop);
+  font-weight: var(--core-type-body-large-weight);
+  line-height: var(--core-type-body-large-line-height);
+}
+
+/* --- Emphasis axis (Ch.18 Bt-2 — closed, 3 values) --- */
+.primary {
+  background-color: var(--semantic-color-accent-primary);
+  color: var(--semantic-color-background-primary); /* Ch.18 §4: "background.primary text" */
+}
+.primary:hover:not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: var(--semantic-elevation-card-hover);
+}
+.primary:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--semantic-color-accent-pressed); /* Ch.39: gold elements shift to accent.pressed */
+}
+
+.secondary {
+  background-color: transparent;
+  border-color: var(--semantic-color-border-default);
+  color: var(--semantic-color-text-primary);
+}
+.secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: var(--semantic-elevation-card-hover);
+}
+
+.ghost {
+  background-color: transparent;
+  color: var(--semantic-color-text-primary);
+}
+.ghost:hover:not(:disabled):not([aria-disabled="true"]) {
+  text-decoration: underline; /* Ch.18 §4: "reveals a subtle underline on hover" */
+  text-underline-offset: var(--core-space-1);
+}
+
+/* --- Destructive (Ch.18 Bt-4 — recolors, never a new emphasis tier) --- */
+.destructive.primary {
+  background-color: var(--semantic-color-border-error);
+  color: var(--semantic-color-text-primary);
+}
+.destructive.secondary,
+.destructive.ghost {
+  color: var(--semantic-color-text-error);
+}
+.destructive.secondary {
+  border-color: var(--semantic-color-border-error);
+}
+
+/* --- Disabled (Ch.39 St-3 — suppresses Hover/Focus/Active unconditionally) --- */
+.button:disabled,
+.button[aria-disabled="true"] {
+  opacity: var(--semantic-opacity-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --- Loading (Ch.39 St-4 — Loading implies Disabled; Loading's treatment
+   takes visual precedence) --- */
+.loading {
+  position: relative;
+  color: transparent; /* label hidden, not removed, so width doesn't change */
+}
+.pulse {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--semantic-radius-pill);
+  background-color: currentColor;
+  animation: button-pulse var(--motion-duration-standard) var(--motion-easing-entrance) infinite;
+}
+@keyframes button-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@trady-perch/motion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Trady Perch motion tokens (Design System Bible Ch.15) and animation governance constants (Ch.40), compiled to CSS custom properties and typed TS exports.",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./css": "./dist/motion-tokens.css"
+  }
+}
