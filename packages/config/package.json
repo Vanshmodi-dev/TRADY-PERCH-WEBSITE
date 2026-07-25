@@ -17,5 +17,8 @@
     "./prettier": "./prettier.base.mjs",
     "./performance-budget.json": "./performance-budget.json",
     "./vitest": "./vitest.base.mjs"
+  },
+  "devDependencies": {
+    "vitest-axe": "^0.1.0"
   }
 }

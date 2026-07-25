@@ -1,15 +1,23 @@
 import type { MetadataRoute } from "next";
+import { CASE_STUDIES } from "@/features/case-studies/case-studies-data";
 import { SITE_URL } from "@/shared/site-config";
 
 /**
- * Product Implementation Constitution Ch.40 §4/§6 — every indexable route
- * gets a sitemap entry. This is a routing-level concern this milestone
- * owns (it shipped every route listed here); page-level `lastModified`
- * precision arrives once real content (not a placeholder stub) exists.
- * `/search` is intentionally excluded — not yet linked from navigation,
- * and its own metadata sets `robots: { index: false }`.
+ * Product Implementation Constitution Ch.40 §4/§6 — every real, indexable
+ * route gets a sitemap entry; a sitemap listing a page that page's own
+ * metadata marks `noindex` sends search engines a contradictory signal,
+ * so this list and each route's own metadata must agree.
+ *
+ * Excluded on purpose, all via `robots: { index: false }` on the route's
+ * own metadata (ADR-0007): `/about`, `/process`, `/careers`, `/resources`,
+ * `/blog` (Ch.14.2 deferred pages — intentionally not built out yet) and
+ * `/search` (not a real feature yet, also not linked from navigation).
  */
-const ROUTES: Array<{ path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }> = [
+const STATIC_ROUTES: Array<{
+  path: string;
+  priority: number;
+  changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
+}> = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
   { path: "/solutions", priority: 0.9, changeFrequency: "monthly" },
   { path: "/solutions/ai-agents", priority: 0.7, changeFrequency: "monthly" },
@@ -25,11 +33,6 @@ const ROUTES: Array<{ path: string; priority: number; changeFrequency: MetadataR
   { path: "/work/case-studies", priority: 0.8, changeFrequency: "weekly" },
   { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/about", priority: 0.6, changeFrequency: "monthly" },
-  { path: "/process", priority: 0.6, changeFrequency: "monthly" },
-  { path: "/careers", priority: 0.4, changeFrequency: "monthly" },
-  { path: "/resources", priority: 0.6, changeFrequency: "weekly" },
-  { path: "/blog", priority: 0.6, changeFrequency: "weekly" },
   { path: "/faq", priority: 0.6, changeFrequency: "monthly" },
   { path: "/legal", priority: 0.3, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
@@ -37,10 +40,19 @@ const ROUTES: Array<{ path: string; priority: number; changeFrequency: MetadataR
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ROUTES.map(({ path, priority, changeFrequency }) => ({
+  const staticEntries = STATIC_ROUTES.map(({ path, priority, changeFrequency }) => ({
     url: `${SITE_URL}${path}`,
     lastModified: new Date(),
     changeFrequency,
     priority,
   }));
+
+  const caseStudyEntries = CASE_STUDIES.map((caseStudy) => ({
+    url: `${SITE_URL}/work/case-studies/${caseStudy.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...staticEntries, ...caseStudyEntries];
 }

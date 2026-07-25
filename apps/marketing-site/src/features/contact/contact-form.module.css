@@ -1,0 +1,84 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+  max-width: 40rem;
+}
+
+/* Visually hidden and out of the tab order — see the honeypot comment in
+   contact-form.tsx. Same clip-based technique as shared/components's
+   .srOnly, kept local since this is the form's own implementation detail. */
+.honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.formError {
+  display: flex;
+  align-items: center;
+  font-size: var(--core-type-body-size-mobile);
+  color: var(--semantic-color-text-error);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .formError {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--semantic-space-gap-related-items);
+  padding: var(--semantic-space-padding-component-lg);
+  background-color: var(--semantic-color-surface-card);
+  border-radius: var(--semantic-radius-card);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  max-width: 40rem;
+}
+
+.successHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-gap-related-items);
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  /* Ch.17.5: success is calm, not celebratory — a single small icon and
+     text.success color, no confetti/bounce. */
+  color: var(--semantic-color-text-success);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .successHeading {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.successIcon {
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+  flex-shrink: 0;
+}
+
+.successBody {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .successBody {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}

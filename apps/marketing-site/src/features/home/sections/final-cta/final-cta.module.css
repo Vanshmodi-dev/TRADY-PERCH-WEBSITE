@@ -1,20 +1,19 @@
-.stub {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--semantic-space-gap-stack);
-  max-width: var(--core-container-width-content);
-  margin-inline: auto;
-  padding: var(--semantic-space-padding-section-lg) var(--semantic-space-padding-section-sm);
+/* Master Vision Ch.13 item 14. Ch.7 Centered Statement. Emotional target
+   (Ch.4.3): Ease and resolve — "the next obvious step in a conversation
+   that has already, quietly, been happening for the length of the page." */
+
+.section {
+  composes: section from "../../../../shared/components/section.module.css";
 }
 
-.eyebrow {
-  font-size: var(--core-type-label-size-desktop);
-  font-weight: var(--core-type-label-weight);
-  letter-spacing: var(--core-type-label-tracking);
-  text-transform: uppercase;
-  color: var(--semantic-color-accent-primary);
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--semantic-space-gap-stack);
+  max-width: 60ch;
 }
 
 .heading {
@@ -31,20 +30,15 @@
   }
 }
 
-.description {
+.body {
   font-size: var(--core-type-body-large-size-mobile);
   line-height: var(--core-type-body-large-line-height);
   color: var(--semantic-color-text-secondary);
-  max-width: 68ch;
+  margin: 0;
 }
 
 @media (min-width: 1024px) {
-  .description {
+  .body {
     font-size: var(--core-type-body-large-size-desktop);
   }
-}
-
-.note {
-  font-size: var(--core-type-caption-size-desktop);
-  color: var(--semantic-color-text-tertiary);
 }

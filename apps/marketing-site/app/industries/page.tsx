@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { IndustriesHubPage } from "@/features/industries/industries-hub-page";
+import { SITE_URL } from "@/shared/site-config";
+
+const TITLE = "Industries — Real Estate, Medical, Legal & More";
+const DESCRIPTION = "Real estate, medical, legal, manufacturing, education, finance, and e-commerce.";
 
 export const metadata: Metadata = {
-  title: "Industries",
-  description: "Real estate, medical, legal, manufacturing, education, finance, and e-commerce.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/industries` },
+  openGraph: { type: "website", url: `${SITE_URL}/industries`, title: TITLE, description: DESCRIPTION },
 };
 
 export default function IndustriesPage() {
-  return (
-    <PageStub
-      eyebrow="Industries"
-      heading="Built for the way your industry actually operates"
-      description="Real estate, medical, legal, manufacturing, education, finance, and e-commerce — automation designed around each industry's real operational pain points, not a generic template."
-      milestoneNote="Full page content arrives in Milestone 4 (Remaining Marketing Pages)."
-    />
-  );
+  return <IndustriesHubPage />;
 }

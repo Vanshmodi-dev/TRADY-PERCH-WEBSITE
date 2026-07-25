@@ -20,6 +20,7 @@
       "900": "#6B5324"
     },
     "emerald": {
+      "400": "#62BA98",
       "500": "#3E8C6E",
       "700": "#2C6B53"
     },
@@ -43,11 +44,11 @@
     "48": "192px"
   },
   "radius": {
-    "_origin": "md=10px is CANONICAL — Ch.18 (Buttons), §4: first population of this Core category, applied to all button sizes. none/sm/lg/xl/full remain INTERIM, derived from Ch.5's 4px base rhythm pending Ch.6/Ch.9 formally absorbing Ch.18's population into their own tables (per Ch.18 §16's own documented limitation).",
+    "_origin": "md=10px CANONICAL (Ch.18 Buttons §4). lg=16px CANONICAL (Ch.19 Cards §4/§5: 'one step larger than Chapter 18's button radius of 10px'). none/sm/xl/full remain INTERIM, derived from Ch.5's 4px base rhythm pending a future consolidated Radius chapter (per Ch.18 §16 and Ch.19 §16's own documented limitations).",
     "none": "0px",
     "sm": "4px",
     "md": "10px",
-    "lg": "12px",
+    "lg": "16px",
     "xl": "20px",
     "full": "9999px"
   },

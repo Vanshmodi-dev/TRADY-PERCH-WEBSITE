@@ -9,7 +9,8 @@ Single source of truth for every Trady Perch design token. Structured data lives
 | `color` | Design System Bible Ch.3 | Canonical (first-canonical-draft) |
 | `space` | Design System Bible Ch.5 | Canonical (first-canonical-draft) |
 | `radius.md` (10px) | Design System Bible Ch.18 §4 (Buttons) — first population of this Core category | Canonical |
-| `radius` (none/sm/lg/xl/full) | Not sourced — interim, derived from Ch.5's 4px rhythm and `md`'s now-canonical 10px | Interim — Ch.18 §16 itself notes Ch.6/Ch.9 should formally absorb this category when next revised |
+| `radius.lg` (16px) | Design System Bible Ch.19 §4/§5 (Cards) — "one step larger than Chapter 18's button radius of 10px" | Canonical |
+| `radius` (none/sm/xl/full) | Not sourced — interim, derived from Ch.5's 4px rhythm and the now-canonical md/lg steps | Interim — Ch.18 §16 and Ch.19 §16 both note a future consolidated Radius chapter should formally absorb this category |
 | `border` (width) | Not explicitly sourced; standard 1px/2px scale | Interim, low-risk |
 | `shadow` / elevation | Design System Bible Ch.9 | Canonical (first-canonical-draft) |
 | `blur` / materials | Design System Bible Ch.10 | Canonical (first-canonical-draft) |
@@ -41,3 +42,7 @@ semanticTokens.color.accent.primary; // "#C9A24B" — resolved literal, for logi
 ```
 
 Components should consume **semantic or component tokens only** — never a core token directly (Ch.13 §3). CSS: `color: var(--semantic-color-text-primary);`, never `var(--core-color-white-050)` from component code.
+
+## `semantic.color.text.tertiary` — contrast warning (found in Milestone 3 review)
+
+`text.tertiary` (`core.color.gray.600` / `#6E6E74`) computes to **~3.6–3.9:1** against both background tiers — it fails WCAG AA's 4.5:1 floor for normal text. Ch.3 itself names this token `"Tertiary text / disabled-state text"`; for genuinely **disabled** content WCAG doesn't require AA contrast, so the value is correct for that use. It is **not** safe for any text meant to be actively read (captions, labels, attributions) — use `semantic.color.text.secondary` (`gray.400`, ~7.7–8.3:1) instead. `text.tertiary` is safe at **large text sizes** (≥24px / ≥18.66px bold), which only need 3:1 — e.g. a big numeral is fine; a small caption is not.

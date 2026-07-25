@@ -211,6 +211,15 @@
   text-decoration: none;
 }
 
+/* Ch.11: gold is reserved for the active/selected state. The desktop
+   bar's underline treatment doesn't translate to a vertical list, so the
+   current section is marked with color alone here instead (Milestone 4
+   review — the mobile drawer previously gave no active-section signal). */
+.mobileNavLink.active,
+.mobileDropdownLabel.active {
+  color: var(--semantic-color-accent-secondary);
+}
+
 .mobileDropdownGroup {
   display: flex;
   flex-direction: column;

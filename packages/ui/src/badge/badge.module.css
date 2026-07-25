@@ -1,0 +1,65 @@
+/* Ch.33 Badges, Tags & Status Indicators. Anatomy: Container -> Label -> optional leading Icon. */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-1);
+  border-radius: var(--semantic-radius-pill);
+  border: var(--core-border-hairline) solid transparent;
+  font-weight: var(--core-type-label-weight);
+  white-space: nowrap;
+  width: fit-content;
+}
+
+/* Ch.4 §9 / Ch.8 Re-2: Milestone 6 review — .sm was pinned to the Mobile
+   token forever (never upgraded at Desktop) and .md was pinned to the
+   Desktop token forever (never had a Mobile value at all). Both now share
+   the same mobile-base + Desktop-override pattern as the rest of the
+   type-scale fixes this milestone. */
+.sm {
+  padding: 0 var(--core-space-2);
+  font-size: var(--core-type-caption-size-mobile);
+}
+.md {
+  padding: var(--core-space-1) var(--core-space-3);
+  font-size: var(--core-type-caption-size-mobile);
+}
+
+@media (min-width: 1024px) {
+  .sm {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .md {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+.icon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  flex-shrink: 0;
+}
+
+/* Ch.33 Bd-1 — exactly four colors, each permanently fixed to one meaning. */
+.neutral {
+  color: var(--semantic-color-text-secondary);
+  border-color: var(--semantic-color-border-default);
+}
+.success {
+  color: var(--semantic-color-text-success);
+  border-color: var(--semantic-color-text-success);
+}
+/* Ch.53 1.4.11 / Milestone 7 review: border.error (crimson.500) fails the
+   3:1 graphical-element minimum against surface.card (2.88:1) — the same
+   surface.card gap fixed in text-field.module.css's .inputError. Not
+   currently instantiated anywhere with color="error" (verified via
+   codebase search), but a Badge placed inside a Card is an entirely
+   ordinary future use this component must already be correct for. */
+.error {
+  color: var(--semantic-color-text-error);
+  border-color: var(--semantic-color-text-error);
+}
+.accent {
+  color: var(--semantic-color-accent-primary);
+  border-color: var(--semantic-color-accent-primary);
+}

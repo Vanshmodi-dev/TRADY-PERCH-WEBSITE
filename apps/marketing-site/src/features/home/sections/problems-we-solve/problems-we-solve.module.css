@@ -1,0 +1,65 @@
+/*
+ * Master Vision Ch.13 item 4. Ch.4.3: "the most emotionally important
+ * section on the entire page... a visitor who feels seen here will
+ * forgive a merely-good hero." Ch.7 Split Narrative pattern.
+ */
+
+.section {
+  composes: section from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  display: grid;
+  gap: var(--semantic-space-gap-grid);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .container {
+    grid-template-columns: 5fr 7fr;
+    align-items: start;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--semantic-space-gap-related-items);
+  padding-block: var(--semantic-space-padding-component-md);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.item:last-child {
+  border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.icon {
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+  color: var(--semantic-color-text-secondary);
+  flex-shrink: 0;
+  margin-top: var(--core-space-1);
+}
+
+.itemText {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .itemText {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}

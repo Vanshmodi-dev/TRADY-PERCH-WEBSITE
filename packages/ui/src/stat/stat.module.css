@@ -1,0 +1,49 @@
+/*
+ * Design System Bible Ch.4, Ty-5 ("numerals-as-proof-points"): any numeral
+ * functioning as a result/metric/measurable claim is set one scale step
+ * larger than surrounding text, in accent.primary (gold), using tabular
+ * figures — never ordinary body-colored/body-sized text.
+ */
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+}
+
+.value {
+  color: var(--semantic-color-accent-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--core-type-h2-line-height);
+  margin: 0;
+}
+
+.sm .value {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+}
+@media (min-width: 1024px) {
+  .sm .value {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.md .value {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+}
+@media (min-width: 1024px) {
+  .md .value {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.label {
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+@media (min-width: 1024px) {
+  .label {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}

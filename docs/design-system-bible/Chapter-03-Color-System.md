@@ -19,25 +19,25 @@ This chapter depends on Chapter 1 in full and Chapter 2's resolution model direc
 
 A color system for this brand carries a constraint most color systems do not: it must be capable of *disciplined scarcity*, not merely *harmonious variety*. Most color-system philosophy is written for brands that want their palette used freely and often; Trady Perch's entire premium positioning depends on one color — gold — being used rarely enough to still mean something (§7.4, Principle 3). A color system built the way a typical consumer brand's is built, optimized for flexible, generous application, would be actively wrong here.
 
-Three approaches were considered and two rejected. **A wide, expressive palette** — multiple accent hues, a broad range of tints for flexibility — was rejected outright; §6.1 is explicit that gold is the only accent, and a wide palette would immediately create pressure to use the "other" colors somewhere, diluting the very scarcity the brand depends on. **A minimal palette with no internal scale** — one exact value per named role, no steps — was rejected because it cannot represent hover, pressed, or disabled states without inventing ad hoc one-off values at the moment they're needed, which is exactly the Premature Invention anti-pattern Chapter 1 warns against. What remains, and what this chapter builds, is a **small, enumerated Core scale — sixteen values, not a hundred** — deep enough to cover every state a Semantic role will need, shallow enough that the full palette can be seen and audited in one sitting.
+Three approaches were considered and two rejected. **A wide, expressive palette** — multiple accent hues, a broad range of tints for flexibility — was rejected outright; §6.1 is explicit that gold is the only accent, and a wide palette would immediately create pressure to use the "other" colors somewhere, diluting the very scarcity the brand depends on. **A minimal palette with no internal scale** — one exact value per named role, no steps — was rejected because it cannot represent hover, pressed, or disabled states without inventing ad hoc one-off values at the moment they're needed, which is exactly the Premature Invention anti-pattern Chapter 1 warns against. What remains, and what this chapter builds, is a **small, enumerated Core scale — seventeen values, not a hundred** — deep enough to cover every state a Semantic role will need, shallow enough that the full palette can be seen and audited in one sitting. (Sixteen at this chapter's original authoring; `emerald.400` was added in Milestone 7 through the exact justification process C-1 itself requires — see that principle's own note below.)
 
 ---
 
 ## 3. CORE PRINCIPLES
 
-### C-1 — The Closed Sixteen-Value Core Palette
+### C-1 — The Closed Core Palette
 
-**Purpose.** The Core color tier consists of exactly sixteen values, enumerated in Section 4. It is a closed set, not an open range.
+**Purpose.** The Core color tier consists of exactly seventeen values (sixteen at this chapter's original authoring; see the Milestone 7 note below), enumerated in Section 4. It is a closed set, not an open range.
 
-**Reasoning.** Descends from P3 (a palette that can grow indefinitely cannot stay scarce) and P7 (a seventeenth value must be justified against all sixteen existing ones before it is added).
+**Reasoning.** Descends from P3 (a palette that can grow indefinitely cannot stay scarce) and P7 (a new value must be justified against every existing one before it is added).
 
-**Examples.** A designer needing "a slightly different gray for this one context" checks the existing two gray steps first; if neither serves, the burden is on them to show why, not on the system to accommodate.
+**Examples.** A designer needing "a slightly different gray for this one context" checks the existing two gray steps first; if neither serves, the burden is on them to show why, not on the system to accommodate. `emerald.400` (Milestone 7) is the concrete case: `emerald.500` and `emerald.700` were both checked against the AA text-contrast need a new `surface.card` computation surfaced, both found insufficient (one too dark already, the other darker still), and only then was a new step added — see Chapter 53's accessibility conformance work and this chapter's own Section 8.
 
 **When it applies.** To any proposed addition to the Core color tier.
 
-**When it does not apply.** To Semantic or Component tier colors, which may reference the sixteen Core values in new combinations freely — the closure applies to raw values, not to the roles built from them.
+**When it does not apply.** To Semantic or Component tier colors, which may reference the seventeen Core values in new combinations freely — the closure applies to raw values, not to the roles built from them.
 
-**Common misunderstandings.** Assuming sixteen is an arbitrary round number. It is the specific count required to give every named role in Section 4 a working default plus one interactive-state step — not a target chosen for its own sake, and not a ceiling that should be treated as sacred if a genuinely new role is later proven necessary.
+**Common misunderstandings.** Assuming the count is an arbitrary round number. Sixteen was the specific count required to give every named role in Section 4 a working default plus one interactive-state step — not a target chosen for its own sake, and not a ceiling treated as sacred once a genuinely new role was proven necessary, which is exactly what happened once.
 
 ### C-2 — Gold Is Two Distinct Roles, Not One Hue With a Tint
 
@@ -99,7 +99,7 @@ Three approaches were considered and two rejected. **A wide, expressive palette*
 
 ## 4. COMPLETE DESIGN SPECIFICATION
 
-### Core Tier — the sixteen values
+### Core Tier — the seventeen values
 
 | Token | Hex | Description |
 |---|---|---|
@@ -114,7 +114,8 @@ Three approaches were considered and two rejected. **A wide, expressive palette*
 | `core.color.gold.500` | `#C9A24B` | Gold — Primary Accent. |
 | `core.color.gold.600` | `#B8903D` | Gold, pressed/active step. |
 | `core.color.gold.900` | `#6B5324` | Gold, deepest step — reserved for rare high-contrast-on-light contexts (print, Chapter 60). |
-| `core.color.emerald.500` | `#3E8C6E` | Success. |
+| `core.color.emerald.400` | `#62BA98` | Success — Text role, added Milestone 7 (see Section 8): same hue/saturation as `emerald.500`, lightened by the same proportional step `crimson.500`→`crimson.400` already establishes, for text contexts `emerald.500` doesn't clear. |
+| `core.color.emerald.500` | `#3E8C6E` | Success — Accent/border role. |
 | `core.color.emerald.700` | `#2C6B53` | Success, pressed/active step. |
 | `core.color.crimson.400` | `#C97873` | Error — Text role (see C-4). |
 | `core.color.crimson.500` | `#A8443E` | Error — Accent role (icons, borders, low-opacity backgrounds). |
@@ -134,7 +135,7 @@ Three approaches were considered and two rejected. **A wide, expressive palette*
 | `semantic.color.accent.primary` | `gold.500` | CTAs, key numerals, active/selected indicators. |
 | `semantic.color.accent.secondary` | `gold.300` | Subheadline emphasis, decorative underlines, hover glows. |
 | `semantic.color.accent.pressed` | `gold.600` | Pressed/active state of any Gold 500 element. |
-| `semantic.color.text.success` | `emerald.500` | Success confirmation copy. |
+| `semantic.color.text.success` | `emerald.400` | Success confirmation copy. Re-pointed from `emerald.500` in Milestone 7 (see Section 8) — the original ref failed AA against `surface.card`. |
 | `semantic.color.text.error` | `crimson.400` | Error copy (C-4 text role). |
 | `semantic.color.border.error` | `crimson.500` | Error borders, icon fills (C-4 accent role). |
 | `semantic.color.focus.ring` | `gold.500` | Keyboard focus indicator, per Chapter 2 §8. |
@@ -146,10 +147,10 @@ Component-tier color tokens are not pre-populated here; per Chapter 2's T-4, the
 
 ## 5. MEASUREMENTS
 
-- **Core palette size: exactly sixteen values.** *(C-1)*
+- **Core palette size: exactly seventeen values** (sixteen at original authoring, plus `emerald.400` added Milestone 7). *(C-1)*
 - **Gold Budget ceiling: 10% of rendered viewport area**, measured by summing the bounding area of every element using `accent.primary` or `accent.secondary` as a fill, stroke, or glow source, divided by total viewport area. Text set in a gold numeral counts by its rendered glyph area, not its full bounding box, per the spirit (not letter) of §7.4's ceiling.
 - **Minimum contrast ratios:** 4.5:1 for normal text, 3:1 for large text (24px/18.66px bold and above) and graphical/UI-component contrast, per WCAG 2.1 AA — the floor this chapter's Section 8 verifies every pairing against, with AAA (7:1 / 4.5:1 respectively) preferred wherever achievable per Master Vision §22.
-- **Core step count per hue family:** neutrals (black) — 4 steps; white — 1 step; gray — 2 steps; gold — 4 steps; emerald — 2 steps; crimson — 3 steps. No family exceeds 4 steps without a documented reason.
+- **Core step count per hue family:** neutrals (black) — 4 steps; white — 1 step; gray — 2 steps; gold — 4 steps; emerald — 3 steps; crimson — 3 steps. No family exceeds 4 steps without a documented reason.
 
 ---
 
@@ -159,9 +160,9 @@ Component-tier color tokens are not pre-populated here; per Chapter 2's T-4, the
 
 **During review.** Every text/surface pairing introduced by a new component is checked against Section 8's recorded ratios, or a new ratio is calculated and recorded if the pairing is genuinely new.
 
-**Under a Core-tier edit.** Any change to one of the sixteen Core values invalidates every recorded contrast ratio built on it until recalculated (C-3) — this is treated as a mandatory, blocking step of the edit, not a follow-up task that can be deferred.
+**Under a Core-tier edit.** Any change to one of the seventeen Core values invalidates every recorded contrast ratio built on it until recalculated (C-3) — this is treated as a mandatory, blocking step of the edit, not a follow-up task that can be deferred.
 
-**Under a proposal to add a seventeenth Core value.** The proposer must show, specifically, which of the sixteen existing values (and which Semantic combination of them) was checked and found insufficient, per C-1 and Chapter 2's T-4/T-2.
+**Under a proposal to add a new Core value.** The proposer must show, specifically, which of the existing values (and which Semantic combination of them) was checked and found insufficient, per C-1 and Chapter 2's T-4/T-2 — exactly the record C-1's own Examples entry now keeps for `emerald.400`.
 
 ---
 
@@ -180,11 +181,15 @@ The following ratios are calculated using the WCAG relative-luminance formula ag
 | `text.primary` (`white.050`) on `background.primary` (`black.950`) | **17.9 : 1** | Passes AAA. |
 | `text.secondary` (`gray.400`) on `background.primary` | **8.3 : 1** | Passes AAA. |
 | `accent.primary` (`gold.500`) on `background.primary` (numerals, icons) | **8.2 : 1** | Passes AAA. |
-| `text.success` (`emerald.500`) on `background.primary` | **4.85 : 1** | Passes AA (normal text); treated as UI feedback text rather than body copy, per Master Vision §22's distinction — AAA would require a lighter step if this is ever promoted to body-copy use. |
+| `text.success` (`emerald.400`) on `background.primary` | **8.42 : 1** | Passes AAA (was recorded as 6.8:1 at first — recomputed and corrected during Milestone 7's own review). Re-pointed here from `emerald.500` in Milestone 7 — see the two rows immediately below. |
+| `text.success` (`emerald.500`, superseded — kept for the historical record) on `background.primary` | **4.85 : 1** | Passed AA (normal text) here, but this was never the binding case — see the next row. |
+| `text.success` (`emerald.500`, superseded) on `surface.card` | **4.19 : 1** | **Failed AA.** Not caught at authoring time because this chapter's own Section 8 had only ever checked `emerald.500` against `background.primary` — `surface.card` (a lighter resting-card tone) was never computed, and it's precisely where Milestone 7's automated review actually renders `text.success` (the Contact page's success-state card). Fixed by adding `emerald.400` (new row above) rather than by moving the affected panel off `surface.card`, preserving this chapter's established "cards sit one step lighter than the page" visual language. `emerald.400` was derived at the same hue/saturation, lightened by the same proportional step `crimson.500`→`crimson.400` already uses for the identical text-contrast need — not a new design language, an application of this chapter's own existing pattern to a hue that was still missing it. |
+| `text.success` (`emerald.400`) on `surface.card` | **7.28 : 1** | Passes AAA (was recorded as 5.9:1 at first — recomputed and corrected during Milestone 7's own review) — confirms the fix clears not just the 4.5:1 floor that prompted it, but Ax-3's AAA target too. |
 | `text.error` (`crimson.400`) on `background.primary` | **6.0 : 1** | Passes AA comfortably; near but not at AAA. |
 | `border.error` (`crimson.500`) on `background.primary`, as a graphical element | **3.3 : 1** | Passes the 3:1 graphical/UI-component threshold; would fail if set as normal text — this is the exact case C-4 exists to prevent, and is precisely why `crimson.500` is restricted to the Accent role and never used for running text. |
+| `border.error` (`crimson.500`) on `surface.card`, as a graphical element | **2.9 : 1** | **Fails the 3:1 threshold.** The same "Section 8 only checked `background.primary`" gap as `text.success` above, found by Milestone 7's automated review against `TextField`'s error-state input border (which sits on its own `surface.card` background) and `Badge`'s (then-unused) error variant. Fixed at the component level in both cases by substituting `text.error` (`crimson.400`, 5.2:1 here — comfortably clears even the stricter 4.5:1 text floor) for the border color, rather than by changing this token's Core value — `crimson.500` remains correct and unchanged everywhere it's checked against `background.primary`. |
 
-This last row is the clearest demonstration of why C-4 exists: `crimson.500` is a legitimate, verified choice for an error icon or border, and a genuine accessibility failure if a future contributor reaches for it as error *text* instead of `crimson.400`. Both values look like "the error color" at a glance; only one of them is correct for text. This is exactly the kind of mistake a contrast-metadata record (rather than visual inspection alone) is built to catch.
+The `background.primary`-only row is the clearest demonstration of why C-4 exists: `crimson.500` is a legitimate, verified choice for an error icon or border, and a genuine accessibility failure if a future contributor reaches for it as error *text* instead of `crimson.400`. Both values look like "the error color" at a glance; only one of them is correct for text. This is exactly the kind of mistake a contrast-metadata record (rather than visual inspection alone) is built to catch — and, per Milestone 7, the same mistake can recur one level down (Accent-role *border*, not Text-role *text*) simply by moving to a lighter surface. A future contributor should read both `crimson.500` rows above as one lesson, not two.
 
 ---
 
@@ -196,7 +201,7 @@ Color tokens do not vary by breakpoint — a Semantic role resolves to the same 
 
 ## 10. AI & FUTURE INTERFACES
 
-A voice-only interface has no color at all, and this chapter's principles translate there only by analogy — Chapter 72 will need its own equivalent of "scarce signal" for vocal emphasis, structurally similar to C-5 but with no color values to measure. A spatial or AR environment (Chapter 73) will need this chapter's sixteen Core values to survive translation into a lit, three-dimensional context — an untested claim, flagged honestly in Section 16, since color under simulated ambient lighting does not always read identically to color on a flat, backlit screen.
+A voice-only interface has no color at all, and this chapter's principles translate there only by analogy — Chapter 72 will need its own equivalent of "scarce signal" for vocal emphasis, structurally similar to C-5 but with no color values to measure. A spatial or AR environment (Chapter 73) will need this chapter's seventeen Core values to survive translation into a lit, three-dimensional context — an untested claim, flagged honestly in Section 16, since color under simulated ambient lighting does not always read identically to color on a flat, backlit screen.
 
 ---
 
@@ -220,7 +225,7 @@ Using `border.error` (`crimson.500`) as the color for a form field's inline erro
 
 ## 14. QUALITY ASSURANCE CHECKLIST
 
-- [ ] Is every new color value placed at the correct tier per the Resolution Question, and is it one of the sixteen existing Core values wherever possible? *(C-1)*
+- [ ] Is every new color value placed at the correct tier per the Resolution Question, and is it one of the seventeen existing Core values wherever possible? *(C-1)*
 - [ ] Is Gold 500 and Champagne's role distinction respected — CTA/numeral versus secondary emphasis — rather than used interchangeably? *(C-2)*
 - [ ] Does every new text/surface pairing have a recorded, calculated contrast ratio, not merely a visual impression of adequate contrast? *(C-3)*
 - [ ] If a state color is used as both text and a graphical accent, are the correct, distinct steps used for each? *(C-4)*
@@ -236,13 +241,13 @@ Chapter 1 (P1, P2, P3, P7, P8). Chapter 2 (resolution model, contrast-metadata r
 
 ## 16. FUTURE EXPANSION
 
-**Possible future additions.** A seventeenth Core value should only be added once a specific, documented case shows the existing sixteen insufficient — per C-1, this chapter expects that to be rare.
+**Possible future additions.** An eighteenth Core value should only be added once a specific, documented case shows the existing seventeen insufficient — per C-1, this chapter expects that to be rare (it has happened exactly once so far, per C-1's `emerald.400` example).
 
 **Documented assumptions.** This chapter assumes a single, dark-native palette with no light-mode equivalent in general use; Chapter 52 owns the question of whether and how any of these values translate to a light or print-safe context.
 
 **Documented limitations.** The contrast ratios in Section 8 are calculated against solid Core-tier backgrounds. They have not yet been verified against a glass or blurred surface (Chapter 10), where a translucent panel's effective background may differ from the flat value assumed here — this should be re-verified once Chapter 10 is written.
 
-**Future research areas.** Whether the sixteen-value Core palette holds up once real render and spatial-computing work (Chapters 14, 73) tests these colors under simulated three-dimensional lighting rather than flat screen display.
+**Future research areas.** Whether the seventeen-value Core palette holds up once real render and spatial-computing work (Chapters 14, 73) tests these colors under simulated three-dimensional lighting rather than flat screen display.
 
 ---
 

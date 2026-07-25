@@ -20,7 +20,10 @@
     background-color var(--motion-duration-quick) var(--motion-easing-entrance),
     border-color var(--motion-duration-quick) var(--motion-easing-entrance),
     color var(--motion-duration-quick) var(--motion-easing-entrance),
-    transform var(--motion-duration-instant, 80ms) linear;
+    /* Master Vision §9.1 Principle 3: "linear... never" — no stated
+       Instant-tier exception, so the press compression gets the same
+       Entrance curve as everything else (Milestone 3 review). */
+    transform var(--motion-duration-instant, 80ms) var(--motion-easing-entrance);
 }
 
 /* Ch.39: Active — 98% scale compression, Instant tier. Not gated behind
@@ -30,27 +33,42 @@
   transform: scale(0.98);
 }
 
-/* --- Size axis (Ch.18 §4, independent of Emphasis per Ch.17 An-2) --- */
+/* --- Size axis (Ch.18 §4, independent of Emphasis per Ch.17 An-2) ---
+   Ch.4 §9 / Ch.8 Re-2: Mobile carries its own type value, not a
+   compressed Desktop fallback — Milestone 6 review caught every size
+   step here hardcoding the Desktop token unconditionally. */
 .sm {
   padding-inline: var(--semantic-space-padding-component-sm);
   padding-block: var(--semantic-space-padding-button-block-sm);
-  font-size: var(--core-type-caption-size-desktop);
+  font-size: var(--core-type-caption-size-mobile);
   font-weight: var(--core-type-caption-weight);
   line-height: var(--core-type-caption-line-height);
 }
 .md {
   padding-inline: var(--semantic-space-padding-component-md);
   padding-block: var(--semantic-space-padding-button-block-md);
-  font-size: var(--core-type-body-size-desktop);
+  font-size: var(--core-type-body-size-mobile);
   font-weight: var(--core-type-body-weight);
   line-height: var(--core-type-body-line-height);
 }
 .lg {
   padding-inline: var(--semantic-space-padding-component-lg);
   padding-block: var(--semantic-space-padding-button-block-lg);
-  font-size: var(--core-type-body-large-size-desktop);
+  font-size: var(--core-type-body-large-size-mobile);
   font-weight: var(--core-type-body-large-weight);
   line-height: var(--core-type-body-large-line-height);
+}
+
+@media (min-width: 1024px) {
+  .sm {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .md {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .lg {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
 }
 
 /* --- Emphasis axis (Ch.18 Bt-2 — closed, 3 values) --- */
@@ -92,8 +110,14 @@
 .destructive.ghost {
   color: var(--semantic-color-text-error);
 }
+/* Ch.53 1.4.11 / Milestone 7 review: border.error (crimson.500) fails the
+   3:1 graphical-element minimum against surface.card (2.88:1) — the same
+   surface.card gap fixed in text-field.module.css's .inputError and
+   badge.module.css's .error border, missed here in the first pass. Not
+   currently instantiated anywhere with destructive+secondary (verified via
+   codebase search), but the same dormant-landmine reasoning applies. */
 .destructive.secondary {
-  border-color: var(--semantic-color-border-error);
+  border-color: var(--semantic-color-text-error);
 }
 
 /* --- Disabled (Ch.39 St-3 — suppresses Hover/Focus/Active unconditionally) --- */

@@ -1,0 +1,100 @@
+.section {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../shared/components/section.module.css";
+  max-width: 72ch;
+}
+
+.eyebrow {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-secondary);
+  margin: 0 0 var(--core-space-2);
+}
+
+@media (min-width: 1024px) {
+  .eyebrow {
+    font-size: var(--core-type-label-size-desktop);
+  }
+}
+
+.heading {
+  font-size: var(--core-type-h1-size-mobile);
+  font-weight: var(--core-type-h1-weight);
+  line-height: var(--core-type-h1-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--core-space-2);
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: var(--core-type-h1-size-desktop);
+  }
+}
+
+.updated {
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+  margin: 0 0 var(--semantic-space-gap-stack);
+}
+
+.notice {
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+  color: var(--semantic-color-text-secondary);
+  padding: var(--semantic-space-padding-component-md);
+  background-color: var(--semantic-color-surface-card);
+  border-radius: var(--semantic-radius-card);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  border-left: var(--core-space-1) solid var(--semantic-color-accent-secondary);
+  margin-bottom: var(--semantic-space-gap-stack);
+}
+
+@media (min-width: 1024px) {
+  .updated,
+  .notice {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+}
+
+.docSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+}
+
+.docSectionHeading {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .docSectionHeading {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.paragraph {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .paragraph {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}

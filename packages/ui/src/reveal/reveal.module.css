@@ -1,0 +1,18 @@
+/* Ch.15 Mt-1/Mt-2: Standard tier (300ms), Entrance curve — a one-directional
+   reveal with no corresponding exit, so only the Entrance curve applies
+   (Mt-2's own stated exception). Distance collapses via --motion-reduced
+   exactly like every other transform in this system (see packages/motion's
+   README), so reduced-motion users get a 100ms opacity-only crossfade with
+   no travel, per Mt-4 — never a hard, invisible-until-JS cut. */
+.reveal {
+  opacity: 0;
+  transform: translateY(calc(var(--core-space-6) * (1 - var(--motion-reduced, 0))));
+  transition:
+    opacity var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,93 @@
+/* Master Vision Ch.13 item 9 / Ch.15. "Long-form depth (slow proof for a
+   careful reader)" — Ch.7 Split Narrative, varying from Portfolio's grid
+   immediately before it (La-2). */
+
+.section {
+  composes: sectionAlt from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  display: grid;
+  gap: var(--semantic-space-gap-grid);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .container {
+    grid-template-columns: 7fr 5fr;
+    align-items: start;
+  }
+}
+
+.badge {
+  margin-bottom: var(--semantic-space-gap-related-items);
+}
+
+.heading {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--semantic-space-gap-stack);
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.narrative {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+}
+
+.readMore {
+  margin-top: var(--semantic-space-gap-stack);
+}
+
+.label {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  /* text.secondary, not text.tertiary — Milestone 3 review computed
+     gray.600 (tertiary) at ~3.63:1 against this background, failing WCAG
+     AA's 4.5:1 floor for normal text. tertiary's own source label
+     ("Tertiary text / disabled-state text") is correct for genuinely
+     disabled content, which WCAG doesn't hold to this bar — but this is
+     real, readable content, so it needs the token that actually passes. */
+  color: var(--semantic-color-text-secondary);
+  margin: 0 0 var(--core-space-2);
+}
+
+@media (min-width: 1024px) {
+  .label {
+    font-size: var(--core-type-label-size-desktop);
+  }
+}
+
+.paragraph {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .paragraph {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-grid);
+  padding: var(--semantic-space-padding-component-lg);
+  background-color: var(--semantic-color-surface-card);
+  border-radius: var(--semantic-radius-card);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}

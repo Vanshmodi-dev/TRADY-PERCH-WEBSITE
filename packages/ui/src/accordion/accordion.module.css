@@ -1,0 +1,85 @@
+/* Ch.37 Accordions & Expandable Content. Anatomy: Header Row -> Content Panel. */
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+/* Ch.37 Ac-3: the entire header row is the click target, never an icon alone. */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--semantic-space-gap-related-items);
+  width: 100%;
+  min-height: 44px; /* Ch.18 §9 touch-target floor, extended to this header row */
+  padding-block: var(--semantic-space-padding-component-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: var(--core-type-body-large-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+}
+
+@media (min-width: 1024px) {
+  .header {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+.chevron {
+  width: var(--core-icon-size-20);
+  height: var(--core-icon-size-20);
+  flex-shrink: 0;
+  transition: transform var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+.item.open .chevron {
+  transform: rotate(180deg);
+}
+
+/*
+ * Ch.37 §7 literally specifies an animated height transition, but
+ * Ch.40 Ag-1 closes the animatable-property list to six properties, none of
+ * which is height/max-height — and Ag-1 states explicitly its one named
+ * exception (the intro sequence) is "never usable as precedent for
+ * anything else." Ag-1 is treated as authoritative here: the panel's
+ * height changes instantly (an ordinary layout reflow, not a "jump" in
+ * Ac-2's sense — nothing scrolls the expanding item out of view or moves
+ * the viewport), while its revealed content fades in via opacity, which
+ * IS a permitted property, at the Quick tier Ch.37 §7 asks for.
+ */
+.panel {
+  overflow: hidden;
+}
+.panel[hidden] {
+  display: none;
+}
+.panelContent {
+  padding-bottom: var(--semantic-space-padding-component-md);
+  color: var(--semantic-color-text-secondary);
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  animation: accordion-fade-in var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+@media (min-width: 1024px) {
+  .panelContent {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+@keyframes accordion-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

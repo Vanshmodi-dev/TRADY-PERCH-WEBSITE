@@ -1,0 +1,97 @@
+.hero {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.heroContainer {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.section {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.sectionAlt {
+  composes: sectionAlt from "../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.srOnly {
+  composes: srOnly from "../../shared/components/section.module.css";
+}
+
+.sectionLabel {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--semantic-space-gap-grid);
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .sectionLabel {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.ctaHeading {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--semantic-space-gap-stack);
+  text-align: center;
+  max-width: 32ch;
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .ctaHeading {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.factorsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+}
+
+@media (min-width: 600px) {
+  .factorsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Milestone 6 review: each card carries a full 2-sentence body — dense
+   enough that 3 narrow columns at Tablet's 600px floor wrapped into
+   cramped, ragged cards (confirmed via screenshot at 768px), unlike the
+   shorter single-sentence .factorsGrid above. Recombines to 2 columns at
+   Tablet instead, reaching 3 only at Desktop (1024px). */
+.shapesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+}
+
+@media (min-width: 600px) {
+  .shapesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .shapesGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--semantic-space-gap-related-items);
+  padding-top: var(--semantic-space-padding-component-lg);
+}

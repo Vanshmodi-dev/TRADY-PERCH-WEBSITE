@@ -17,7 +17,16 @@ export function SiteHeader() {
       items={PRIMARY_NAV_ITEMS}
       ctaLabel={PRIMARY_CTA.label}
       ctaHref={PRIMARY_CTA.href}
-      logoIconSrc="/logo-mark.jpeg"
+      // Ch.37 §2 / Pf-1 (Milestone 8 review): Logo renders this via a
+      // plain <img> (packages/ui is framework-agnostic, ADR-0005 — no
+      // next/image), so the delivered file itself has to already be the
+      // right size. Was the raw 862×581 source JPEG (13KB) for a 24px
+      // display — logo.module.css's .icon. Ch.37 §2's automated
+      // compression pipeline doesn't exist yet in this repo (a disclosed
+      // gap, per that chapter's own §12), so this variant (190×128 WebP,
+      // 1.4KB — retina-safe headroom for a 24px box) was generated once,
+      // manually, via sharp, not regenerated automatically on every build.
+      logoIconSrc="/logo-mark-icon.webp"
       linkComponent={NextLinkAdapter}
       currentPath={pathname}
     />

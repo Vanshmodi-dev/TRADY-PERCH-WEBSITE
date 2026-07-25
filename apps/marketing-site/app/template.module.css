@@ -1,0 +1,26 @@
+/* Ch.15 Mt-1/Mt-2: Standard tier, Entrance curve — a one-directional
+   arrival with no corresponding exit (the outgoing page simply unmounts;
+   there's nothing to play an Exit curve on), so only Entrance applies. */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pageTransition {
+  animation: page-fade-in var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/* Known, disclosed tradeoff (Milestone 5 review Finding #9): this wraps
+   every route's initial content, including each page's LCP candidate, in
+   an opacity animation — Chrome's LCP measurement has documented special
+   handling for opacity-animated elements that can push the reported
+   timestamp later. The exposure is bounded (this tier's own 300ms, or
+   100ms under reduced motion) and no measurement tooling exists in this
+   milestone to quantify the real-world impact — that belongs to
+   Milestone 8 (Performance Optimization), which should audit this
+   specifically against Ch.23's performance budget rather than this
+   milestone guessing at a fix without data. */

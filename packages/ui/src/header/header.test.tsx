@@ -83,6 +83,53 @@ describe("Header", () => {
     expect(pricingLinks.some((link) => link.className.includes("active"))).toBe(true);
   });
 
+  it("keeps a flat item active on its own sub-routes, not only its exact path", () => {
+    render(
+      <Header
+        items={items}
+        ctaLabel="Book a Strategy Call"
+        ctaHref="/contact"
+        logoIconSrc="/icon.jpeg"
+        currentPath="/work/case-studies/real-estate-brokerage"
+      />,
+    );
+    const workLinks = screen.getAllByRole("link", { name: "Work" });
+    expect(workLinks.some((link) => link.className.includes("active"))).toBe(true);
+  });
+
+  it("never activates a flat item for an unrelated route that merely shares its prefix", () => {
+    const itemsWithSimilarPrefix: NavItem[] = [...items, { label: "Workshop", href: "/workshop" }];
+    render(
+      <Header
+        items={itemsWithSimilarPrefix}
+        ctaLabel="Book a Strategy Call"
+        ctaHref="/contact"
+        logoIconSrc="/icon.jpeg"
+        currentPath="/work"
+      />,
+    );
+    const workshopLinks = screen.getAllByRole("link", { name: "Workshop" });
+    expect(workshopLinks.some((link) => link.className.includes("active"))).toBe(false);
+  });
+
+  it("Ch.11: marks the current section active inside the mobile drawer too, not only the desktop bar", async () => {
+    const user = userEvent.setup();
+    render(
+      <Header
+        items={items}
+        ctaLabel="Book a Strategy Call"
+        ctaHref="/contact"
+        logoIconSrc="/icon.jpeg"
+        currentPath="/solutions/ai-agents"
+      />,
+    );
+    const trigger = screen.getByRole("button", { name: "Open menu" });
+    await user.click(trigger);
+    const drawer = screen.getByRole("dialog", { name: "Navigation menu" });
+    const solutionsLabel = within(drawer).getByText("Solutions");
+    expect(solutionsLabel.className).toMatch(/active/i);
+  });
+
   it("Ch.20 Nv-3 / §9: a CTA instance exists outside the drawer — visible in the collapsed mobile bar itself, never hidden inside the menu — in addition to the one inside the open drawer", async () => {
     const user = userEvent.setup();
     render(<Header items={items} ctaLabel="Book a Strategy Call" ctaHref="/contact" logoIconSrc="/icon.jpeg" />);

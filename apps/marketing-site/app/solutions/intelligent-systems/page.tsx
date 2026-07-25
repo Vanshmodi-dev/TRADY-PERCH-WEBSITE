@@ -1,18 +1,38 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { SolutionDetailPage } from "@/features/solutions/solution-detail-page";
+import { getSolutionBySlug } from "@/features/solutions/solutions-data";
+import { SITE_URL } from "@/shared/site-config";
+import { JsonLd } from "@/shared/json-ld";
+
+const solution = getSolutionBySlug("intelligent-systems")!;
+
+const CANONICAL = `${SITE_URL}/solutions/intelligent-systems`;
 
 export const metadata: Metadata = {
-  title: "Intelligent Systems",
-  description: "Custom intelligent systems designed and deployed with enterprise-grade rigor.",
+  title: solution.title,
+  description: solution.summary,
+  alternates: { canonical: CANONICAL },
+  openGraph: { type: "website", url: CANONICAL, title: solution.title, description: solution.summary },
+};
+
+// Ch.40 §3, the same principle as the pricing page's Service block, applied
+// to each of the four solution templates: each describes a real service
+// category, not a fixed product.
+const SERVICE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: solution.title,
+  name: `Trady Perch — ${solution.title}`,
+  description: solution.heroDescription,
+  provider: { "@type": "Organization", name: "Trady Perch", url: SITE_URL },
+  url: CANONICAL,
 };
 
 export default function IntelligentSystemsPage() {
   return (
-    <PageStub
-      eyebrow="Solutions"
-      heading="Intelligent Systems"
-      description="Custom intelligent systems designed and deployed with the rigor of enterprise software and the judgment of a trusted advisor."
-      milestoneNote="Full page content arrives in Milestone 4 (Remaining Marketing Pages)."
-    />
+    <>
+      <JsonLd data={SERVICE_JSON_LD} />
+      <SolutionDetailPage solution={solution} />
+    </>
   );
 }

@@ -1,0 +1,45 @@
+/* WCAG 2.1.1 §2.4.1 Bypass Blocks — Milestone 7 review. Not in Design
+   System Bible Ch.53 §4's conformance map (a genuine gap: no prior chapter
+   had established a skip-link requirement), added here since every page
+   shares the same multi-item primary nav a keyboard user would otherwise
+   have to tab through before reaching page content. Visually hidden using
+   the same clip technique as shared/components/section.module.css's
+   .srOnly, reset to a normal visible position on focus — the standard
+   skip-link pattern. */
+.skipLink {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+
+  /* Milestone 7 review: was 100, tied exactly with the homepage intro
+     overlay's own z-index (intro-sequence.module.css) — the overlay is
+     later in paint order, so a first-visit Tab press (which starts the
+     overlay's dissolve) could leave the freshly-focused skip link visually
+     obscured beneath the still-substantially-opaque overlay for the
+     dissolve's duration. 200 is comfortably above every other z-index in
+     the codebase (the overlay's 100 is the next-highest). */
+  z-index: 200;
+  background-color: var(--semantic-color-accent-primary);
+  color: var(--semantic-color-background-primary);
+  border-radius: var(--semantic-radius-control);
+  font-weight: var(--core-type-label-weight);
+  text-decoration: none;
+}
+
+.skipLink:focus {
+  top: var(--core-space-4);
+  left: var(--core-space-4);
+  width: auto;
+  height: auto;
+  padding: var(--core-space-2) var(--core-space-4);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}

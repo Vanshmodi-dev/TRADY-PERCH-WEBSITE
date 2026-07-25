@@ -1,0 +1,130 @@
+/* Master Vision Ch.13 item 10. Ch.7 Centered Statement (framed) pattern.
+   Emotional target (Ch.4.3): "a controlled, adult version of delight." */
+
+.section {
+  composes: section from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+}
+
+.heading {
+  max-width: 60ch;
+  margin-inline: auto;
+  margin-bottom: var(--semantic-space-gap-grid);
+}
+
+.frame {
+  max-width: 560px;
+  margin-inline: auto;
+  border-radius: var(--semantic-radius-card);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: var(--semantic-color-surface-card);
+  overflow: hidden;
+}
+
+.frameHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  padding: var(--semantic-space-padding-component-md);
+  border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.frameHeaderIcon {
+  width: var(--core-icon-size-20);
+  height: var(--core-icon-size-20);
+  color: var(--semantic-color-text-secondary);
+}
+
+.frameHeaderLabel {
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+@media (min-width: 1024px) {
+  .frameHeaderLabel {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  padding: var(--semantic-space-padding-component-lg);
+  min-height: 220px;
+}
+
+.bubbleRow {
+  display: flex;
+}
+.bubbleRow.user {
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 80%;
+  padding: var(--core-space-2) var(--core-space-3);
+  border-radius: var(--core-radius-md);
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  opacity: 0;
+  animation: demo-message-in var(--motion-duration-standard) var(--motion-easing-entrance) forwards;
+}
+
+@media (min-width: 1024px) {
+  .bubble {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.bubbleRow.ai .bubble {
+  background-color: var(--semantic-color-background-secondary);
+  color: var(--semantic-color-text-primary);
+  border-bottom-left-radius: var(--core-radius-none);
+}
+
+.bubbleRow.user .bubble {
+  background-color: var(--semantic-color-surface-card-hover);
+  color: var(--semantic-color-text-primary);
+  border-bottom-right-radius: var(--core-radius-none);
+}
+
+@keyframes demo-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--core-space-2) * (1 - var(--motion-reduced, 0))));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-2);
+  padding: 0 var(--semantic-space-padding-component-lg) var(--semantic-space-padding-component-lg);
+}
+
+.closingNote {
+  padding: var(--semantic-space-padding-component-md) var(--semantic-space-padding-component-lg);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+@media (min-width: 1024px) {
+  .closingNote {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+.resetRow {
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--semantic-space-padding-component-lg) var(--semantic-space-padding-component-lg);
+}

@@ -1,0 +1,54 @@
+.hero {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.heroContainer {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.section {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.srOnly {
+  composes: srOnly from "../../shared/components/section.module.css";
+}
+
+/* Milestone 6 review: each card carries a full businessImpact sentence
+   plus two stats — dense enough that 3 narrow columns at Tablet's 600px
+   floor wrapped into cramped, ragged 8-9 line cards (confirmed via
+   screenshot at 768px). Recombines to 2 columns at Tablet instead,
+   reaching 3 only at Desktop (1024px), matching the same density-driven
+   choice industries-hub-page.module.css already makes for its own
+   paragraph-carrying cards. */
+.grid {
+  display: grid;
+  gap: var(--semantic-space-gap-grid);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.badge {
+  margin-bottom: var(--semantic-space-gap-related-items);
+}
+
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--semantic-space-padding-section-sm);
+}

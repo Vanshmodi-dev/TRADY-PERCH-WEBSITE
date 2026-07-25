@@ -1,0 +1,15 @@
+/* Master Vision Ch.13 item 13. Ch.7 Centered Statement, narrow measure. */
+
+.section {
+  composes: sectionAlt from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  composes: stackLg from "../../../../shared/components/section.module.css";
+}
+
+.accordionWrapper {
+  max-width: 68ch;
+  margin-inline: auto;
+}

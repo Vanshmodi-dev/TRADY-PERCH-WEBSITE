@@ -18,7 +18,11 @@
     box-shadow var(--motion-duration-quick) var(--motion-easing-entrance),
     background-color var(--motion-duration-quick) var(--motion-easing-entrance),
     border-color var(--motion-duration-quick) var(--motion-easing-entrance),
-    color var(--motion-duration-quick) var(--motion-easing-entrance);
+    color var(--motion-duration-quick) var(--motion-easing-entrance),
+    /* Matches Button/Card's press compression (Milestone 3 review: never
+       linear, and never untransitioned either — this had no transform
+       transition at all, an even more abrupt gap than Button/Card's bug). */
+    transform var(--motion-duration-instant, 80ms) var(--motion-easing-entrance);
 }
 
 .iconButton:active:not(:disabled) {

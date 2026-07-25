@@ -22,12 +22,21 @@
 }
 
 .wordmark {
-  font-size: var(--core-type-label-size-desktop);
+  font-size: var(--core-type-label-size-mobile);
   font-weight: var(--core-type-label-weight);
   line-height: var(--core-type-label-line-height);
   letter-spacing: var(--core-type-label-tracking);
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* Ch.4 §9 / Ch.8 Re-2: same unconditional-Desktop-token bug as the
+   Milestone 6 review's named findings, caught here via a follow-up sweep
+   (the review's file list didn't include Logo). */
+@media (min-width: 1024px) {
+  .wordmark {
+    font-size: var(--core-type-label-size-desktop);
+  }
 }
 
 /* Icon-mark-only below ~400px — a sub-breakpoint refinement (no Ch.8 range

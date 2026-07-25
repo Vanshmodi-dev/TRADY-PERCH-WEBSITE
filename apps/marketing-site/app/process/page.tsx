@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { DeferredPageNotice } from "@/shared/components/deferred-page-notice";
 
 export const metadata: Metadata = {
   title: "Process",
   description: "Discover, Design, Build, Deploy, Support — how we work.",
+  robots: { index: false, follow: true },
 };
 
 export default function ProcessPage() {
   return (
-    <PageStub
+    <DeferredPageNotice
       eyebrow="Process"
-      heading="A repeatable, professional method"
-      description="Discover → Design → Build → Deploy → Support — a clear, evidence-of-process-rigor engagement, not an improvised one."
-      milestoneNote="Full page content arrives in Milestone 4 (Remaining Marketing Pages)."
+      heading="This page doesn't exist yet — on purpose."
+      description="Our process already has a home: the How We Work section on the homepage covers it in full. A separate Process page would only repeat it in different words."
+      redirectHref="/#how-we-work-heading"
+      redirectLabel="Read how we work"
     />
   );
 }

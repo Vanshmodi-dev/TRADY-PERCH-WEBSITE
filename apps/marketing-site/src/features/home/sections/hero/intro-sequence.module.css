@@ -1,0 +1,228 @@
+/* Master Vision §9.2. Ch.15 Mt-3: Ceremonial timing/curve is used
+   exclusively here — no other component in the system may use it. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--core-space-6);
+  background-color: var(--semantic-color-background-primary);
+  /* Mt-2: this is functionally an exit (the overlay leaving), so it uses
+     the Exit curve, not Entrance or Ceremonial — Ceremonial pacing is
+     reserved for the intro's own arrival, not its dismissal (Milestone 5
+     review Finding #7: this previously paired the Ceremonial curve with
+     the Deliberate duration token, an internal tier mismatch). Duration
+     matches TIMINGS.dissolving in intro-sequence.tsx exactly, both here
+     and under reduced motion (Deliberate's own reduced companion) — see
+     that file for why the two must stay numerically in sync. */
+  transition: opacity var(--motion-duration-deliberate) var(--motion-easing-exit);
+}
+
+/* Milestone 8 (Ch.36 LCP budget): the overlay's own logo image is the
+   homepage's LCP element. It previously only entered the DOM after a
+   client-side sessionStorage check resolved (a setTimeout + state update
+   past hydration) — the browser couldn't even discover the image to start
+   fetching it until then, measured as 1.4s of the LCP's own "Load Delay"
+   phase. Rendered unconditionally now (so the image tag — and next/image's
+   priority preload link — exist from the very first server-rendered
+   paint), with this class taking over the "invisible until we know a
+   returning visitor shouldn't see it" job an early `return null` used to
+   do. visibility, not opacity or display:none: opacity would share
+   .overlay's own `transition: opacity` rule below, so removing .hidden
+   once the check resolves would animate a 500ms fade-in that was never
+   part of the original design (mounting was always instant, never
+   transitioned) — visibility has no transition applied to it, so toggling
+   it is always immediate. display:none was avoided too, out of caution,
+   even though modern preload scanners are documented to discover
+   `<img>`/`srcset` from markup independent of computed CSS display. */
+.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Step 7: dissolve, not cut or slide — a plain opacity fade is the
+   "curtain lifting" Master Vision describes; the Hero section beneath is
+   already fully mounted and settled by the time this reaches 0 (its own
+   entrance takes well under a second — see hero.module.css).
+   pointer-events: none from the first frame of dissolving (Milestone 5
+   review Finding #3): without it, the fully-transparent-but-still-mounted
+   overlay silently swallows the visitor's first click on the just-
+   revealed homepage for the remainder of the transition. */
+.dissolving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mark {
+  position: relative;
+  width: min(220px, 45vw);
+  aspect-ratio: 862 / 581; /* /logo-mark.jpeg's real dimensions */
+  opacity: 0;
+  overflow: hidden; /* clips .wipeCover once it's fully slid off */
+}
+
+.mark.revealing,
+.mark.instant {
+  opacity: 1;
+}
+
+.logoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Step 2 (golden line ignition): revealed via a solid panel sliding off
+   the real mark (transform only), not clip-path — Ch.40 Ag-1's closed
+   six-property list names clip-path explicitly as forbidden, and its one
+   disclosed exception is scoped specifically to step 3's reflection
+   sweep below, "never treated as a precedent for anything else." A
+   sliding cover produces the identical left-to-right reveal using only
+   Ag-1-permitted `transform`/`opacity` (Milestone 5 review Finding #1).
+   The bright leading edge (Finding #2: was a separate `left`-animated
+   element, also non-permitted) is now a ::after pseudo-element glued to
+   the cover's own left edge, so it rides along for free as the parent's
+   transform animates — no independent animation of its own needed. */
+.wipeCover {
+  position: absolute;
+  inset: 0;
+  background-color: var(--semantic-color-background-primary);
+}
+
+.wipeCover::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  background-color: var(--semantic-color-accent-secondary);
+  box-shadow: 0 0 16px 4px var(--semantic-color-accent-secondary);
+}
+
+.mark.revealing .wipeCover {
+  animation: wipe-cover var(--motion-duration-ceremonial) var(--motion-easing-ceremonial) forwards;
+}
+
+@keyframes wipe-cover {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  55% {
+    transform: translateX(100%);
+    opacity: 1;
+  }
+  65%,
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Step 3 (metallic reflection sweep) — masked to the logo image's own
+   luminance (bright gold letterforms = visible, black square around them
+   = hidden), so this light band only ever appears to move across the
+   mark itself, never the space around it. Ag-1's own text names this
+   exact mechanism — "a defined, one-time gradient position animation" —
+   as the system's sole, scoped exception to the closed property list; it
+   is not a precedent for anything else (see .wipeCover above, which
+   deliberately does NOT reuse this exception for a different mechanism). */
+.reflection {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 60%
+  );
+  background-size: 300% 100%;
+  background-position: 200% 0;
+  mask-image: url("/logo-mark.jpeg");
+  mask-mode: luminance;
+  mask-size: 100% 100%;
+  -webkit-mask-image: url("/logo-mark.jpeg");
+  -webkit-mask-size: 100% 100%;
+  opacity: 0;
+}
+
+.mark.revealing .reflection {
+  animation: reflection-sweep var(--motion-duration-ceremonial) var(--motion-easing-ceremonial) forwards;
+}
+
+@keyframes reflection-sweep {
+  0%,
+  55% {
+    opacity: 0;
+    background-position: 200% 0;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    background-position: -100% 0;
+  }
+}
+
+/* Step 4 (wordmark resolution) / Step 5 (tagline arrival) — plain,
+   confident opacity fades, Deliberate tier; no bounce, no slide. */
+.wordmark {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+  opacity: 0;
+  transition: opacity var(--motion-duration-deliberate) var(--motion-easing-entrance);
+}
+
+@media (min-width: 1024px) {
+  .wordmark {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.wordmark.visible {
+  opacity: 1;
+}
+
+.tagline {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-secondary);
+  margin: 0;
+  opacity: 0;
+  transition: opacity var(--motion-duration-deliberate) var(--motion-easing-entrance);
+}
+
+@media (min-width: 1024px) {
+  .tagline {
+    font-size: var(--core-type-label-size-desktop);
+  }
+}
+
+.tagline.visible {
+  opacity: 1;
+}
+
+/* Ch.15 §4 / §9.5: Ceremonial's reduced-motion companion is full static
+   presentation, not a faster version of the same animation — the
+   component itself never applies .revealing under reduced motion, and
+   omits the wipeCover/reflection elements from the DOM entirely, so the
+   only rule needed here is removing the wordmark/tagline's fade. */
+@media (prefers-reduced-motion: reduce) {
+  .wordmark,
+  .tagline {
+    transition: none;
+  }
+}

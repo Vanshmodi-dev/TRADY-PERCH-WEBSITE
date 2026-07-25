@@ -60,6 +60,7 @@ The rejected alternative is treating "we follow WCAG" as sufficient without ever
 **2.1.1 Keyboard:** Chapter 42, in full.
 **2.1.2 No Keyboard Trap:** Chapter 23, Dl-3/42, Kb-3 (focus traps release cleanly).
 **2.2.2 Pause, Stop, Hide:** Chapter 25, Ts-3 (pause-on-hover); Chapter 15, Mt-4 (reduced-motion pairing).
+**2.4.1 Bypass Blocks:** Added Milestone 7 — no chapter had named a skip-link requirement before this row (Master Vision §17.7's keyboard-navigation commitment implies it, but Chapter 42 itself, ostensibly the chapter that would own this, doesn't mention it). A visually-hidden-until-focused "Skip to main content" link, first in tab order on every page, implemented per Master Vision §17.7 directly rather than a named Chapter 42 rule — flagged here as the gap it was, not backfilled as though Chapter 42 always covered it.
 **2.4.3 Focus Order:** Chapter 42, Kb-1.
 **2.4.7 Focus Visible:** Chapter 39 (default focus ring), Chapter 42, Kb-2.
 **2.5.5 Target Size:** Chapter 43, Tg-1 (44×44px floor).
@@ -73,7 +74,7 @@ The rejected alternative is treating "we follow WCAG" as sufficient without ever
 
 ## 5. MEASUREMENTS
 
-Total success criteria explicitly mapped in Section 4: 20, spanning Levels A and AA, with AAA pursued per Ax-3 wherever Chapter 3's own contrast computations already clear that bar.
+Total success criteria explicitly mapped in Section 4: 19 (recounted Milestone 7 — this line previously read "20" against a Section 4 that, even after adding 2.4.1 above, only lists 19; the original "20" never matched an actual count of the rows above it), spanning Levels A and AA, with AAA pursued per Ax-3 wherever Chapter 3's own contrast computations already clear that bar.
 
 ---
 

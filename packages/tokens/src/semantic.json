@@ -12,7 +12,10 @@
       "primary": { "ref": "core.color.white.050" },
       "secondary": { "ref": "core.color.gray.400" },
       "tertiary": { "ref": "core.color.gray.600" },
-      "success": { "ref": "core.color.emerald.500" },
+      "success": {
+        "ref": "core.color.emerald.400",
+        "_derivedFrom": "Milestone 7 accessibility review: emerald.500 (the original ref) computes to 4.19:1 against surface.card, failing WCAG AA's 4.5:1 text minimum — a case Design System Bible Ch.3 Section 8 hadn't computed (it only checked background.primary, where emerald.500 passes at 4.85:1). emerald.400 is the same hue/saturation lightened by the same proportional step Ch.3's own crimson.500-to-400 pair already establishes for this exact need."
+      },
       "error": { "ref": "core.color.crimson.400" }
     },
     "accent": {

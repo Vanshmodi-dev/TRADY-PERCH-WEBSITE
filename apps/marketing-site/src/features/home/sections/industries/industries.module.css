@@ -1,0 +1,35 @@
+/* Master Vision Ch.13 item 6. Emotional target (Ch.4.3): Belonging. Ch.7
+   Structured Grid, kept quiet (La-4) between Solutions and the more
+   process-driven How We Work section that follows. */
+
+.section {
+  composes: section from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  composes: stackLg from "../../../../shared/components/section.module.css";
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--semantic-space-gap-related-items);
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.icon {
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+  color: var(--semantic-color-text-secondary);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+}

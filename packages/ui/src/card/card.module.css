@@ -1,0 +1,77 @@
+/* Ch.19 Cards & Containers. Anatomy: Container -> optional Media -> Title -> Body -> optional Footer. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+  padding: var(--semantic-space-padding-component-lg);
+  background-color: var(--semantic-color-surface-card);
+  border-radius: var(--semantic-radius-card); /* core.radius.lg = 16px, Ch.19 §4/§5 */
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  text-decoration: none;
+  color: inherit;
+}
+
+.compact {
+  padding: var(--semantic-space-padding-component-md);
+  gap: var(--semantic-space-gap-related-items);
+}
+
+/* Ch.19 Cd-1: an Interactive card's affordance must match its behavior exactly. */
+.interactive {
+  cursor: pointer;
+  transition:
+    box-shadow var(--motion-duration-quick) var(--motion-easing-entrance),
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    /* Master Vision §9.1 Principle 3: never linear (Milestone 3 review). */
+    transform var(--motion-duration-instant, 80ms) var(--motion-easing-entrance);
+}
+.interactive:hover {
+  background-color: var(--semantic-color-surface-card-hover);
+  box-shadow: var(--semantic-elevation-card-hover);
+}
+.interactive:active {
+  transform: scale(0.98);
+}
+
+.media {
+  width: 100%;
+  border-radius: var(--core-radius-sm);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.title {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.body {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .body {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--semantic-space-gap-related-items);
+  margin-top: auto;
+  padding-top: var(--core-space-2);
+}

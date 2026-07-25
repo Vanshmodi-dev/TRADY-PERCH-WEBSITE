@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { ContactPage } from "@/features/contact/contact-page";
+import { SITE_URL } from "@/shared/site-config";
+
+const TITLE = "Contact";
+const DESCRIPTION = "Book a strategy call with Trady Perch.";
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description: "Book a strategy call with Trady Perch.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/contact` },
+  openGraph: { type: "website", url: `${SITE_URL}/contact`, title: TITLE, description: DESCRIPTION },
 };
 
-export default function ContactPage() {
-  return (
-    <PageStub
-      eyebrow="Contact"
-      heading="How do I actually start?"
-      description="Book a strategy call — a real conversation about your operations, not a sales pitch."
-      milestoneNote="A full contact form arrives in Milestone 4 (Remaining Marketing Pages)."
-    />
-  );
+export default function Page() {
+  return <ContactPage />;
 }

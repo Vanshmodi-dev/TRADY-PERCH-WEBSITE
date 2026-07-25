@@ -12,9 +12,15 @@ import type { HeaderProps, NavItem } from "./header.types";
 const RECEDE_SCROLL_THRESHOLD = 24;
 
 function ChevronIcon() {
+  // Ch.11: 24x24 base grid, 1.5px stroke at that base — drawn at the
+  // canonical viewBox/stroke pair and scaled down via CSS width/height
+  // (.dropdownIcon), so the rendered stroke scales proportionally with
+  // it (1.5px * 16/24 = 1px at this icon's 16px display size), rather
+  // than a mismatched 16x16 viewBox baking in a too-thick fixed 1.5px
+  // stroke at that small size (Milestone 3 review).
   return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className={styles.dropdownIcon}>
-      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={styles.dropdownIcon}>
+      <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -35,12 +41,20 @@ function CloseIcon() {
   );
 }
 
+/** Exact match, or a genuine sub-route (`/work` matches `/work/case-studies`
+ * but not an unrelated `/workshop`) — applied consistently whether the
+ * item is a flat link or a dropdown, so a nav item stays active anywhere
+ * under its own section, not only on that section's own index page. */
+function pathIsWithinSection(currentPath: string, sectionHref: string): boolean {
+  return currentPath === sectionHref || currentPath.startsWith(`${sectionHref}/`);
+}
+
 function isActiveItem(item: NavItem, currentPath?: string): boolean {
   if (!currentPath) return false;
-  if (item.href) return currentPath === item.href;
+  if (item.href) return pathIsWithinSection(currentPath, item.href);
   if (item.dropdown) {
-    if (item.dropdown.some((entry) => currentPath.startsWith(entry.href))) return true;
-    if (item.viewAllHref && currentPath.startsWith(item.viewAllHref)) return true;
+    if (item.dropdown.some((entry) => pathIsWithinSection(currentPath, entry.href))) return true;
+    if (item.viewAllHref && pathIsWithinSection(currentPath, item.viewAllHref)) return true;
   }
   return false;
 }
@@ -277,45 +291,54 @@ export function Header({ items, ctaLabel, ctaHref, logoIconSrc, linkComponent, c
         }
       >
         <ul className={styles.mobileNavList}>
-          {items.map((item) => (
-            <li key={item.label}>
-              {item.dropdown ? (
-                <div className={styles.mobileDropdownGroup}>
-                  <span className={styles.mobileDropdownLabel}>{item.label}</span>
-                  <div className={styles.mobileDropdownLinks}>
-                    {item.dropdown.map((entry) => (
-                      <Link
-                        key={entry.href}
-                        href={entry.href}
-                        linkComponent={linkComponent}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {entry.label}
-                      </Link>
-                    ))}
-                    {item.viewAllHref ? (
-                      <Link
-                        href={item.viewAllHref}
-                        linkComponent={linkComponent}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {item.viewAllLabel ?? "View all"}
-                      </Link>
-                    ) : null}
+          {items.map((item) => {
+            const active = isActiveItem(item, currentPath);
+            return (
+              <li key={item.label}>
+                {item.dropdown ? (
+                  <div className={styles.mobileDropdownGroup}>
+                    <span
+                      className={[styles.mobileDropdownLabel, active && styles.active]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      {item.label}
+                    </span>
+                    <div className={styles.mobileDropdownLinks}>
+                      {item.dropdown.map((entry) => (
+                        <Link
+                          key={entry.href}
+                          href={entry.href}
+                          linkComponent={linkComponent}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          {entry.label}
+                        </Link>
+                      ))}
+                      {item.viewAllHref ? (
+                        <Link
+                          href={item.viewAllHref}
+                          linkComponent={linkComponent}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          {item.viewAllLabel ?? "View all"}
+                        </Link>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <Link
-                  href={item.href ?? "#"}
-                  linkComponent={linkComponent}
-                  className={styles.mobileNavLink}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          ))}
+                ) : (
+                  <Link
+                    href={item.href ?? "#"}
+                    linkComponent={linkComponent}
+                    className={[styles.mobileNavLink, active && styles.active].filter(Boolean).join(" ")}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </Drawer>
     </header>

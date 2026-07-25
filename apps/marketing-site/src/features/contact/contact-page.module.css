@@ -1,0 +1,63 @@
+.hero {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-padding-section-sm);
+  margin-top: var(--semantic-space-padding-section-sm);
+  align-items: start;
+}
+
+/* Ch.8 Re-1: 900px isn't one of the 4 canonical ranges (Mobile/600/1024/1440)
+   — Milestone 6 review. Recombines at Tablet (600px) rather than deferring
+   to Desktop like the pricing/case-study grids: unlike those, .direct here
+   is deliberately light (one heading + one sentence), so a 3fr:2fr split
+   still leaves the form column comfortably wide at Tablet's floor. */
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.direct {
+  padding: var(--semantic-space-padding-component-lg);
+  background-color: var(--semantic-color-surface-card);
+  border-radius: var(--semantic-radius-card);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.directHeading {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--core-space-2);
+}
+
+@media (min-width: 1024px) {
+  .directHeading {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.directBody {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .directBody {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.directLink {
+  color: var(--semantic-color-accent-secondary);
+}

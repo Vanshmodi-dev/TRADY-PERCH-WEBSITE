@@ -1,0 +1,68 @@
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-related-items);
+  max-width: 68ch;
+}
+
+.center {
+  align-items: center;
+  text-align: center;
+  margin-inline: auto;
+}
+
+.eyebrow {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-secondary);
+}
+
+@media (min-width: 1024px) {
+  .eyebrow {
+    font-size: var(--core-type-label-size-desktop);
+  }
+}
+
+.title {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+/* Interior-page hero headings (SectionHeading size="h1"): one step above
+   in-page section headings, one step below the homepage Hero's Display
+   scale — see the `level`/`size` doc comment in section-heading.tsx. */
+.titleLarge {
+  font-size: var(--core-type-h1-size-mobile);
+  font-weight: var(--core-type-h1-weight);
+  line-height: var(--core-type-h1-line-height);
+}
+
+@media (min-width: 1024px) {
+  .titleLarge {
+    font-size: var(--core-type-h1-size-desktop);
+  }
+}
+
+.description {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .description {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}

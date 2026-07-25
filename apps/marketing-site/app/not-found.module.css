@@ -39,7 +39,13 @@
 }
 
 .supportingText {
-  font-size: var(--core-type-body-size-desktop);
+  font-size: var(--core-type-body-size-mobile);
   color: var(--semantic-color-text-secondary);
   max-width: 60ch;
+}
+
+@media (min-width: 1024px) {
+  .supportingText {
+    font-size: var(--core-type-body-size-desktop);
+  }
 }

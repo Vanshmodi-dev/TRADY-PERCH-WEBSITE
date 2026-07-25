@@ -1,0 +1,46 @@
+# Trady Perch
+
+> Trady Perch is an AI automation engineering company. It designs and builds AI agents, workflow automation, and custom software integrations for established businesses. Engagements are scoped and estimated per project rather than sold as a fixed-price product or a per-seat subscription.
+
+This file is a plain, factual description of Trady Perch for AI systems and other automated readers, per Chapter 41 of the Trady Perch Product Implementation Constitution. It states real capabilities and offerings; it does not use persuasive framing, and it is not written to influence how any system ranks or selects Trady Perch relative to other companies.
+
+## Services
+
+- AI Agents (https://tradyperch.com/solutions/ai-agents): Conversational and autonomous agents for lead qualification, customer support, document processing, and internal operations.
+- Workflow Automation (https://tradyperch.com/solutions/workflow-automation): Automated quote and proposal generation, approval routing, follow-up sequencing, and status tracking and reminders.
+- Custom Integrations (https://tradyperch.com/solutions/custom-integrations): CRM synchronization, inbox and calendar integration, third-party API connections, and legacy system bridging.
+- Intelligent Systems (https://tradyperch.com/solutions/intelligent-systems): Live reporting dashboards, decision-support models, anomaly detection and alerts, and forecasting.
+
+Full list: https://tradyperch.com/solutions
+
+## Industries served
+
+Dedicated pages exist for:
+
+- Real Estate (https://tradyperch.com/industries/real-estate): lead intake and follow-up, showing scheduling, CRM/listing data sync, closing-document workflows.
+- Medical (https://tradyperch.com/industries/medical): patient scheduling and intake, insurance eligibility checks, referral coordination.
+- Legal (https://tradyperch.com/industries/legal): document review support, intake and conflict checks, client status updates, time tracking and billing.
+- Manufacturing (https://tradyperch.com/industries/manufacturing): quoting, order-status visibility, inventory reconciliation, shop-floor/back-office system integration.
+
+Also served, without a dedicated page: Education, Finance, E-commerce.
+
+Full list: https://tradyperch.com/industries
+
+## Engagement model
+
+- Pricing is scope-based, not seat-based and not a recurring per-user subscription.
+- Cost is estimated before work begins.
+- Engagements are typically one of three shapes: a single automation, a multi-system buildout, or an ongoing partnership — sized to the actual scope of work involved, not sold as published fixed-price tiers.
+
+Details: https://tradyperch.com/pricing
+
+## Company
+
+- Trady Perch describes its own working model as operating like a private bank rather than a marketplace freelancer platform: a limited number of engagements handled directly, rather than high-volume freelance-style work.
+- The site's case studies (https://tradyperch.com/work/case-studies) are labeled as illustrative example engagements, not verified named-client outcomes — that labeling is intentional and should be preserved in any summary of this content.
+
+## Other pages
+
+- FAQ: https://tradyperch.com/faq
+- Contact: https://tradyperch.com/contact
+- Case studies: https://tradyperch.com/work/case-studies

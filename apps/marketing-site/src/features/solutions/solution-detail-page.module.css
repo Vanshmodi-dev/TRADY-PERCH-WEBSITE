@@ -1,0 +1,130 @@
+.hero {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.heroContainer {
+  composes: container from "../../shared/components/section.module.css";
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-related-items);
+}
+
+.heroIcon {
+  width: var(--core-icon-size-48);
+  height: var(--core-icon-size-48);
+  color: var(--semantic-color-accent-secondary);
+}
+
+.section {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.sectionAlt {
+  composes: sectionAlt from "../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.sectionLabel {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--semantic-space-gap-grid);
+}
+
+@media (min-width: 1024px) {
+  .sectionLabel {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--semantic-space-gap-related-items);
+  padding-block: var(--semantic-space-padding-component-md);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.item:last-child {
+  border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.itemIcon {
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+  color: var(--semantic-color-accent-secondary);
+  flex-shrink: 0;
+  margin-top: var(--core-space-1);
+}
+
+.itemTitle {
+  font-size: var(--core-type-body-large-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--core-space-1);
+}
+
+@media (min-width: 1024px) {
+  .itemTitle {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+.itemBody {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .itemBody {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.builtForLabel {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--semantic-space-gap-related-items);
+}
+
+@media (min-width: 1024px) {
+  .builtForLabel {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.builtForText {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  max-width: 68ch;
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .builtForText {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--semantic-space-gap-related-items);
+  padding-top: var(--semantic-space-padding-component-lg);
+}

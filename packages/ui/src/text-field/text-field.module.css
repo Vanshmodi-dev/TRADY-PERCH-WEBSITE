@@ -1,0 +1,132 @@
+/* Ch.21 Forms & Inputs. Anatomy: Label -> Input Region -> Helper/Error Text (Fm-4). */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+}
+
+.label {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: var(--core-type-label-tracking);
+  color: var(--semantic-color-text-primary);
+}
+
+.required {
+  color: var(--semantic-color-text-secondary);
+}
+
+.input {
+  width: 100%;
+  font-family: inherit;
+  color: var(--semantic-color-text-primary);
+  background-color: var(--semantic-color-surface-card);
+  border: var(--core-border-default) solid var(--semantic-color-border-default);
+  border-radius: var(--semantic-radius-control); /* core.radius.md, Ch.21 §4 */
+  /* Ch.21 §5: 44px touch-target floor at every size step. */
+  min-height: 44px;
+  transition:
+    border-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.input::placeholder {
+  color: var(--semantic-color-text-secondary);
+}
+
+/* Ch.21 §6 Hover: "border shifts from border.default to a slightly more
+   visible step" — the token system has no dedicated border-hover tier yet,
+   so this reuses text.secondary (an already-lighter gray) as the border
+   tone rather than inventing a new token or reaching for a CSS filter that
+   would also brighten the field's text and background unintentionally. */
+.input:hover:not(:disabled) {
+  border-color: var(--semantic-color-text-secondary);
+}
+
+.input:disabled {
+  opacity: var(--semantic-opacity-disabled);
+  cursor: not-allowed;
+}
+
+/* Ch.4 §9 / Ch.8 Re-2: Mobile carries its own type value — Milestone 6
+   review caught every size step here (and the error/helper text below)
+   hardcoding the Desktop token unconditionally. */
+.sm {
+  padding-inline: var(--semantic-space-padding-component-sm);
+  padding-block: var(--semantic-space-padding-button-block-sm);
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+}
+.md {
+  padding-inline: var(--semantic-space-padding-component-md);
+  padding-block: var(--semantic-space-padding-button-block-md);
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+}
+.lg {
+  padding-inline: var(--semantic-space-padding-component-lg);
+  padding-block: var(--semantic-space-padding-button-block-lg);
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+}
+
+@media (min-width: 1024px) {
+  .sm {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .md {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .lg {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Ch.53 1.4.11 / Milestone 7 review: border.error (crimson.500) computes to
+   2.88:1 against this field's own surface.card background — below the 3:1
+   graphical-element minimum, a case Design System Bible Ch.3 Section 8
+   never computed (it only checked border.error against background.primary,
+   where it passes at 3.3:1). text.error (crimson.400) is lighter and
+   clears both thresholds comfortably (5.2:1) here — the same substitution
+   Ch.3 §12 already prescribes for error *text* in the wrong step, applied
+   to this equivalent border-contrast gap. */
+.inputError {
+  border-color: var(--semantic-color-text-error);
+}
+
+.errorText {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--core-space-1);
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+  color: var(--semantic-color-text-error);
+  margin: 0;
+}
+
+.errorIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.helperText {
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .errorText,
+  .helperText {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}

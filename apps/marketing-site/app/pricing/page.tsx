@@ -1,18 +1,40 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { PricingPage } from "@/features/pricing/pricing-page";
+import { SITE_URL } from "@/shared/site-config";
+import { JsonLd } from "@/shared/json-ld";
+
+const TITLE = "Pricing";
+const DESCRIPTION = "Scope-based engagement, not fixed SaaS-style pricing tiers.";
 
 export const metadata: Metadata = {
-  title: "Pricing",
-  description: "Scope-based engagement, not fixed SaaS-style pricing tiers.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/pricing` },
+  openGraph: { type: "website", url: `${SITE_URL}/pricing`, title: TITLE, description: DESCRIPTION },
 };
 
-export default function PricingPage() {
+// Ch.40 §3: "a pricing page's template knows it produces a
+// Product-or-Service-equivalent block." `Service`, not `Product` — Trady
+// Perch sells scoped engineering engagements, not a fixed, purchasable
+// SKU (this page's own entire point, per pricing-data.ts). No `offers`/
+// price field: Ch.5.4 prohibits any price signal anywhere on the site,
+// including a "starting at" figure — that rule applies to structured data
+// exactly as it applies to visible copy, not just to what a human reads.
+const SERVICE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "AI automation engineering",
+  name: "Trady Perch AI automation engagements",
+  description: DESCRIPTION,
+  provider: { "@type": "Organization", name: "Trady Perch", url: SITE_URL },
+  url: `${SITE_URL}/pricing`,
+};
+
+export default function Page() {
   return (
-    <PageStub
-      eyebrow="Pricing"
-      heading="Roughly what this costs, and why it's fair"
-      description="A custom-automation engagement is scoped and priced around the outcome, not a fixed subscription tier — here's how that works and what to expect."
-      milestoneNote="Full page content arrives in Milestone 4 (Remaining Marketing Pages)."
-    />
+    <>
+      <JsonLd data={SERVICE_JSON_LD} />
+      <PricingPage />
+    </>
   );
 }

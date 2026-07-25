@@ -1,0 +1,106 @@
+/*
+ * Master Vision Ch.13 item 2 (Hero) + Ch.4.3 (emotional spec: "composed
+ * curiosity... the visitor should exhale, not lean forward anxiously").
+ * Ch.7 Centered Statement pattern: single column, generous vertical
+ * padding, no forced 100vh — the next section's edge is meant to be
+ * visible, an implicit scroll invitation rather than an explicit prompt.
+ */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--semantic-space-gap-stack);
+  max-width: var(--core-container-width-content);
+  margin-inline: auto;
+  padding: var(--semantic-space-padding-hero) var(--core-space-4) var(--semantic-space-padding-section-lg);
+  min-height: 90svh;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    padding-inline: var(--semantic-space-padding-section-sm);
+  }
+}
+
+/* Ch.16.3: the tagline is the emotional/brand layer — smaller than the
+   headline, never repeating what the headline says.
+   animation-delay: 300ms — matches app/template.module.css's page-level
+   fade duration exactly, so Hero's own 3-element stagger starts only
+   once that page-chrome fade has finished, not stacked on top of it
+   (Milestone 5 review Finding #6: without this offset, the wrapper fade
+   plus tagline plus headline plus subheadline briefly hit 4 concurrently
+   animating elements on a fresh, same-session homepage load — one past
+   Ch.40 Ag-2's ceiling of 3). On a genuine first visit the IntroSequence
+   overlay hides all of this anyway, so the offset is only ever visible
+   on a same-session reload or internal navigation back to "/". */
+.tagline {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  color: var(--semantic-color-text-secondary);
+  opacity: 0;
+  animation: hero-settle var(--motion-duration-deliberate) var(--motion-easing-entrance) forwards;
+  animation-delay: 300ms;
+}
+
+@media (min-width: 1024px) {
+  .tagline {
+    font-size: var(--core-type-label-size-desktop);
+  }
+}
+
+/* Ch.16.3: the headline is the rational "so what does this mean for me"
+   layer — the single dominant visual element of the section (P2). */
+.headline {
+  font-size: var(--core-type-h1-size-mobile);
+  font-weight: var(--core-type-h1-weight);
+  line-height: var(--core-type-h1-line-height);
+  color: var(--semantic-color-text-primary);
+  max-width: 20ch;
+  margin: 0;
+  opacity: 0;
+  animation: hero-settle var(--motion-duration-deliberate) var(--motion-easing-entrance) forwards;
+  animation-delay: 390ms;
+}
+
+@media (min-width: 1024px) {
+  .headline {
+    font-size: var(--core-type-h1-size-desktop);
+  }
+}
+
+.subheadline {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  max-width: 60ch;
+  margin: 0;
+  opacity: 0;
+  animation: hero-settle var(--motion-duration-deliberate) var(--motion-easing-entrance) forwards;
+  animation-delay: 480ms;
+}
+
+@media (min-width: 1024px) {
+  .subheadline {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+/* Ch.10.3 Animation Hierarchy: staggered, not simultaneous — each element
+   settles a beat behind the last. Transform-only movement, gated behind
+   --motion-reduced so reduced-motion visitors get an opacity-only fade
+   (Ch.15 Mt-4) with no vertical travel. */
+@keyframes hero-settle {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--core-space-4) * (1 - var(--motion-reduced, 0))));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,18 +1,58 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { Card, CardBody, CardTitle } from "@trady-perch/ui";
+import { NextLinkAdapter } from "@/shared/components/next-link-adapter";
+import { SectionHeading } from "@/shared/components/section-heading";
+import { SITE_URL } from "@/shared/site-config";
+import styles from "./legal.module.css";
+
+const TITLE = "Legal";
+const DESCRIPTION = "Legal information for Trady Perch, including privacy policy and terms of service.";
 
 export const metadata: Metadata = {
-  title: "Legal",
-  description: "Legal information for Trady Perch, including privacy policy and terms of service.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/legal` },
 };
+
+const DOCUMENTS = [
+  {
+    href: "/privacy",
+    title: "Privacy Policy",
+    body: "What information this site collects, how it's used, and how to request a copy or deletion of yours.",
+  },
+  {
+    href: "/terms",
+    title: "Terms of Service",
+    body: "The terms governing use of this website.",
+  },
+];
 
 export default function LegalPage() {
   return (
-    <PageStub
-      eyebrow="Legal"
-      heading="Legal"
-      description="Compliance and licensing information, plus links to our Privacy Policy and Terms of Service."
-      milestoneNote="Full page content arrives in Milestone 4 (Remaining Marketing Pages)."
-    />
+    <section className={styles.section}>
+      <div className={styles.container}>
+        <SectionHeading
+          eyebrow="Legal"
+          heading="Legal"
+          description="Compliance and licensing information, plus links to our Privacy Policy and Terms of Service."
+          level="h1"
+          size="h1"
+        />
+        <div className={styles.grid}>
+          {DOCUMENTS.map((doc) => (
+            <Card
+              key={doc.href}
+              interactivity="interactive"
+              href={doc.href}
+              linkComponent={NextLinkAdapter}
+              density="compact"
+            >
+              <CardTitle as="h2">{doc.title}</CardTitle>
+              <CardBody>{doc.body}</CardBody>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

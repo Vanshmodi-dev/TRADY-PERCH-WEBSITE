@@ -38,4 +38,13 @@ npm run test         # Vitest across all workspaces
 
 ## Status
 
-Milestone 2 (Global layout, navigation, footer & routing) complete — the site now has a real Header (desktop dropdowns + mobile drawer), Footer, and every required route from `docs/adr/0006-sitemap-and-navigation-ia.md` (page *content* for most of them is still a placeholder, arriving in Milestones 3–4). See `docs/adr/` for the decisions made. Full milestone plan: Global layout → Homepage → remaining pages → interactivity/motion → responsive → accessibility → performance → SEO → final QA.
+Milestones 1–9 complete: setup; global layout/navigation/footer; homepage; every remaining page; motion & interactivity; responsive implementation; accessibility (WCAG 2.1 AA, automated Layers 1–2 — see `docs/product-implementation-constitution/Chapter-66-Engineering-Debt-Register.md` for the one remaining manual-testing gap); performance (Core Web Vitals budgets, see the same register for one deliberately-accepted exception); SEO (structured data, `llms.txt`, sitemap/robots). Milestone 10 (final QA and production readiness) is in progress. See `docs/adr/` for architectural decisions and Chapter 66 above for every currently-open, disclosed gap.
+
+Additional verification scripts beyond `npm run test`, each self-contained (boots its own server):
+
+```bash
+npm run test:a11y --workspace=@trady-perch/marketing-site         # real-Chromium axe-core, every route
+npm run test:keyboard --workspace=@trady-perch/marketing-site     # keyboard-only navigation
+npm run test:performance --workspace=@trady-perch/marketing-site  # Lighthouse + CDP byte measurement
+npm run test:schema --workspace=@trady-perch/marketing-site       # structured-data (JSON-LD) validation
+```

@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { DeferredPageNotice } from "@/shared/components/deferred-page-notice";
 
 export const metadata: Metadata = {
   title: "About",
   description: "Trady Perch is the AI automation partner that operates like a private bank.",
+  robots: { index: false, follow: true },
 };
 
 export default function AboutPage() {
   return (
-    <PageStub
+    <DeferredPageNotice
       eyebrow="About"
-      heading="The AI automation partner that operates like a private bank"
-      description="Not a freelance automation shop optimizing for speed of delivery over quality of outcome. Not an enterprise consultancy optimizing for scope of contract over speed of value."
-      milestoneNote="Full page content arrives in Milestone 4 (Remaining Marketing Pages)."
+      heading="This page doesn't exist yet — on purpose."
+      description="A real story earns an About page; a few paragraphs about being 'passionate' don't. The part that's actually load-bearing — the engineering disciplines this company is built on — already lives on the homepage."
+      redirectHref="/#technology-stack-heading"
+      redirectLabel="See what we're built on"
     />
   );
 }

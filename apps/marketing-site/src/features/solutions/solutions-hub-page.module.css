@@ -1,0 +1,43 @@
+.hero {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.heroContainer {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.section {
+  composes: section from "../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../shared/components/section.module.css";
+}
+
+.srOnly {
+  composes: srOnly from "../../shared/components/section.module.css";
+}
+
+.grid {
+  display: grid;
+  gap: var(--semantic-space-gap-grid);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.cardIcon {
+  width: var(--core-icon-size-32);
+  height: var(--core-icon-size-32);
+  color: var(--semantic-color-accent-secondary);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--semantic-space-padding-section-sm);
+}

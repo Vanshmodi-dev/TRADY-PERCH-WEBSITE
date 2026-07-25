@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { PortfolioPage } from "@/features/work/portfolio-page";
+import { SITE_URL } from "@/shared/site-config";
+
+const TITLE = "Work";
+const DESCRIPTION = "Portfolio of AI automation work delivered for established businesses.";
 
 export const metadata: Metadata = {
-  title: "Work",
-  description: "Portfolio of AI automation work delivered for established businesses.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/work` },
+  openGraph: { type: "website", url: `${SITE_URL}/work`, title: TITLE, description: DESCRIPTION },
 };
 
 export default function WorkPage() {
-  return (
-    <PageStub
-      eyebrow="Work"
-      heading="Proof, not promises"
-      description="A portfolio of the systems we've designed and deployed — see our full case studies for measurable outcomes."
-      milestoneNote="Full page content, including a portfolio grid and featured case studies, arrives in Milestone 4 (Remaining Marketing Pages)."
-    />
-  );
+  return <PortfolioPage />;
 }

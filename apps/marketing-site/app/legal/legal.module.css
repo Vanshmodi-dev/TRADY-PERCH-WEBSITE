@@ -1,0 +1,20 @@
+.section {
+  composes: section from "../../src/shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../src/shared/components/section.module.css";
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+  margin-top: var(--semantic-space-padding-section-sm);
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -44,7 +44,7 @@
 }
 
 .tagline {
-  font-size: var(--core-type-caption-size-desktop);
+  font-size: var(--core-type-caption-size-mobile);
   color: var(--semantic-color-text-secondary);
   max-width: 32ch;
 }
@@ -55,12 +55,31 @@
   gap: var(--semantic-space-gap-related-items);
 }
 
+/* Ch.53 1.4.3 / Milestone 7 review: text.tertiary (gray.600) computes to
+   3.88:1 against background.primary — below the 4.5:1 normal-text minimum
+   at this caption/label size (well under the 24px large-text threshold
+   where 3.88:1 would actually pass). This is the exact "text.secondary,
+   not text.tertiary" substitution already applied throughout the rest of
+   the codebase (e.g. case-studies.module.css's own .label) — the Footer,
+   rendered on every single route, had simply never received it. */
 .columnHeading {
-  font-size: var(--core-type-label-size-desktop);
+  font-size: var(--core-type-label-size-mobile);
   font-weight: var(--core-type-label-weight);
   letter-spacing: var(--core-type-label-tracking);
   text-transform: uppercase;
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-secondary);
+}
+
+/* Ch.4 §9 / Ch.8 Re-2: Milestone 6 review named .tagline; .columnHeading
+   had the identical unconditional-Desktop-token bug and is fixed alongside
+   it here for consistency. */
+@media (min-width: 1024px) {
+  .tagline {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .columnHeading {
+    font-size: var(--core-type-label-size-desktop);
+  }
 }
 
 .columnLink {
@@ -95,9 +114,11 @@
   }
 }
 
+/* Ch.53 1.4.3 / Milestone 7 review: same text.tertiary AA failure as
+   .columnHeading above (3.88:1, below the 4.5:1 floor at this size). */
 .copyright {
   font-size: var(--core-type-caption-size-mobile);
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-secondary);
 }
 
 .legalLinks {
@@ -107,11 +128,15 @@
 
 .legalLink {
   font-size: var(--core-type-caption-size-mobile);
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-secondary);
   text-decoration: none;
 }
 .legalLink:hover {
-  color: var(--semantic-color-text-secondary);
+  /* Was text.secondary — identical to .legalLink's own resting color once
+     that moved off text.tertiary above, which erased the hover state
+     entirely. text.primary matches .columnLink:hover's own resting-to-hover
+     step immediately above in this file. */
+  color: var(--semantic-color-text-primary);
 }
 
 @media (min-width: 1024px) {

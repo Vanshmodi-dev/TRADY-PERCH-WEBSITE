@@ -1,0 +1,27 @@
+/* Master Vision Ch.13 item 12 / Ch.5.4. Ch.7 Structured Grid, three-up. */
+
+.section {
+  composes: section from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  composes: stackLg from "../../../../shared/components/section.module.css";
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+}

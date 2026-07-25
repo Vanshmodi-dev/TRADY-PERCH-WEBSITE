@@ -1,0 +1,32 @@
+/* Master Vision Ch.13 item 5. Ch.7 Structured Grid — varies from Problems
+   We Solve's Split Narrative immediately before it (La-2). */
+
+.section {
+  composes: sectionAlt from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  composes: stackLg from "../../../../shared/components/section.module.css";
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Ch.11: icon color matches the adjacent text hierarchy by default — gold
+   is reserved strictly for a genuine active/selected state, never used
+   decoratively to make a card "look important" (Ic rules). */
+.cardIcon {
+  width: var(--core-icon-size-32);
+  height: var(--core-icon-size-32);
+  color: var(--semantic-color-text-secondary);
+}

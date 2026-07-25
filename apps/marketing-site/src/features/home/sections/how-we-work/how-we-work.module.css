@@ -1,0 +1,72 @@
+/* Master Vision Ch.13 item 7. Emotional target (Ch.4.3): Security. Ch.7
+   Stacked Sequence pattern — vertical, one step per row. */
+
+.section {
+  composes: sectionAlt from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  composes: stackLg from "../../../../shared/components/section.module.css";
+}
+
+.sequence {
+  display: flex;
+  flex-direction: column;
+  max-width: 68ch;
+  margin-inline: auto;
+  list-style: none;
+  padding: 0;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--semantic-space-gap-grid);
+  padding-block: var(--semantic-space-padding-component-lg);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.step:last-child {
+  border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.index {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  color: var(--semantic-color-text-tertiary);
+  line-height: 1;
+}
+
+@media (min-width: 1024px) {
+  .index {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.stepTitle {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--core-space-2);
+}
+
+@media (min-width: 1024px) {
+  .stepTitle {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+.stepBody {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .stepBody {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}

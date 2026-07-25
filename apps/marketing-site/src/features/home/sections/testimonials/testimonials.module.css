@@ -1,0 +1,54 @@
+/* Master Vision Ch.13 item 11. Ch.7 Structured Grid, varying from the AI
+   Demo's Centered Statement immediately before it (La-2). */
+
+.section {
+  composes: sectionAlt from "../../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../../shared/components/section.module.css";
+  composes: stackLg from "../../../../shared/components/section.module.css";
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.badge {
+  margin-bottom: var(--semantic-space-gap-related-items);
+}
+
+.quote {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0 0 var(--semantic-space-gap-related-items);
+}
+
+@media (min-width: 1024px) {
+  .quote {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+.attribution {
+  font-size: var(--core-type-caption-size-mobile);
+  /* text.secondary — see case-studies.module.css's .label for why
+     text.tertiary fails WCAG AA at this size (Milestone 3 review). This
+     is who is supposedly vouching for the company; it must be legible. */
+  color: var(--semantic-color-text-secondary);
+}
+
+@media (min-width: 1024px) {
+  .attribution {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}

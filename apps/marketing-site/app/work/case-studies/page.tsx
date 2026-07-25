@@ -1,18 +1,22 @@
 import type { Metadata } from "next";
-import { PageStub } from "@/shared/components/page-stub";
+import { CaseStudiesIndexPage } from "@/features/case-studies/case-studies-index-page";
+import { SITE_URL } from "@/shared/site-config";
+
+const TITLE = "Case Studies";
+const DESCRIPTION = "Measurable outcomes from AI automation systems we've designed and deployed.";
 
 export const metadata: Metadata = {
-  title: "Case Studies",
-  description: "Measurable outcomes from AI automation systems we've designed and deployed.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/work/case-studies` },
+  openGraph: {
+    type: "website",
+    url: `${SITE_URL}/work/case-studies`,
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function CaseStudiesPage() {
-  return (
-    <PageStub
-      eyebrow="Work"
-      heading="Case Studies"
-      description="Real engagements, real outcomes — evidence of past results for businesses like yours."
-      milestoneNote="Full page content arrives in Milestone 4 (Remaining Marketing Pages)."
-    />
-  );
+  return <CaseStudiesIndexPage />;
 }
