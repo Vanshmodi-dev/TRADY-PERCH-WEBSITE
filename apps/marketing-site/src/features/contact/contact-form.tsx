@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button, TextField } from "@trady-perch/ui";
 import { CheckIcon } from "@/shared/components/icons";
 import {
@@ -25,6 +25,31 @@ export function ContactForm() {
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [formError, setFormError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  /**
+   * WCAG 3.3.1 / Ch.42 Kb-1. A failed submit previously only re-rendered
+   * inline errors: focus stayed on the submit button at the bottom of the
+   * form, so a screen-reader user got no indication of *which* field failed
+   * without manually tabbing back up through the whole form to hunt for it.
+   * Moving focus to the first invalid control announces that control's
+   * label, its `aria-invalid` state and its `aria-describedby` error text in
+   * one step — and scrolls it into view for sighted keyboard users too.
+   *
+   * Field order is read from the DOM rather than from a hardcoded list so it
+   * cannot drift out of sync with the rendered order if a field is added.
+   */
+  function focusFirstInvalidField(fieldErrors: ContactFormErrors) {
+    const form = formRef.current;
+    if (!form) return;
+    for (const control of form.querySelectorAll<HTMLElement>("input[name], textarea[name]")) {
+      const name = control.getAttribute("name");
+      if (name && name in fieldErrors && fieldErrors[name as keyof ContactFormErrors]) {
+        control.focus();
+        return;
+      }
+    }
+  }
 
   function updateField<K extends keyof ContactFormData>(field: K, value: string) {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -42,6 +67,7 @@ export function ContactForm() {
     const fieldErrors = validateContactForm(data);
     if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
+      focusFirstInvalidField(fieldErrors);
       return;
     }
 
@@ -59,6 +85,7 @@ export function ContactForm() {
 
       if (!result.ok) {
         setErrors(result.errors ?? {});
+        if (result.errors) focusFirstInvalidField(result.errors);
         setFormError(
           result.errors?.message ??
             "Something went wrong sending this. Try again, or email us directly.",
@@ -95,7 +122,7 @@ export function ContactForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form className={styles.form} onSubmit={handleSubmit} noValidate ref={formRef}>
       <TextField
         id="contact-name"
         name="name"
@@ -126,6 +153,8 @@ export function ContactForm() {
         label="Company"
         value={data.company}
         onChange={(value) => updateField("company", value)}
+        onBlur={() => handleBlur("company")}
+        error={errors.company}
         helperText="Optional."
         autoComplete="organization"
       />

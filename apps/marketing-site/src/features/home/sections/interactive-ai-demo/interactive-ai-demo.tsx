@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge, Button } from "@trady-perch/ui";
 import { ChatIcon } from "@/shared/components/icons";
 import { SectionHeading } from "@/shared/components/section-heading";
@@ -94,7 +94,31 @@ export function InteractiveAiDemo() {
   const [choices, setChoices] = useState<Choice[] | null>(INITIAL_CHOICES);
   const [step, setStep] = useState<0 | 1 | 2>(0);
 
+  /**
+   * Ch.42 Kb-3 / WCAG 2.4.3. Every choice replaces the whole button set with
+   * a differently-keyed one, so React unmounts the button the visitor just
+   * activated. Measured before this fix: `document.activeElement` was
+   * `BODY` after every single choice — a keyboard or screen-reader user was
+   * silently returned to the top of the document mid-conversation, which is
+   * precisely the "never to the page's <body>" case Kb-3 names.
+   *
+   * Focus moves to the first control of whatever replaced it (the next
+   * choice set, or "Restart demo" at the end) rather than to the new
+   * transcript message: the transcript is already an aria-live log that
+   * announces itself, so focusing it would double-announce, and landing on
+   * the next actionable control is where the visitor wants to be anyway.
+   */
+  const interactionRef = useRef<HTMLDivElement>(null);
+  const shouldMoveFocus = useRef(false);
+
+  useEffect(() => {
+    if (!shouldMoveFocus.current) return;
+    shouldMoveFocus.current = false;
+    interactionRef.current?.querySelector("button")?.focus();
+  }, [step]);
+
   function handleChoice(choice: Choice) {
+    shouldMoveFocus.current = true;
     const userMessage = toMessage({ from: "user", text: choice.label });
 
     if (step === 0) {
@@ -111,6 +135,8 @@ export function InteractiveAiDemo() {
   }
 
   function handleReset() {
+    // Same Kb-3 case: "Restart demo" unmounts itself on activation.
+    shouldMoveFocus.current = true;
     setMessages([toMessage(INITIAL_MESSAGE)]);
     setChoices(INITIAL_CHOICES);
     setStep(0);
@@ -142,32 +168,37 @@ export function InteractiveAiDemo() {
               </div>
             ))}
           </div>
-          {choices ? (
-            <div className={styles.choices}>
-              {choices.map((choice) => (
-                <Button
-                  key={choice.id}
-                  emphasis="secondary"
-                  size="sm"
-                  onClick={() => handleChoice(choice)}
-                >
-                  {choice.label}
-                </Button>
-              ))}
-            </div>
-          ) : (
-            <>
-              <p className={styles.closingNote}>
-                This is what happens automatically, day or night, for every lead — no one waiting for a
-                free moment.
-              </p>
-              <div className={styles.resetRow}>
-                <Button emphasis="ghost" size="sm" onClick={handleReset}>
-                  Restart demo
-                </Button>
+          {/* Plain wrapper purely as the focus-restoration scope (see
+              interactionRef above). .frame is block-flow, so this introduces
+              no layout change of its own. */}
+          <div ref={interactionRef}>
+            {choices ? (
+              <div className={styles.choices}>
+                {choices.map((choice) => (
+                  <Button
+                    key={choice.id}
+                    emphasis="secondary"
+                    size="sm"
+                    onClick={() => handleChoice(choice)}
+                  >
+                    {choice.label}
+                  </Button>
+                ))}
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                <p className={styles.closingNote}>
+                  This is what happens automatically, day or night, for every lead — no one waiting
+                  for a free moment.
+                </p>
+                <div className={styles.resetRow}>
+                  <Button emphasis="ghost" size="sm" onClick={handleReset}>
+                    Restart demo
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </section>

@@ -94,6 +94,21 @@ describe("ContactForm", () => {
     expect(screen.getByLabelText("Name", { exact: false })).toHaveValue("Jamie Rivera");
   });
 
+  // WCAG 3.3.1 — before this, a failed submit left focus on the submit
+  // button, so a screen-reader user was told nothing about which field was
+  // at fault and had to tab back through the form to find out.
+  it("moves focus to the first invalid field when submission is blocked", async () => {
+    const user = userEvent.setup();
+    render(<ContactForm />);
+
+    await user.type(screen.getByLabelText(/Name/), "Ada Lovelace");
+    await user.click(screen.getByRole("button", { name: "Send message" }));
+
+    // Name is valid, so Email is the first field actually in error.
+    expect(document.activeElement).toBe(screen.getByLabelText(/Email/));
+    expect(document.activeElement).not.toBe(document.body);
+  });
+
   it("keeps the honeypot field out of the accessible tab order", () => {
     render(<ContactForm />);
     const honeypot = document.getElementById("contact-website");

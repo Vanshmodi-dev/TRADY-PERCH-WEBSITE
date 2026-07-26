@@ -64,6 +64,29 @@ describe("InteractiveAiDemo", () => {
     expect(screen.queryByText(/I'm connecting you with an agent/)).not.toBeInTheDocument();
   });
 
+  // Ch.42 Kb-3 / WCAG 2.4.3. Each choice unmounts the button that was just
+  // activated; before this was handled, focus fell back to <body> on every
+  // step, stranding keyboard and screen-reader users at the top of the
+  // document mid-conversation.
+  it("keeps keyboard focus on the next control after a choice, never dropping it to the body", async () => {
+    const user = userEvent.setup();
+    render(<InteractiveAiDemo />);
+
+    await user.click(screen.getByRole("button", { name: "I'm looking to sell" }));
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Within 30 days" }));
+
+    await user.click(screen.getByRole("button", { name: "Within 30 days" }));
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Restart demo" }));
+
+    await user.click(screen.getByRole("button", { name: "Restart demo" }));
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", { name: "I'm looking to sell" }),
+    );
+  });
+
   it("the transcript is announced to assistive technology as a live, polite log", () => {
     const { container } = render(<InteractiveAiDemo />);
     const log = container.querySelector('[role="log"]');
