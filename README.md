@@ -38,7 +38,20 @@ npm run test         # Vitest across all workspaces
 
 ## Status
 
-Milestones 1–9 complete: setup; global layout/navigation/footer; homepage; every remaining page; motion & interactivity; responsive implementation; accessibility (WCAG 2.1 AA, automated Layers 1–2 — see `docs/product-implementation-constitution/Chapter-66-Engineering-Debt-Register.md` for the one remaining manual-testing gap); performance (Core Web Vitals budgets, see the same register for one deliberately-accepted exception); SEO (structured data, `llms.txt`, sitemap/robots). Milestone 10 (final QA and production readiness) is in progress. See `docs/adr/` for architectural decisions and Chapter 66 above for every currently-open, disclosed gap.
+Milestones 1–10 complete: setup; global layout/navigation/footer; homepage; every remaining page; motion & interactivity; responsive implementation; accessibility; performance; SEO (structured data, `llms.txt`, sitemap/robots); final QA.
+
+Two things this section previously overstated, corrected here rather than quietly edited:
+
+- **Accessibility conformance is WCAG 2.1 AA, not 2.2 AA.** Design System Bible Ch.53 maps the system to WCAG 2.1 specifically (it predates 2.2), and `npm run test:a11y` gates on the `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa` tag set to match. The Milestone 10 review additionally checked the 2.2-only criteria by hand and fixed what it found (2.4.11 Focus Not Obscured; 2.5.8 Target Size). 2.2 is not yet a *claimed, mapped* conformance target — see the Chapter 66 register.
+- **The performance budget exception is sitewide, not "one".** Every route exceeds Ch.36's 2000ms LCP budget under Lighthouse's throttled lab methodology, so `npm run test:performance` exits non-zero by design. Unthrottled real-browser LCP is 204–272ms. The full record, including root cause, is [[ADR-0008]] plus its Chapter 66 entry — read those before re-diagnosing.
+
+**CI runs on every push and pull request to `main`** via `.github/workflows/ci.yml` — static checks (lint, typecheck, production-dependency vulnerability scan), then unit/integration tests and the full-route axe-core accessibility audit in parallel, in Ch.49 §2's gate order. `test:performance` is deliberately excluded because it fails by design (see the LCP note below). **These checks report but do not yet block**: making them enforcing requires a branch-protection rule on `main`, which is a repository-settings action — see the Chapter 66 register entry for the exact steps.
+
+**Contact form delivery is live as of 2026-07-26.** Validated submissions are delivered via Resend to the address in `MARKETING_SITE_CONTACT_INBOX_EMAIL`. Copy `apps/marketing-site/.env.example` to `.env.local` and fill it in; with no values set the form still validates and reports success, logging server-side that nothing was delivered, so the app builds and tests without a secret. Note that Resend rejects any `from` address on an unverified domain — until `tradyperch.com` is verified in the Resend dashboard, the sender falls back to `onboarding@resend.dev`, which can only deliver to the Resend account owner's own address.
+
+**Manual accessibility testing (Ch.19 Layer 3) — partially complete as of 2026-07-26.** A human pass with NVDA on Windows covered the screen-reader walkthrough and keyboard-only task completion and found no defects; that entry is resolved in the Chapter 66 register. Touch/gesture verification on real touch hardware — Ch.19 §2's third component, which a desktop screen reader cannot exercise — remains open there as its own entry. Per Ch.19 §3, the passing result binds to this release cycle only and the flows re-enter the cadence next cycle.
+
+See `docs/adr/` for architectural decisions and Chapter 66 for every currently-open, disclosed gap.
 
 Additional verification scripts beyond `npm run test`, each self-contained (boots its own server):
 
