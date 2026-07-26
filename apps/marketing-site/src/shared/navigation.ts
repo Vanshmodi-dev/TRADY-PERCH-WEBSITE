@@ -14,6 +14,17 @@ export const PRIMARY_NAV_ITEMS: NavItem[] = [
       { label: "Custom Integrations", href: "/solutions/custom-integrations" },
       { label: "Intelligent Systems", href: "/solutions/intelligent-systems" },
     ],
+    // Mirrors Industries below. Without it `/solutions` — a real, indexable
+    // page carrying the second-highest sitemap priority on the site (0.9) —
+    // was reachable from no global navigation at all: a link-graph pass over
+    // the built HTML found 4 inbound internal links to it, against 28 for
+    // every route the header or footer actually links, and none from either
+    // the desktop dropdown or the mobile drawer, where "Solutions" was a
+    // non-navigable group label. Ch.20 Nv-2's four-sub-item ceiling is
+    // unaffected: this is the same structurally-separate "view all"
+    // affordance Industries already uses, not a fifth sub-item.
+    viewAllHref: "/solutions",
+    viewAllLabel: "View all solutions",
   },
   {
     label: "Industries",
