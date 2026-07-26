@@ -11,6 +11,24 @@ import { fileURLToPath } from "node:url";
 const APP_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const ROOT_DIR = fileURLToPath(new URL("../../../..", import.meta.url));
 
+/**
+ * How long to wait for a spawned server to answer its first request.
+ *
+ * Was 60s, which is ample on a warm developer machine (a local `next dev`
+ * binds in ~2s) but is not a safe margin on a cold 2-core CI runner doing a
+ * first-ever Turbopack compile with no cache — and the failure mode is
+ * genuinely misleading: the audit reports "Server did not respond", so a
+ * timeout surfaces as an apparently-failed accessibility or performance gate
+ * rather than as a slow boot. Observed locally under heavy load, which is
+ * exactly the condition CI runs in.
+ *
+ * Raising this costs nothing in the happy path — the poll resolves the moment
+ * the server answers, so this value is only ever reached when something is
+ * actually wrong, and each script's own CI job timeout remains the real
+ * upper bound.
+ */
+const SERVER_BOOT_TIMEOUT_MS = 180_000;
+
 function waitForServer(url, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   return new Promise((resolve, reject) => {
@@ -82,7 +100,7 @@ export async function ensureDevServer(port) {
 
   console.log(`Starting dev server on port ${port}...`);
   const serverProcess = spawnServer("npx", ["next", "dev", "--port", String(port)]);
-  await waitForServer(baseUrl, 60_000);
+  await waitForServer(baseUrl, SERVER_BOOT_TIMEOUT_MS);
 
   return { baseUrl, stop: () => stopServer(serverProcess) };
 }
@@ -109,7 +127,7 @@ export async function ensureProdServer(port) {
 
   console.log(`Starting production server on port ${port}...`);
   const serverProcess = spawnServer("npx", ["next", "start", "--port", String(port)]);
-  await waitForServer(baseUrl, 60_000);
+  await waitForServer(baseUrl, SERVER_BOOT_TIMEOUT_MS);
 
   return { baseUrl, stop: () => stopServer(serverProcess) };
 }
