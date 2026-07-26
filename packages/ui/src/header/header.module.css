@@ -19,11 +19,22 @@
   backdrop-filter: blur(var(--core-blur-subtle));
   -webkit-backdrop-filter: blur(var(--core-blur-subtle));
   border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
-  transition:
-    background-color var(--nav-transition-duration, var(--motion-duration-standard))
-      var(--motion-easing-entrance),
-    padding-block var(--nav-transition-duration, var(--motion-duration-standard))
-      var(--motion-easing-entrance);
+  /* Ch.40 Ag-1 — only opacity, transform, color, background-color,
+     border-color and box-shadow may animate, system-wide, with exactly one
+     named exception elsewhere (the intro sequence's reflection sweep). This
+     rule previously also transitioned `padding-block`, which is outside that
+     closed list on both counts Ag-1 exists for: it is a novel animatable
+     property, and — unlike the six — it is layout-triggering, so every frame
+     of the 300ms recession forced a reflow of the whole document beneath a
+     position:fixed bar, repeatedly, on the scroll path.
+
+     Ch.20 §5's own measured recession signal is the transparency shift
+     (glass-nav 72% -> ~55%), which is background-color and therefore
+     permitted; §4's "slightly reduced padding" remains part of the receded
+     *state*, it simply steps rather than tweens. At an 8px delta, mid-scroll,
+     under the background fade, the step is not perceptible as a jump. */
+  transition: background-color var(--nav-transition-duration, var(--motion-duration-standard))
+    var(--motion-easing-entrance);
 }
 
 /* Ch.20 Nv-4 — recede on downward scroll, never disappear entirely. */
@@ -121,6 +132,17 @@
    * Like Drawer (see drawer.module.css), a single transition config is used
    * for both directions as an interim simplification, deferred to
    * Milestone 5 (Interactive elements & animations).
+   */
+  /*
+   * `visibility` is deliberately in this list despite not being one of
+   * Ag-1's six animatable properties, and is a documented deviation rather
+   * than an oversight: it is a discrete, non-interpolated property (it never
+   * "animates" in the sense Ag-1 governs — it only defers its own switch to
+   * the end of the fade). Without it the panel must either flip to hidden
+   * instantly, discarding the opacity fade Ag-1 does permit, or stay
+   * `visible` while transparent, leaving its links in the tab order for
+   * keyboard users while invisible to everyone else — a worse outcome under
+   * Ch.42 than the deviation.
    */
   transition:
     opacity var(--motion-duration-quick) var(--motion-easing-entrance),
