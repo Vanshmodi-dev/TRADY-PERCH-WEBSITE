@@ -5,14 +5,16 @@
   composes: section from "../../../../shared/components/section.module.css";
 }
 
+/* `stackLg` supplies the shared heading->content section rhythm, exactly as
+   in solutions/industries/portfolio/testimonials/pricing/faq. It was missing
+   here, and the local `.heading` rule that was meant to compensate for its
+   absence could never apply — SectionHeading takes no `className` prop, so
+   the class was unreachable dead CSS and the compensation silently did
+   nothing. Measured before this fix: 0px between the heading block and the
+   demo frame, against a uniform 64px in every sibling section. */
 .container {
   composes: container from "../../../../shared/components/section.module.css";
-}
-
-.heading {
-  max-width: 60ch;
-  margin-inline: auto;
-  margin-bottom: var(--semantic-space-gap-grid);
+  composes: stackLg from "../../../../shared/components/section.module.css";
 }
 
 .frame {
