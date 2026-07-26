@@ -16,6 +16,39 @@ body {
 
 html {
   color-scheme: dark; /* Design System Bible Ch.52 — dark-native only, no light theme. */
+
+  /* WCAG 2.2 SC 2.4.11 (Focus Not Obscured, Minimum) / Ch.42 Kb-2. The Ch.20
+     header is position:fixed, so without this every in-page anchor jump
+     (`/#technology-stack-heading` and `/#how-we-work-heading`, both of which
+     are the *primary* CTA target on a DeferredPageNotice page) scrolls its
+     target to viewport top — i.e. entirely underneath the header. Measured
+     before this rule: target landed at y=0 with the header's bottom edge at
+     78px, so the destination heading was 100% obscured on arrival, and a
+     keyboard user tabbing to a just-scrolled element saw the same.
+
+     --header-clearance is the single source of truth for "how much vertical
+     space the fixed header occupies": 86px is the real measured expanded
+     height at >=1024px (78px receded, 79px at 375px), plus a small buffer so
+     an anchored heading arrives visibly clear of the bar rather than flush
+     against it. */
+  --header-clearance: 96px;
+
+  /* The extra --core-space-6 is not padding for its own sake — it corrects a
+     real, measured interaction between anchor scrolling and Reveal.
+
+     Reveal (packages/ui) starts a section at `translateY(--core-space-6)` and
+     settles it to 0. A section is revealed by being scrolled to, so at the
+     moment the browser computes an anchor's scroll offset the target is still
+     translated 24px *down*; the browser commits that position, the reveal then
+     settles, and the heading rises 24px — landing under the header again even
+     with correct scroll padding. Measured: with scroll-padding-top at 0/96/200px
+     the target landed at -24/72/176px, a constant 24px deficit exactly equal to
+     --core-space-6. Adding the reveal's own travel distance cancels it, and the
+     token reference means the two cannot drift apart.
+
+     Under prefers-reduced-motion the travel collapses to 0 (see packages/motion),
+     so the anchor simply lands 24px lower — clear of the header either way. */
+  scroll-padding-top: calc(var(--header-clearance) + var(--core-space-6));
 }
 
 body {
@@ -43,10 +76,18 @@ video {
 }
 
 /* Ch.20 Header is position:fixed — clear it so content never renders
-   underneath. Interim fixed estimate (core.space.24 = 96px); refined against
-   the header's real measured height in Milestone 6 (Responsive refinement). */
+   underneath. Shares --header-clearance with scroll-padding-top above so the
+   two can't drift apart: they answer the same question (how tall is the fixed
+   header) and previously only one of them answered it at all.
+
+   The value was carried for several milestones as an "interim estimate to be
+   refined against the header's real measured height in Milestone 6" — that
+   refinement never happened, so it was measured directly in the Milestone 10
+   review instead: 86px expanded / 78px receded at 1440px, 79px at 375px.
+   96px is kept (it was, as it turns out, a sound estimate) now that it is a
+   verified clearance with deliberate headroom rather than an unverified guess. */
 main {
-  padding-top: var(--core-space-24);
+  padding-top: var(--header-clearance);
 }
 
 /* Chapter 3 — keyboard focus indicator uses the gold accent, always visible. */
