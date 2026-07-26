@@ -126,10 +126,20 @@
   gap: var(--semantic-space-gap-related-items);
 }
 
+/* WCAG 2.2 SC 2.5.8 (Target Size, Minimum) — 24x24 CSS px floor. Measured
+   before this rule: 33x21, 46x21 and 38x21 for Legal/Privacy/Terms, i.e.
+   under the floor on every route the footer renders on (all of them). The
+   "inline" exception doesn't rescue these — they're a discrete row of
+   controls in a flex container, not links sitting inside a sentence.
+   Height comes from min-height + centering rather than extra padding so the
+   footer's existing vertical rhythm is unchanged. */
 .legalLink {
   font-size: var(--core-type-caption-size-mobile);
   color: var(--semantic-color-text-secondary);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 .legalLink:hover {
   /* Was text.secondary — identical to .legalLink's own resting color once
