@@ -29,15 +29,15 @@ function clientKey(request: Request): string {
 }
 
 /**
- * Real server-side validation and a real delivery attempt — this is not a
- * fake endpoint. What's genuinely incomplete: no email service provider is
- * configured in this environment (no `RESEND_API_KEY`), so there is
- * nowhere real to deliver a validated submission to yet. That's a
- * deployment/ops step (an ESP account + API key belong to whoever owns
- * the inbox, not to the codebase) — see the Milestone 4 Completion Report
- * for the explicit pre-launch checklist item this produces. Until that
- * key is set, submissions are validated but not delivered anywhere, and
- * that is logged loudly server-side rather than silently swallowed.
+ * Real server-side validation and real delivery via Resend.
+ *
+ * Delivery is configured through three Ch.10 environment variables (see
+ * `src/shared/env.ts`). When the API key or inbox address is absent — an
+ * unconfigured environment such as CI or a fresh clone — the endpoint still
+ * validates the submission, still returns a truthful success to the visitor,
+ * and logs loudly server-side rather than silently swallowing the message.
+ * That degradation path is deliberate and predates delivery being wired up;
+ * it is what keeps the build and tests runnable without a live secret.
  */
 export async function POST(request: Request): Promise<Response> {
   if (isRateLimited(clientKey(request))) {
@@ -47,7 +47,21 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const formData = await request.formData();
+  // Ch.27 — `request.formData()` throws on any body that isn't form-encoded,
+  // and an unhandled throw here surfaces as an opaque 500. Anyone can send
+  // `Content-Type: application/json` to this public endpoint, so a malformed
+  // body is an expected input to reject cleanly, not an exceptional server
+  // fault to crash on.
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json(
+      { ok: false, errors: { message: "Malformed request body." } },
+      { status: 400 },
+    );
+  }
+
   const data: ContactFormData = {
     name: readField(formData.get("name")),
     email: readField(formData.get("email")),
@@ -67,33 +81,58 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ ok: false, errors }, { status: 422 });
   }
 
-  const apiKey = env.RESEND_API_KEY;
-  const toAddress = env.CONTACT_INBOX_EMAIL;
+  const apiKey = env.MARKETING_SITE_RESEND_API_KEY;
+  const toAddress = env.MARKETING_SITE_CONTACT_INBOX_EMAIL;
 
   if (!apiKey || !toAddress) {
     console.warn(
-      "[api/contact] RESEND_API_KEY or CONTACT_INBOX_EMAIL not set — submission validated but not delivered.",
+      "[api/contact] MARKETING_SITE_RESEND_API_KEY or MARKETING_SITE_CONTACT_INBOX_EMAIL not set — submission validated but not delivered.",
     );
     return NextResponse.json({ ok: true });
   }
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Trady Perch site <contact@tradyperch.com>",
-      to: toAddress,
-      reply_to: data.email,
-      subject: `New inquiry from ${data.name}`,
-      text: `Name: ${data.name}\nEmail: ${data.email}\nCompany: ${data.company || "—"}\n\n${data.message}`,
-    }),
-  });
+  // A newline in `name` would otherwise split the subject header. Resend's
+  // JSON API escapes this itself, so this is defence in depth rather than a
+  // live injection hole — but the subject is built from visitor-supplied
+  // text, so it is collapsed to a single line at the point of use.
+  const safeName = data.name.replace(/\s+/g, " ").trim();
+
+  let response: Response;
+  try {
+    response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: env.MARKETING_SITE_RESEND_FROM_EMAIL,
+        to: toAddress,
+        reply_to: data.email,
+        subject: `New inquiry from ${safeName}`,
+        text: `Name: ${data.name}\nEmail: ${data.email}\nCompany: ${data.company || "—"}\n\n${data.message}`,
+      }),
+    });
+  } catch (cause) {
+    // Ch.27 — a DNS failure, TLS error, or timeout reaching Resend is a
+    // network fault, not a malformed submission. Without this the throw
+    // escapes as an opaque 500 and the visitor's message is lost with no
+    // server-side record of what they wrote.
+    console.error("[api/contact] Could not reach Resend", cause);
+    return NextResponse.json(
+      { ok: false, errors: { message: "Something went wrong sending this — email us directly instead." } },
+      { status: 502 },
+    );
+  }
 
   if (!response.ok) {
-    console.error("[api/contact] Resend delivery failed", await response.text());
+    // Body is logged in full: Resend returns the actionable reason here
+    // (unverified sender domain, invalid key, recipient restriction), and
+    // discarding it would leave a failed delivery undiagnosable.
+    console.error(
+      `[api/contact] Resend delivery failed (${response.status})`,
+      await response.text(),
+    );
     return NextResponse.json(
       { ok: false, errors: { message: "Something went wrong sending this — email us directly instead." } },
       { status: 502 },

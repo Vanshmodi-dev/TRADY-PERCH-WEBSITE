@@ -15,8 +15,26 @@ const MAX_REQUESTS_PER_WINDOW = 5;
 
 const hits = new Map<string, number[]>();
 
+/**
+ * A key's entry is only ever pruned when that same key is seen again, so
+ * without this sweep every distinct client key that ever hit the endpoint
+ * stayed resident for the process's whole lifetime — a slow, unbounded leak
+ * on exactly the public, unauthenticated endpoint most exposed to a wide
+ * spread of source addresses. Swept on write rather than on a timer so the
+ * module stays free of background work and side effects at import time.
+ */
+function evictExpiredKeys(now: number): void {
+  for (const [key, timestamps] of hits) {
+    if (timestamps.every((t) => now - t >= WINDOW_MS)) {
+      hits.delete(key);
+    }
+  }
+}
+
 export function isRateLimited(key: string): boolean {
   const now = Date.now();
+  evictExpiredKeys(now);
+
   const timestamps = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
 
   if (timestamps.length >= MAX_REQUESTS_PER_WINDOW) {
