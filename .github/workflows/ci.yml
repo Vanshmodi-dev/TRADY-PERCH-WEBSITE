@@ -1,0 +1,141 @@
+# Continuous Integration — Product Implementation Constitution Ch.56
+# (Continuous Integration Standard), enforcing Ch.49 (Quality Gates Standard).
+#
+# Job order deliberately mirrors Ch.49 §2's gate sequence: "fastest and
+# cheapest first... a change fails fast, at the cheapest applicable gate,
+# rather than waiting through expensive checks to fail on something a fast
+# check would have caught first." So `static` gates everything after it — a
+# missing semicolon never gets to spend three minutes booting Chromium.
+#
+# Gate coverage vs. Ch.49 §2:
+#   1. Static checks .................. `static` job (lint, typecheck, deps)
+#   2. Unit + integration tests ....... `test` and `accessibility` jobs
+#   3. Build-time budget checks ....... NOT WIRED (see note below)
+#   4. E2E + performance .............. NOT WIRED (see note below)
+#   5. Visual regression .............. does not exist yet (Ch.62 suite unbuilt)
+#   6. Human/AI review ................ branch protection, configured in the
+#                                       repository settings, not in this file
+#
+# Deliberately absent: `npm run test:performance`. It exits non-zero by
+# design on every route — see ADR-0008 and its Chapter 66 register entry —
+# because Ch.36 §2's 2000ms LCP budget is measured under Lighthouse's
+# throttled lab methodology, and the shared framework bundle exceeds it
+# sitewide. Wiring it in as a blocking gate would make CI permanently red and
+# train everyone to ignore it. That register entry's own instruction is
+# explicit: do not "fix" this by loosening the script's threshold or
+# excluding routes. It stays a manually-run check until the underlying
+# bundle-size debt is resolved.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A force-push or a quick follow-up commit shouldn't leave a superseded run
+# burning minutes. In-progress runs for the same ref are cancelled — except
+# on main, where each commit's result is a record worth keeping intact.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# Least privilege: nothing here writes to the repository, publishes a
+# package, or comments on a PR.
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------- Gate 1
+  static:
+    name: Static checks (lint, typecheck, dependencies)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Read from .nvmrc (24.18.0) rather than pinned here, so the CI
+          # runtime and the documented local runtime cannot drift apart.
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` rather than `npm install`: installs exactly the lockfile,
+      # and fails loudly if package.json and package-lock.json disagree.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Ch.49 §2 gate 1 includes a dependency vulnerability scan, and Ch.45 §4
+      # requires it be automatic rather than "a manual, periodic audit someone
+      # has to remember to run". Scoped to production dependencies: a dev-only
+      # advisory in a test runner or linter is not a shipped-code risk, and
+      # blocking every PR on one would make this gate noise.
+      - name: Dependency vulnerability scan
+        run: npm audit --omit=dev --audit-level=high
+
+  # ---------------------------------------------------------------- Gate 2
+  test:
+    name: Unit and integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: static
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Vitest across every workspace (marketing-site + packages/ui).
+      # Includes Ch.18 Layer 2's component-level accessibility assertions
+      # (packages/ui's vitest-axe suite), per Ch.48 §2.
+      - name: Run tests
+        run: npm run test
+
+  # Gate 2 as well, per Ch.48 §2: full-page accessibility properties (heading
+  # hierarchy, focus order across components, landmark structure) "only exist
+  # once multiple components are actually assembled together", so they are
+  # checked at the integration layer. Split into its own job because it is the
+  # only check here needing a real browser — it runs axe-core in real Chromium
+  # against every route, so contrast is measured against real compiled CSS
+  # rather than jsdom's class-name proxies.
+  accessibility:
+    name: Accessibility (axe-core, every route)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: static
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Chromium only — the audit script launches exactly that. `--with-deps`
+      # pulls the OS-level shared libraries headless Chromium needs, which are
+      # not present on a bare runner image.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/marketing-site
+
+      # Self-contained: the script builds the token packages and boots its own
+      # `next dev` instance on port 3100, then tears it down. No separate
+      # server step, and no secrets — it crawls pages, never the contact API.
+      - name: Run accessibility audit
+        run: npm run test:a11y --workspace=@trady-perch/marketing-site
