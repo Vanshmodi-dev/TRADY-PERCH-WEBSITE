@@ -1,146 +1,245 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ParticleField, type FieldStage } from "./field-lines";
 import styles from "./intro-sequence.module.css";
 
 const SESSION_KEY = "tp-intro-shown";
+const WORDMARK = "TRADY PERCH";
 
-type Phase = "silence" | "revealing" | "wordmark" | "tagline" | "hold" | "dissolving" | "done";
+/**
+ * FIELD LINES — the eight-beat opening sequence.
+ *
+ * The conceit: the wordmark is not assembled by particles, it is the shape of
+ * an invisible magnetic field that suspended metallic dust reveals. Beat 3
+ * (ignition — rotation only, no translation) is the signature moment; beat 8
+ * (the pull-back, which discovers the wordmark was etched on an object all
+ * along) is the reveal.
+ *
+ * Total 5000ms. Skippable at any moment, once per session. Both are kept
+ * because they protect the effect rather than dilute it — an unskippable
+ * five-second ceremony on a third visit converts the site's most memorable
+ * moment into its most irritating one.
+ *
+ * The hero underneath is fully server-rendered and present in the DOM from the
+ * first byte; this overlay sits on top of it. A skip, a slow connection, a JS
+ * failure, or reduced motion therefore all resolve to a finished hero rather
+ * than to an empty screen.
+ */
 
-// Full-motion timings (ms). Master Vision §9.2 gives qualitative sequencing
-// (silence, then ignition, then a held pause, then a dissolve) but no exact
-// durations — these are a reasonable, disclosed first-canonical proposal,
-// the same status Ch.15 itself claims for its own token values. `dissolving`
-// specifically must equal `--motion-duration-deliberate` (500ms) exactly —
-// it's both a JS wait and the CSS transition duration the overlay's own
-// opacity fade runs on (intro-sequence.module.css's `.overlay`), and the
-// two silently drifting apart was Milestone 5 review Finding #3.
-const TIMINGS: Partial<Record<Phase, number>> = {
-  silence: 400,
-  revealing: 1400, // golden line ignition (0–55%) + metallic reflection sweep (55–100%), see the CSS
-  wordmark: 500,
-  tagline: 500,
-  hold: 700,
-  dissolving: 500, // must match --motion-duration-deliberate
+type Beat =
+  | "black"
+  | "charge"
+  | "ignition"
+  | "migration"
+  | "settle"
+  | "sweep"
+  | "tagline"
+  | "pullback"
+  | "done";
+
+type ActiveBeat = Exclude<Beat, "done">;
+
+/** Beat durations in ms. Sum: 5000. */
+const BEAT_MS: Record<ActiveBeat, number> = {
+  black: 400,
+  charge: 500,
+  ignition: 700,
+  migration: 1200,
+  settle: 400,
+  sweep: 600,
+  tagline: 400,
+  pullback: 800,
 };
 
-// Ch.15 §4: Ceremonial's reduced-motion companion is "full static
-// presentation, no animation" — not a faster version of the same
-// animation, a genuinely different, instant path (§9.5: "must degrade...
-// rather than being skipped entirely" — still shown once per session,
-// just never animated). `dissolving` must match `--motion-duration-
-// deliberate`'s own reduced-motion companion (150ms) for the same reason
-// as the full-motion value above.
-const REDUCED_TIMINGS: Partial<Record<Phase, number>> = {
-  hold: 900,
-  dissolving: 150,
-};
+const BEAT_ORDER: ActiveBeat[] = [
+  "black",
+  "charge",
+  "ignition",
+  "migration",
+  "settle",
+  "sweep",
+  "tagline",
+  "pullback",
+];
 
-const FULL_ORDER: Phase[] = ["silence", "revealing", "wordmark", "tagline", "hold", "dissolving"];
-const REDUCED_ORDER: Phase[] = ["hold", "dissolving"];
+/** Which physics stage each beat drives the field into. */
+const BEAT_STAGE: Record<ActiveBeat, FieldStage> = {
+  black: "charge",
+  charge: "charge",
+  ignition: "align",
+  migration: "migrate",
+  settle: "settle",
+  sweep: "formed",
+  tagline: "formed",
+  pullback: "formed",
+};
 
 const SKIP_EVENTS = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
 
-function markSessionShown() {
+/** How long the static (reduced-motion / no-canvas) presentation is held
+ *  before dissolving. Content is still delivered — §9.5 requires the intro
+ *  degrade rather than be skipped outright. */
+const STATIC_HOLD_MS = 1400;
+
+function markSessionShown(): void {
   try {
     sessionStorage.setItem(SESSION_KEY, "1");
   } catch {
-    // Private-browsing/storage-disabled contexts — the intro simply shows
-    // again next load, a harmless degradation, not a crash.
+    // Storage-disabled contexts simply show the sequence again next load —
+    // a harmless degradation, not a failure worth handling further.
   }
 }
 
-/**
- * Master Vision §9.2 (Intro Experience). Homepage-only, not the root
- * layout — step 7 is explicitly "dissolve into the homepage... hero
- * content beneath already faintly present," which only makes sense
- * arriving at the homepage specifically. A visitor landing directly on an
- * interior page (a shared /solutions/ai-agents link, say) never sees this
- * at all: there's no hero underneath to dissolve into.
- *
- * No literal vector trace of the TP monogram's exact geometry — there's
- * no vector source art in this repo, only the raster /logo-mark.jpeg, and
- * hand-approximating its bezier curves risks a visible mismatch against
- * the real mark on the site's single most scrutinized moment. Instead,
- * the real asset is progressively revealed via a sliding cover panel
- * (transform only — see the CSS for why this replaced an earlier
- * clip-path approach, Ch.40 Ag-1), paired with a leading bright edge that
- * reads as the line "switching on" the geometry as it goes (§9.2 step 2's
- * own language) — genuinely accurate to the mark, not an approximation of
- * it. The reflection sweep (step 3) is masked to the logo image's own
- * luminance, so it only lights up the gold letterforms, never the black
- * square around them.
- */
 export function IntroSequence() {
-  const [phase, setPhase] = useState<Phase>("silence");
+  const [beat, setBeat] = useState<Beat>("black");
   const [reducedMotion, setReducedMotion] = useState(false);
-  // Defaults to true (render nothing) until the real session check
-  // resolves client-side — safer than defaulting to false, which would
-  // briefly show the overlay to a returning visitor before hiding it.
-  const [skippedThisSession, setSkippedThisSession] = useState(true);
-  // Milestone 5 review Finding #5: skipping while still in "silence" (the
-  // mark has never appeared yet) must not let the mark/reflection start
-  // their entrance animation in the same instant the overlay starts
-  // dissolving — that's a fresh 2-element animation stacked on top of the
-  // overlay's own fade, a 3-way-simultaneous moment that also looks like
-  // a flicker, not a dismissal. This flag keeps the mark suppressed for
-  // the rest of this visit once that specific case happens.
-  const [skippedFromSilence, setSkippedFromSilence] = useState(false);
+  // Defaults to "already shown" so a returning visitor never sees a flash of
+  // overlay before the session check resolves.
+  const [alreadyShown, setAlreadyShown] = useState(true);
+  const [environmentResolved, setEnvironmentResolved] = useState(false);
+  const [fieldFailed, setFieldFailed] = useState(false);
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fieldRef = useRef<ParticleField | null>(null);
+  // Mirrored into a ref so the skip listener, which is registered once, can
+  // read the live beat without being torn down and re-added on every
+  // transition. Synced in an effect rather than during render — a ref write
+  // during render is not a rendering concern and React lints it as such.
+  const beatRef = useRef<Beat>(beat);
   useEffect(() => {
-    // Reading sessionStorage/matchMedia is a one-time environment check,
-    // not a subscription to an external system's changes — there's
-    // nothing to "call setState in a callback" in response to. Deferred
-    // one tick (react-hooks/set-state-in-effect) purely to keep this a
-    // callback rather than a synchronous effect-body call; the practical
-    // delay is imperceptible, and computing it during render instead
-    // would read `window`/`sessionStorage` on the server, which don't exist.
+    beatRef.current = beat;
+  }, [beat]);
+
+  // One-time environment read, deferred a tick so this stays a callback rather
+  // than a synchronous setState in an effect body, and so `window` is never
+  // touched during server render.
+  useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      let alreadyShown = true;
+      let shown = true;
       try {
-        alreadyShown = Boolean(sessionStorage.getItem(SESSION_KEY));
+        shown = Boolean(sessionStorage.getItem(SESSION_KEY));
       } catch {
-        alreadyShown = false;
+        shown = false;
       }
-      setSkippedThisSession(alreadyShown);
+      setAlreadyShown(shown);
       setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      setEnvironmentResolved(true);
     }, 0);
     return () => window.clearTimeout(timeoutId);
   }, []);
 
-  useEffect(() => {
-    if (skippedThisSession || phase === "done") return;
+  const staticPath = reducedMotion || fieldFailed;
+  const shouldRunCeremony = environmentResolved && !alreadyShown && !staticPath;
 
-    const order = reducedMotion ? REDUCED_ORDER : FULL_ORDER;
-    const currentIndex = order.indexOf(phase);
-    // `phase` starts at "silence", which isn't on the reduced-motion
-    // path — treated as "jump straight to that path's own first step,
-    // immediately" (duration 0) rather than a separate synchronous
-    // setState call.
-    const duration = currentIndex === -1 ? 0 : ((reducedMotion ? REDUCED_TIMINGS[phase] : TIMINGS[phase]) ?? 0);
+  const finish = useCallback(() => {
+    markSessionShown();
+    setBeat("done");
+  }, []);
+
+  // Reduced motion: Ch.15 Mt-4's Ceremonial companion is a full static
+  // presentation, not a faster animation. The wordmark shows as plain type for
+  // a held moment, then dissolves.
+  useEffect(() => {
+    if (!environmentResolved || alreadyShown || !staticPath) return;
+    const timeoutId = window.setTimeout(finish, STATIC_HOLD_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [environmentResolved, alreadyShown, staticPath, finish]);
+
+  // Field lifecycle. Created only once the ceremony is confirmed to be
+  // running, so returning and reduced-motion visitors never pay for any canvas
+  // work at all.
+  useEffect(() => {
+    if (!shouldRunCeremony) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const field = new ParticleField(canvas, { wordmark: WORDMARK });
+    fieldRef.current = field;
+
+    const applySize = () => {
+      const scale = Math.min(2, window.devicePixelRatio || 1);
+      field.resize(window.innerWidth, window.innerHeight, scale);
+    };
+
+    applySize();
+
+    if (!field.isReady()) {
+      // No 2D context, or the wordmark rasterised to nothing. Degrade to the
+      // static path rather than holding an empty black overlay.
+      field.destroy();
+      fieldRef.current = null;
+      setFieldFailed(true);
+      return;
+    }
+
+    field.start();
+
+    let resizeFrame = 0;
+    const onResize = () => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(applySize);
+    };
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      cancelAnimationFrame(resizeFrame);
+      window.removeEventListener("resize", onResize);
+      field.destroy();
+      fieldRef.current = null;
+    };
+  }, [shouldRunCeremony]);
+
+  // Beat clock.
+  useEffect(() => {
+    if (!shouldRunCeremony || beat === "done") return;
+
+    const activeBeat = beat as ActiveBeat;
+    const index = BEAT_ORDER.indexOf(activeBeat);
+    if (index === -1) return;
+
+    fieldRef.current?.setStage(BEAT_STAGE[activeBeat]);
 
     const timeoutId = window.setTimeout(() => {
-      const next = currentIndex === -1 ? order[0] : order[currentIndex + 1];
-      if (next) {
-        setPhase(next);
-      } else {
-        markSessionShown();
-        setPhase("done");
-      }
-    }, duration);
-    return () => window.clearTimeout(timeoutId);
-  }, [phase, reducedMotion, skippedThisSession]);
+      const next = BEAT_ORDER[index + 1];
+      if (next) setBeat(next);
+      else finish();
+    }, BEAT_MS[activeBeat]);
 
-  // Milestone 5 review Finding #4: while the overlay is up, the real
-  // homepage underneath must not scroll — a visitor's most natural
-  // "get me past this" gesture is to scroll, which is also a skip
-  // trigger below, and without a lock that same scroll would move the
-  // real page behind the opaque overlay, so it can land partway down the
-  // page once the overlay dissolves instead of at the hero (contradicting
-  // §9.2 step 7's "dissolve into the homepage... hero content beneath").
+    return () => window.clearTimeout(timeoutId);
+  }, [beat, shouldRunCeremony, finish]);
+
+  // The sweep (beat 6) is driven per frame rather than by CSS, because the
+  // particles themselves must brighten as it crosses them — that is what sells
+  // the state change from dust to solid metal.
   useEffect(() => {
-    if (skippedThisSession || phase === "done" || phase === "dissolving") {
+    if (!shouldRunCeremony || beat !== "sweep") return;
+    const field = fieldRef.current;
+    if (!field) return;
+
+    const start = performance.now();
+    let frameId = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / BEAT_MS.sweep);
+      field.setSweep(progress);
+      if (progress < 1) frameId = requestAnimationFrame(tick);
+      else field.setSweep(-1);
+    };
+    frameId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      field.setSweep(-1);
+    };
+  }, [beat, shouldRunCeremony]);
+
+  // Scroll lock while the overlay is up. A visitor's most natural "get past
+  // this" gesture is to scroll, which is also a skip trigger — without the
+  // lock, that same scroll moves the real page behind the overlay and the
+  // sequence resolves partway down the document instead of at the hero.
+  useEffect(() => {
+    const overlayUp = environmentResolved && !alreadyShown && beat !== "done";
+    if (!overlayUp) {
       document.body.style.overflow = "";
       return;
     }
@@ -148,94 +247,66 @@ export function IntroSequence() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [skippedThisSession, phase]);
+  }, [environmentResolved, alreadyShown, beat]);
 
-  const phaseRef = useRef(phase);
+  // Skip. Registered once; reads the live beat through a ref.
   useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
+    if (!environmentResolved || alreadyShown) return;
 
-  // Registers once (not per phase change) — `phaseRef` keeps `skip` reading
-  // the current phase regardless, so there's nothing to gain from tearing
-  // listeners down and re-adding them on every transition.
-  useEffect(() => {
-    if (skippedThisSession) return;
-
-    function skip() {
-      if (phaseRef.current === "dissolving" || phaseRef.current === "done") return;
-      if (phaseRef.current === "silence") setSkippedFromSilence(true);
-      setPhase("dissolving");
-    }
+    const skip = () => {
+      if (beatRef.current === "done") return;
+      finish();
+    };
 
     for (const eventName of SKIP_EVENTS) {
-      window.addEventListener(eventName, skip, { once: true });
+      window.addEventListener(eventName, skip, { once: true, passive: true });
     }
     return () => {
       for (const eventName of SKIP_EVENTS) {
         window.removeEventListener(eventName, skip);
       }
     };
-  }, [skippedThisSession]);
+  }, [environmentResolved, alreadyShown, finish]);
 
-  // Milestone 8 (Ch.36 LCP budget): "done" still unmounts entirely — by
-  // then the sequence has fully played and LCP has long since resolved,
-  // so there's nothing left to preserve in the DOM. "skippedThisSession"
-  // no longer does — see styles.hidden (and its own comment) for why the
-  // markup, and specifically the <Image priority> below, now renders
-  // unconditionally instead of being kept out of the DOM behind an early
-  // `return null` until a client-side sessionStorage check resolved. That
-  // check previously delayed the image's own existence in the DOM (and
-  // therefore the browser's ability to even discover and start fetching
-  // it) until after hydration — measured as 1.4s of pure "Load Delay" on
-  // the homepage's LCP, since this image is the LCP element.
-  if (phase === "done") return null;
-
-  const markVisible = phase !== "silence" && !skippedFromSilence;
-  const wordmarkVisible = phase === "wordmark" || phase === "tagline" || phase === "hold";
-  const taglineVisible = phase === "tagline" || phase === "hold";
-
-  return (
-    <div
-      className={[
+  const overlayClassName = useMemo(
+    () =>
+      [
         styles.overlay,
-        skippedThisSession && styles.hidden,
-        phase === "dissolving" && styles.dissolving,
+        alreadyShown && styles.hidden,
+        beat === "pullback" && styles.pullback,
+        staticPath && styles.staticPath,
       ]
         .filter(Boolean)
-        .join(" ")}
-      role="presentation"
-      aria-hidden="true"
-    >
-      <div
-        className={[
-          styles.mark,
-          markVisible && !reducedMotion && styles.revealing,
-          markVisible && reducedMotion && styles.instant,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        <Image
-          className={styles.logoImg}
-          src="/logo-mark.jpeg"
-          alt=""
-          fill
-          sizes="220px"
-          priority
-        />
-        {!reducedMotion ? (
-          <>
-            <span className={styles.wipeCover} />
-            <span className={styles.reflection} />
-          </>
-        ) : null}
+        .join(" "),
+    [alreadyShown, beat, staticPath],
+  );
+
+  if (beat === "done") return null;
+
+  // During the ceremony the etched wordmark stays dark until the sweep lights
+  // it — at that moment the dust has "become" this solid form, and the
+  // particles still on screen behind it read as the same object.
+  const wordmarkLit = staticPath || beat === "sweep" || beat === "tagline" || beat === "pullback";
+  const taglineVisible = staticPath || beat === "tagline" || beat === "pullback";
+
+  return (
+    <div className={overlayClassName} role="presentation" aria-hidden="true">
+      {shouldRunCeremony ? <canvas ref={canvasRef} className={styles.canvas} /> : null}
+
+      <div className={styles.plate}>
+        <p
+          className={[styles.wordmark, wordmarkLit && styles.wordmarkLit].filter(Boolean).join(" ")}
+        >
+          {WORDMARK}
+        </p>
+        <p
+          className={[styles.tagline, taglineVisible && styles.taglineVisible]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          Build. Automate. Grow.
+        </p>
       </div>
-      <p className={[styles.wordmark, wordmarkVisible && styles.visible].filter(Boolean).join(" ")}>
-        TRADY PERCH
-      </p>
-      <p className={[styles.tagline, taglineVisible && styles.visible].filter(Boolean).join(" ")}>
-        Build. Automate. Grow.
-      </p>
     </div>
   );
 }
