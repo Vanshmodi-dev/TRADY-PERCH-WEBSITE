@@ -1,29 +1,60 @@
+import { Button } from "@trady-perch/ui";
+import { NextLinkAdapter } from "@/shared/components/next-link-adapter";
+import { HeroCore } from "./hero-core";
 import styles from "./hero.module.css";
 
 /**
- * Master Vision Ch.13, item 2. Purpose: answer "what is this, in one
- * sentence" and set the tonal register in the first viewport. No CTA here
- * — Ch.5.2's single-CTA physics means the nav's "Book a Strategy Call" is
- * the page's only Primary-emphasis action; a second one here would compete
- * with it for the entire rest of the page, since the nav is always visible.
+ * THE HERO — asymmetric composition, type left, the Core right.
  *
- * The full ceremonial intro sequence (Ch.9.2 — golden line ignition,
- * reflection sweep, wordmark resolution) is a deliberately deferred,
- * separate set-piece for Milestone 5 (Interactive elements & animations).
- * This section ships with a real, spec-compliant staggered entrance
- * (Ch.10.3) so the homepage is complete and correct without it.
+ * Deliberately not centred. Centring turns the object into a hero image;
+ * placing it off-axis makes it a subject in a room, with the type block
+ * holding the entry point. On narrow viewports the two stack, type first —
+ * the claim is never below the object at any width.
+ *
+ * This is a server component. The headline, supporting copy and both CTAs are
+ * in the initial HTML, so the intro overlay always dissolves into a finished
+ * hero and a JS failure or slow connection still delivers the full message.
+ * Only the Core, which is decorative, is client-side.
+ *
+ * Choreography: eyebrow, headline, supporting copy, actions, then the object —
+ * a staggered settle on the Entrance curve, mount-triggered rather than
+ * scroll-triggered, because the hero is the one section already in view.
  */
 export function Hero() {
   return (
     <section className={styles.hero} aria-labelledby="hero-heading">
-      <p className={styles.tagline}>Build. Automate. Grow.</p>
-      <h1 id="hero-heading" className={styles.headline}>
-        The manual work slowing your business down, rebuilt into systems that run themselves.
-      </h1>
-      <p className={styles.subheadline}>
-        Trady Perch designs and deploys AI agents, workflow automation, and custom integrations for
-        established businesses ready to stop doing everything by hand.
-      </p>
+      <div className={styles.grid}>
+        <div className={styles.copy}>
+          <p className={styles.eyebrow}>Build. Automate. Grow.</p>
+
+          <h1 id="hero-heading" className={styles.headline}>
+            The manual work slowing your business down, rebuilt into systems that run themselves.
+          </h1>
+
+          <p className={styles.subheadline}>
+            Trady Perch designs and deploys AI agents, workflow automation, and custom integrations
+            for established businesses ready to stop doing everything by hand.
+          </p>
+
+          <div className={styles.actions}>
+            <Button href="/contact" linkComponent={NextLinkAdapter} size="lg">
+              Book a Strategy Call
+            </Button>
+            <Button
+              href="/#ai-demo-heading"
+              linkComponent={NextLinkAdapter}
+              emphasis="ghost"
+              size="lg"
+            >
+              See it in action
+            </Button>
+          </div>
+        </div>
+
+        <div className={styles.object}>
+          <HeroCore />
+        </div>
+      </div>
     </section>
   );
 }
