@@ -1,0 +1,255 @@
+.section {
+  composes: section from "../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+}
+
+.srOnly {
+  composes: srOnly from "../../../shared/components/section.module.css";
+}
+
+.heading {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  text-align: center;
+  margin: 0 0 var(--semantic-space-gap-related-items);
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.subheading {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-align: center;
+  margin: 0 0 var(--core-space-12);
+}
+
+.tableWrap {
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  border-radius: var(--semantic-radius-card);
+  background-color: var(--semantic-color-surface-card);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE / TABLET (< 1024px): each row becomes its own stacked card.
+
+   Switching table display boxes to `block` is what makes this layout work and
+   is also what strips a table's implicit semantics — which is why every
+   element in pricing-comparison.tsx carries an explicit ARIA role. Explicit
+   roles survive the display change; implicit ones do not.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .tableWrap {
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  .table,
+  .tbody,
+  .row,
+  .rowHead,
+  .cell,
+  .groupRow,
+  .groupLabel {
+    display: block;
+    width: 100%;
+  }
+
+  /* Visually removed, deliberately NOT `display: none`. The explicit
+     role="columnheader" cells stay in the accessibility tree so a screen
+     reader still associates each value with its tier — the visible
+     `data-tier` label below is the sighted equivalent of the same thing.
+     Written out rather than `composes`d because CSS Modules only permits
+     composes on a top-level simple selector, never inside a media query. */
+  .thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .groupLabel {
+    font-size: var(--core-type-label-size-mobile);
+    font-weight: var(--core-type-label-weight);
+    letter-spacing: var(--core-type-label-tracking);
+    text-transform: uppercase;
+    color: var(--semantic-color-accent-primary);
+    padding: 0 0 var(--semantic-space-gap-related-items);
+    margin-top: var(--core-space-12);
+    text-align: left;
+  }
+
+  .tbody:first-of-type .groupLabel {
+    margin-top: 0;
+  }
+
+  .row {
+    border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+    border-radius: var(--semantic-radius-card);
+    background-color: var(--semantic-color-surface-card);
+    padding: var(--semantic-space-padding-component-md);
+    margin-bottom: var(--semantic-space-gap-related-items);
+  }
+
+  .rowHead {
+    font-size: var(--core-type-body-size-mobile);
+    font-weight: var(--core-type-h3-weight);
+    color: var(--semantic-color-text-primary);
+    padding: 0 0 var(--semantic-space-gap-related-items);
+    border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+    margin-bottom: var(--semantic-space-gap-related-items);
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--semantic-space-gap-related-items);
+    padding-block: var(--core-space-2);
+    min-height: 32px;
+  }
+
+  /* Restores the column header that stacking removed. */
+  .cell::before {
+    content: attr(data-tier);
+    font-size: var(--core-type-caption-size-mobile);
+    color: var(--semantic-color-text-secondary);
+  }
+
+  .cellFeatured::before {
+    color: var(--semantic-color-accent-primary);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   DESKTOP (>= 1024px): a genuine table.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .thead th {
+    padding: var(--semantic-space-padding-component-md);
+    border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  }
+
+  .rowHeadCol {
+    font-size: var(--core-type-label-size-desktop);
+    font-weight: var(--core-type-label-weight);
+    letter-spacing: var(--core-type-label-tracking);
+    text-transform: uppercase;
+    /* Ch.53 1.4.3 — text.tertiary is under AA's 4.5:1 floor here. See
+       pricing-roi.module.css's .tileLabel for the measured ratios. */
+    color: var(--semantic-color-text-secondary);
+    width: 34%;
+  }
+
+  .tierHead {
+    font-size: var(--core-type-h3-size-mobile);
+    font-weight: var(--core-type-h3-weight);
+    color: var(--semantic-color-text-primary);
+    text-align: center;
+    width: 22%;
+  }
+
+  .tierHeadFeatured {
+    color: var(--semantic-color-accent-primary);
+  }
+
+  .groupLabel {
+    font-size: var(--core-type-label-size-desktop);
+    font-weight: var(--core-type-label-weight);
+    letter-spacing: var(--core-type-label-tracking);
+    text-transform: uppercase;
+    color: var(--semantic-color-accent-primary);
+    text-align: left;
+    padding: var(--semantic-space-padding-component-md) var(--semantic-space-padding-component-md)
+      var(--core-space-2);
+    background-color: var(--semantic-color-background-secondary);
+  }
+
+  .row {
+    border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+    transition: background-color var(--motion-duration-quick) var(--motion-easing-entrance);
+  }
+
+  .row:hover {
+    background-color: var(--semantic-color-surface-card-hover);
+  }
+
+  .rowHead {
+    font-size: var(--core-type-body-size-desktop);
+    font-weight: var(--core-type-body-weight);
+    color: var(--semantic-color-text-secondary);
+    padding: var(--semantic-space-padding-component-md);
+  }
+
+  .cell {
+    text-align: center;
+    padding: var(--semantic-space-padding-component-md);
+    vertical-align: middle;
+  }
+
+  /* The featured tier's column is tinted end to end so the eye can track it
+     down a long table without re-reading the header. */
+  .cellFeatured {
+    background-color: rgba(201, 162, 75, 0.04);
+  }
+
+  /* data-tier is only needed by the stacked layout. */
+  .cell::before {
+    content: none;
+  }
+}
+
+.valueText {
+  font-size: var(--core-type-body-size-mobile);
+  color: var(--semantic-color-text-primary);
+}
+
+@media (min-width: 1024px) {
+  .valueText {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+.included {
+  width: var(--core-icon-size-20);
+  height: var(--core-icon-size-20);
+  color: var(--semantic-color-accent-primary);
+}
+
+/* Ch.53 1.4.11: an excluded mark still has to clear the 3:1 non-text contrast
+   floor against surface.card — text-tertiary (gray.600) does; a dimmer grey
+   chosen purely to "recede" would not. */
+.excluded {
+  width: var(--core-icon-size-20);
+  height: var(--core-icon-size-20);
+  color: var(--semantic-color-text-tertiary);
+}
+
+@media (min-width: 1024px) {
+  .included,
+  .excluded {
+    display: inline-block;
+  }
+}

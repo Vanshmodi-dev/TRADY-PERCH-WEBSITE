@@ -1,0 +1,123 @@
+.section {
+  composes: section from "../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+}
+
+.heading {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  text-align: center;
+  max-width: 22ch;
+  margin: 0 auto var(--core-space-12);
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-related-items);
+  padding: var(--semantic-space-padding-component-lg);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  border-radius: var(--semantic-radius-card);
+  background-color: var(--semantic-color-surface-card);
+
+  /* Ch.40 Ag-1's closed property set — border-color and box-shadow only, no
+     background-image or filter anywhere in this file. */
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+
+  /* Ag-2 caps simultaneous animation at three elements. The stagger exists so
+     four cards arriving together resolve as a sequence rather than a single
+     four-element event; 60ms is below the Quick tier so the whole run still
+     completes inside one Standard duration. */
+  transition-delay: calc(var(--stagger, 0) * 60ms);
+}
+
+@media (hover: hover) {
+  .item:hover {
+    transform: translateY(-4px);
+    border-color: var(--semantic-color-accent-primary);
+    /* Soft gold bloom — a low-opacity spread of the accent, not a glow filter. */
+    box-shadow:
+      var(--semantic-elevation-card-hover),
+      0 0 0 1px rgba(201, 162, 75, 0.16),
+      0 12px 32px -12px rgba(201, 162, 75, 0.28);
+  }
+}
+
+.glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--core-space-12);
+  height: var(--core-space-12);
+  border-radius: var(--semantic-radius-control);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  color: var(--semantic-color-accent-primary);
+  transition: border-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.glyph svg {
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+}
+
+@media (hover: hover) {
+  .item:hover .glyph {
+    border-color: var(--semantic-color-accent-primary);
+  }
+}
+
+.itemTitle {
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+.itemBody {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .itemBody {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}

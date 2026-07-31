@@ -1,0 +1,22 @@
+.section {
+  composes: section from "../../../shared/components/section.module.css";
+  padding-bottom: 0;
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Ch.5.3: gold is an accent that earns its meaning by scarcity. A 64px hairline
+   rule is the smallest mark that reads as deliberate punctuation rather than a
+   decorative flourish. */
+.divider {
+  width: var(--core-space-16);
+  height: var(--core-border-thick);
+  margin-top: var(--semantic-space-padding-component-lg);
+  border-radius: var(--semantic-radius-pill);
+  background-color: var(--semantic-color-accent-primary);
+}

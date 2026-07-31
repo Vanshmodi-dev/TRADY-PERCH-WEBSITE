@@ -1,0 +1,318 @@
+.section {
+  composes: sectionAlt from "../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+}
+
+.srOnly {
+  composes: srOnly from "../../../shared/components/section.module.css";
+}
+
+.intro {
+  text-align: center;
+  margin-bottom: var(--core-space-12);
+}
+
+.eyebrow {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  line-height: var(--core-type-label-line-height);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+  margin: 0 0 var(--semantic-space-gap-related-items);
+}
+
+.heading {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  max-width: 24ch;
+  margin: 0 auto var(--semantic-space-gap-stack);
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.description {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .description {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+.panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+  padding: var(--semantic-space-padding-component-lg);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  border-radius: var(--semantic-radius-card);
+  background-color: var(--semantic-color-surface-card);
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    /* Controls take the narrower column: five short rows against four result
+       tiles that carry the large figures the section exists to show. */
+    grid-template-columns: 5fr 6fr;
+    gap: var(--core-space-16);
+    padding: var(--core-space-12);
+  }
+}
+
+/* ── Controls ─────────────────────────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+}
+
+.controlHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--semantic-space-gap-related-items);
+}
+
+.controlLabel {
+  font-size: var(--core-type-body-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-text-primary);
+  cursor: pointer;
+}
+
+.controlValue {
+  font-size: var(--core-type-body-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  color: var(--semantic-color-accent-primary);
+  white-space: nowrap;
+  /* Tabular figures stop the readout re-flowing its neighbours as digits
+     change width mid-drag. */
+  font-variant-numeric: tabular-nums;
+}
+
+.controlHint {
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+/*
+ * Range input. Styled from scratch on both engines because a native range
+ * track/thumb ignores every colour token this system defines.
+ * `appearance: none` removes only the paint — the element stays a real
+ * <input type="range">, so keyboard operation (arrows, Home/End, PageUp/Down)
+ * and the AT range role are untouched.
+ */
+.slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 24px; /* Ch.18 §9 touch target — the visible track is 4px, the hit area is not. */
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* `--fill` is set per-input in pricing-roi.tsx. The gradient's two hard stops
+   at the same position paint a filled portion without a second element, and
+   the property is only ever *set*, never transitioned — Ch.40 Ag-1's closed
+   list governs what may animate, and nothing here does. */
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: var(--semantic-radius-pill);
+  background-color: var(--semantic-color-background-secondary);
+  background-image: linear-gradient(
+    to right,
+    var(--semantic-color-accent-primary) 0 var(--fill, 0%),
+    transparent var(--fill, 0%) 100%
+  );
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.slider::-moz-range-track {
+  height: 4px;
+  border-radius: var(--semantic-radius-pill);
+  background-color: var(--semantic-color-background-secondary);
+  background-image: linear-gradient(
+    to right,
+    var(--semantic-color-accent-primary) 0 var(--fill, 0%),
+    transparent var(--fill, 0%) 100%
+  );
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--semantic-radius-pill);
+  background-color: var(--semantic-color-accent-primary);
+  border: var(--core-border-thick) solid var(--semantic-color-background-primary);
+  /* Centres an 18px thumb on a 4px track: (4 - 18) / 2, plus the 1px track border. */
+  margin-top: -8px;
+  transition:
+    transform var(--motion-duration-quick) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--semantic-radius-pill);
+  background-color: var(--semantic-color-accent-primary);
+  border: var(--core-border-thick) solid var(--semantic-color-background-primary);
+  transition:
+    transform var(--motion-duration-quick) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.slider:hover::-webkit-slider-thumb {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 6px rgba(201, 162, 75, 0.14);
+}
+
+.slider:hover::-moz-range-thumb {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 6px rgba(201, 162, 75, 0.14);
+}
+
+/* The gold thumb sits on gold focus ring by default, which reads as no change
+   at all — the ring is offset onto the dark track instead. */
+.slider:focus-visible {
+  outline: 2px solid var(--semantic-color-focus-ring);
+  outline-offset: 4px;
+  border-radius: var(--semantic-radius-pill);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slider:hover::-webkit-slider-thumb,
+  .slider:hover::-moz-range-thumb {
+    transform: none;
+  }
+}
+
+/* ── Results ──────────────────────────────────────────────────────────── */
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-related-items);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+  padding: var(--semantic-space-padding-component-md);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  border-radius: var(--semantic-radius-control);
+  background-color: var(--semantic-color-background-secondary);
+}
+
+/*
+ * The emphasised tile carries gold on its border and its value only — no
+ * background wash.
+ *
+ * Two reasons, and they agree. Ch.27's "gold is accent-only, never a theme"
+ * argues against a gold field behind text. And the wash it replaces (a 0.06
+ * alpha over background.secondary) lightened the surface to #262422, which
+ * dropped this tile's label and caption to 6.5:1 — still AA, but the only
+ * AAA-advisory finding on the site, against a Ch.53 Ax-3 target of AAA for
+ * body copy. Removing it returns the surface to #141416 and the text to
+ * 7.6:1, clearing AAA outright.
+ */
+.tileEmphasis {
+  border-color: var(--semantic-color-accent-primary);
+}
+
+.tileLabel {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  line-height: var(--core-type-label-line-height);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  /* Ch.53 1.4.3 — NOT text.tertiary. gray.600 computes to 3.63:1 against
+     background.secondary and 3.05:1 inside the emphasised tile, both under
+     AA's 4.5:1 floor for text this size; caught by the axe audit. gray.400
+     clears it at 7.6:1 / 6.5:1 while still reading as a recessive label. */
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+.tileValue {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+  /* Non-negotiable on a counting number: proportional digits change width as
+     they animate and make the whole tile jitter horizontally. */
+  font-variant-numeric: tabular-nums;
+}
+
+.tileEmphasis .tileValue {
+  color: var(--semantic-color-accent-primary);
+}
+
+@media (min-width: 1024px) {
+  .tileValue {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.tileCaption {
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+.disclaimer {
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+  /* Ch.53 1.4.3 — see .tileLabel. A disclaimer is exactly the text a visitor
+     is most likely to need to read carefully; recessive cannot mean unreadable. */
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+  padding-top: var(--semantic-space-padding-component-sm);
+  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}

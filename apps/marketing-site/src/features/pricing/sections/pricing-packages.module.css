@@ -1,0 +1,308 @@
+.section {
+  composes: sectionAlt from "../../../shared/components/section.module.css";
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+}
+
+.heading {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  text-align: center;
+  margin: 0 0 var(--semantic-space-gap-related-items);
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+}
+
+.subheading {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-align: center;
+  max-width: 62ch;
+  margin: 0 auto var(--core-space-12);
+}
+
+@media (min-width: 1024px) {
+  .subheading {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+/* Ch.7 permits the symmetric 4/4/4 span specifically for "three pricing tiers
+   before selection". Below Desktop the tiers stack in DOM order — Launch,
+   Growth, Scale — so the progression still reads as a progression. */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--semantic-space-gap-grid);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    /* Vertical room for the featured card's -8px lift so it is never clipped
+       by the grid's own bounds. */
+    padding-block: var(--core-space-2);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-stack);
+  height: 100%;
+  padding: var(--semantic-space-padding-component-lg);
+  background-color: var(--semantic-color-surface-card);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  border-radius: var(--semantic-radius-card);
+
+  /* Ch.40 Ag-1's closed set only. */
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--semantic-color-accent-primary);
+    box-shadow:
+      var(--semantic-elevation-card-hover),
+      0 0 0 1px rgba(201, 162, 75, 0.16),
+      0 16px 40px -16px rgba(201, 162, 75, 0.3);
+  }
+}
+
+/* The featured tier. "Slightly larger" is expressed as more internal room and a
+   standing lift rather than a transform: scale(), which would resample the
+   card's text and leave it visibly softer than its two neighbours. */
+.featured {
+  border-color: var(--semantic-color-accent-primary);
+  box-shadow:
+    var(--semantic-elevation-overlay),
+    0 0 0 1px rgba(201, 162, 75, 0.22);
+}
+
+@media (min-width: 1024px) {
+  .featured {
+    padding-block: var(--core-space-12);
+    transform: translateY(-8px);
+  }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .featured:hover {
+    transform: translateY(-12px);
+  }
+}
+
+/* Ch.15 Mt-4 / Ag-3: distance collapses to zero under reduced motion, matching
+   how packages/ui's Reveal handles the same concern. The lift is decorative;
+   the gold border carries the same "this is the recommended tier" meaning
+   without any movement at all. */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .featured,
+  .card:hover,
+  .featured:hover {
+    transform: none;
+  }
+}
+
+/* Height is reserved whether or not this row has a badge in it — see the
+   comment at its point of use. 24px is the sm Badge's rendered height. */
+.badgeRow {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 24px;
+}
+
+.cardHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+}
+
+/* The tier name outranks the investment slot deliberately. With figures off,
+   all three cards read "Custom Quote" — at the larger of the two sizes that
+   repeated phrase became the loudest thing in the section and pushed the one
+   word that distinguishes the cards into second place. */
+.tierName {
+  font-size: var(--core-type-h3-size-desktop);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .tierName {
+    font-size: var(--core-type-h2-size-desktop);
+    font-weight: var(--core-type-h2-weight);
+    line-height: var(--core-type-h2-line-height);
+  }
+}
+
+.positioning {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+.investment {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+  padding-block: var(--semantic-space-padding-component-md);
+  border-block: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.investmentPrefix {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  line-height: var(--core-type-label-line-height);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  /* Ch.53 1.4.3 — text.tertiary (gray.600) is under AA's 4.5:1 floor on every
+     surface this page uses. See pricing-roi.module.css's .tileLabel. */
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+.investmentAmount {
+  font-size: var(--core-type-h3-size-desktop);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+  /* Matters once PRICING_SHOW_AMOUNTS is on: proportional digits make three
+     stacked rupee figures visibly fail to align down the row of cards. */
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1024px) {
+  .investmentAmount {
+    font-size: var(--core-type-h2-size-mobile);
+  }
+}
+
+.investmentNote {
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-caption-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .investmentNote {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--semantic-space-gap-related-items);
+  margin: 0;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+}
+
+.metaLabel {
+  font-size: var(--core-type-label-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  line-height: var(--core-type-label-line-height);
+  letter-spacing: var(--core-type-label-tracking);
+  text-transform: uppercase;
+  /* Ch.53 1.4.3 — see .investmentPrefix. */
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+.metaValue {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-primary);
+  margin: 0;
+}
+
+.inherits {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  margin: 0;
+}
+
+.inherits strong {
+  color: var(--semantic-color-text-primary);
+  font-weight: var(--core-type-h3-weight);
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-gap-related-items);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--semantic-space-gap-icon-label);
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+}
+
+@media (min-width: 1024px) {
+  .feature {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.featureIcon {
+  width: var(--core-icon-size-20);
+  height: var(--core-icon-size-20);
+  flex-shrink: 0;
+  color: var(--semantic-color-accent-primary);
+  /* Optical alignment with the first line of label text rather than its box. */
+  margin-top: 2px;
+}
+
+.cardFooter {
+  margin-top: auto;
+  padding-top: var(--semantic-space-padding-component-sm);
+}
+
+.cardCta {
+  width: 100%;
+  justify-content: center;
+}
+
+/* The recommended tier's action, carrying the accent as an outline only. Not
+   Ch.18's filled Primary treatment — that stays reserved for the nav CTA. */
+.cardCtaFeatured {
+  border-color: var(--semantic-color-accent-primary);
+  color: var(--semantic-color-accent-primary);
+}

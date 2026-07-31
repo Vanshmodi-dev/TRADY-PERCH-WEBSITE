@@ -1,0 +1,98 @@
+.section {
+  composes: sectionAlt from "../../../shared/components/section.module.css";
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+  position: relative;
+  text-align: center;
+}
+
+/*
+ * A single soft gold bloom, drifting slowly behind the copy.
+ *
+ * Ch.40 Ag-1's closed property set permits `transform` — the element's paint
+ * is a static radial-gradient that never changes; only its translate/scale
+ * animates, so this composites on the GPU and touches neither layout nor
+ * paint. It is one element, well inside Ag-2's three-simultaneous ceiling.
+ *
+ * Ch.27's "gold is accent-only, never a theme" is why this is a 0.10-alpha
+ * wash at its centre and fully transparent by 70% radius, rather than a field
+ * of gold behind the section.
+ */
+.glow {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: min(1100px, 160%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle at center,
+    rgba(201, 162, 75, 0.1) 0%,
+    rgba(201, 162, 75, 0.04) 35%,
+    rgba(201, 162, 75, 0) 70%
+  );
+  animation: cta-drift 24s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes cta-drift {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    transform: translate(-47%, -53%) scale(1.08);
+  }
+}
+
+/* Ch.15 Mt-4 / Ag-3: decorative motion stops entirely rather than merely
+   shortening — the bloom's whole purpose is atmosphere, so a static version of
+   it loses nothing a reduced-motion visitor needed. */
+@media (prefers-reduced-motion: reduce) {
+  .glow {
+    animation: none;
+  }
+}
+
+.heading {
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  color: var(--semantic-color-text-primary);
+  max-width: 20ch;
+  margin: 0 auto var(--semantic-space-gap-stack);
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: var(--core-type-h1-size-desktop);
+    font-weight: var(--core-type-h1-weight);
+    line-height: var(--core-type-h1-line-height);
+  }
+}
+
+.description {
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  max-width: 58ch;
+  margin: 0 auto var(--core-space-12);
+}
+
+@media (min-width: 1024px) {
+  .description {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--semantic-space-gap-related-items);
+}

@@ -23,29 +23,11 @@ export const PRICING_FACTORS: PricingFactor[] = [
   },
 ];
 
-export interface EngagementShape {
-  title: string;
-  body: string;
-}
-
-/**
- * Qualitative descriptions of how engagements typically differ in scope —
- * deliberately contains no dollar figures, ranges, or relative price
- * signals ("$" symbols, "budget-friendly," etc.), per Ch.5.4's blanket
- * rule against any price signal anywhere on the site, including a
- * "starting at" figure.
+/*
+ * `ENGAGEMENT_SHAPES` used to live here, describing three qualitative
+ * engagement scopes for the old /pricing page. It was removed when that page
+ * was rebuilt around the named Launch/Growth/Scale packages in
+ * `pricing-config.ts`, which say the same thing concretely and are the single
+ * editing surface now. This file is kept solely for `PRICING_FACTORS`, which
+ * the homepage teaser still renders.
  */
-export const ENGAGEMENT_SHAPES: EngagementShape[] = [
-  {
-    title: "A single automation",
-    body: "One specific, well-defined piece of manual work — a quoting process, a lead-qualification flow — replaced end to end. The most common starting point for a first engagement.",
-  },
-  {
-    title: "A multi-system buildout",
-    body: "Several connected pieces of work across more of the business — automation plus the integrations that feed it — scoped and sequenced as one coordinated engagement.",
-  },
-  {
-    title: "An ongoing partnership",
-    body: "Continued support and new systems added over time, for businesses that have already seen the first engagement work and want a standing partner rather than a one-off project.",
-  },
-];
