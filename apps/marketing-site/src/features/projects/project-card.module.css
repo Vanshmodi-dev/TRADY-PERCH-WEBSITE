@@ -1,0 +1,646 @@
+/*
+ * Project card — the visual language of the Proof of Capability section.
+ *
+ * ── Principles, not borrowed layouts ──────────────────────────────────────
+ *
+ * Restraint over decoration: one accent hue (the brand gold), used sparingly
+ * and never at full strength. Depth from light rather than from strokes — the
+ * card separates from the page by a graded surface and a soft shadow, not by
+ * a hard border. Motion that is felt rather than watched: nothing travels far,
+ * nothing bounces, nothing overshoots. Hierarchy carried by scale and space,
+ * so the eye is led without anything shouting.
+ *
+ * Every colour, radius, duration and easing is a token. No literals except
+ * geometry that has no token (tilt degrees, hairline offsets) and the
+ * breakpoint values, which CSS forbids `var()` inside.
+ */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: var(--core-radius-xl);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+
+  /* A graded surface, lit from the top-left, rather than a flat fill. This is
+     what stops a dark card reading as a hole in the page. */
+  background-color: var(--semantic-color-surface-card);
+  background-image: linear-gradient(
+    155deg,
+    color-mix(in oklab, var(--semantic-color-surface-card) 100%, white 5.5%) 0%,
+    var(--semantic-color-surface-card) 46%,
+    color-mix(in oklab, var(--semantic-color-surface-card) 100%, black 22%) 100%
+  );
+  box-shadow: var(--semantic-elevation-card);
+
+  /* Perspective is set on the card itself, not an ancestor, so each card's
+     tilt is computed about its own centre. On a shared ancestor, cards far
+     from the vanishing point would skew rather than tilt. */
+  perspective: 1400px;
+  transform:
+    perspective(1400px)
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg))
+    translateY(var(--card-lift, 0px));
+  transform-style: preserve-3d;
+
+  transition:
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-standard) var(--motion-easing-entrance),
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance);
+
+  /* Sequential reveal. The min() cap holds the last card to the same 480ms as
+     the ninth: a stagger should suggest order, not make anyone wait for
+     content that has already downloaded. */
+  animation: card-enter var(--motion-duration-deliberate) var(--motion-easing-ceremonial) both;
+  animation-delay: calc(min(var(--card-index, 0), 8) * 70ms);
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    /* Travel and scale together, both barely — the card settles into place
+       rather than sliding in. Nothing overshoots; the ceremonial curve
+       decelerates the whole way. */
+    transform: translateY(var(--core-space-6)) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* :focus-within alongside :hover throughout — a keyboard user tabbing into a
+   card's actions gets exactly the affordance a mouse user gets (Ch.42 Kb-1). */
+.card:hover,
+.card:focus-within {
+  --card-lift: -6px;
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 34%, transparent);
+  box-shadow:
+    var(--semantic-elevation-card-hover),
+    0 24px 60px -28px color-mix(in oklab, var(--semantic-color-accent-primary) 30%, transparent);
+}
+
+/* --- Border illumination ------------------------------------------------ */
+
+/*
+ * A hairline of light that follows the pointer around the card's edge.
+ *
+ * Implemented as a masked gradient ring rather than a `border-image`: the
+ * gradient is positioned from the same --pointer-x/y the tilt uses, and the
+ * mask punches out the interior so only the 1px edge lights. `padding-box`
+ * against `border-box` in the mask composite is what defines that edge.
+ */
+.borderGlow {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  padding: 1px;
+  opacity: 0;
+  background: radial-gradient(
+    30% 60% at var(--pointer-x, 50%) var(--pointer-y, 0%),
+    color-mix(in oklab, var(--semantic-color-accent-primary) 80%, transparent),
+    transparent 70%
+  );
+
+  /*
+   * Punches out the interior so only the 1px `padding` ring paints.
+   *
+   * Prefixed declarations come FIRST and standard ones LAST, which is
+   * load-bearing rather than stylistic. With the order reversed, the
+   * `-webkit-mask` shorthand resets the already-set standard `mask-composite`
+   * back to `add`, the exclusion never happens, and the whole gradient paints
+   * as a solid gold blob over the card at z-index 3 — which is exactly the
+   * bug this ordering fixes.
+   */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+
+  transition: opacity var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/*
+ * Belt and braces for the same failure mode. If a browser supports neither
+ * mask-composite spelling, the element would paint as an unmasked gradient
+ * covering the card. `@supports not` removes it entirely there — the card
+ * still has its border-colour change and accent shadow on hover, so nothing
+ * about the affordance is lost, only this one refinement.
+ */
+@supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .borderGlow {
+    display: none;
+  }
+}
+
+.card:hover .borderGlow,
+.card:focus-within .borderGlow {
+  opacity: 1;
+}
+
+/* --- Light sweep -------------------------------------------------------- */
+
+/*
+ * A broad specular wash that tracks the cursor across the whole surface,
+ * the way light moves over a physical panel as it tilts. Sits above the
+ * background but below the content, so text is never washed out.
+ */
+/*
+ * Intensity is calibrated, not guessed. Against a near-black surface the eye
+ * resolves a very small amount of added light, so the first pass at 13% over a
+ * 60% x 55% ellipse rendered as a distinct gold blob following the cursor —
+ * legible as an effect, which is the definition of too far. At 6% over a
+ * wider, softer falloff it reads as the surface catching light rather than as
+ * something drawn on top of it.
+ */
+.sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(
+    75% 70% at var(--pointer-x, 50%) var(--pointer-y, 50%),
+    color-mix(in oklab, var(--semantic-color-accent-primary) 6%, transparent),
+    transparent 72%
+  );
+  transition: opacity var(--motion-duration-deliberate) var(--motion-easing-entrance);
+}
+
+.card:hover .sweep,
+.card:focus-within .sweep {
+  opacity: 1;
+}
+
+/* --- Thumbnail ---------------------------------------------------------- */
+
+/*
+ * The thumbnail dominates. 16/10 rather than the source image's 2/1: the
+ * taller frame gives the card a more editorial proportion, and object-fit
+ * crops the OG card's generous padding rather than letterboxing it.
+ */
+.thumbnail {
+  position: relative;
+  z-index: 2;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--core-radius-lg);
+  margin: var(--core-space-3);
+  margin-bottom: 0;
+
+  /*
+   * A designed surface behind the image, not a grey box.
+   *
+   * Load-bearing rather than decorative: the art comes from
+   * opengraph.githubassets.com, a third-party endpoint that generates images
+   * on demand and rate-limits (a 429 is easy to provoke). When it does not
+   * answer, next/image renders an <img> with no pixels and whatever sits
+   * behind it becomes the card. A flat grey rectangle reads as broken; this
+   * angled wash reads as an intentional abstract tile.
+   */
+  background-color: var(--core-color-black-900);
+  background-image:
+    radial-gradient(
+      110% 130% at 8% 0%,
+      color-mix(in oklab, var(--semantic-color-accent-primary) 22%, transparent),
+      transparent 58%
+    ),
+    radial-gradient(
+      95% 120% at 100% 100%,
+      color-mix(in oklab, var(--semantic-color-accent-secondary) 17%, transparent),
+      transparent 55%
+    );
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Deliberate and slow. A quick zoom reads as a hover trick; at this
+     duration the image feels like it is settling rather than reacting. */
+  transition: transform var(--motion-duration-ceremonial) var(--motion-easing-ceremonial);
+}
+
+.card:hover .thumbnailImage,
+.card:focus-within .thumbnailImage {
+  transform: scale(1.045);
+}
+
+/* Grades the thumbnail's lower edge into the card body so the image ends in
+   shadow rather than at a hard line. */
+.thumbnailVeil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--core-color-black-950) 26%, transparent) 0%,
+    transparent 32%,
+    transparent 62%,
+    color-mix(in oklab, var(--core-color-black-950) 62%, transparent) 100%
+  );
+}
+
+.thumbnailOverlay {
+  position: absolute;
+  inset: var(--core-space-3);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--core-space-2);
+  pointer-events: none;
+}
+
+/* The "Selected" mark. Gold, but as a hairline and letterspaced small caps
+   rather than a filled badge — a filled gold pill would out-shout the title. */
+.featuredMark {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--core-space-1) var(--core-space-3);
+  border-radius: var(--semantic-radius-pill);
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-accent-primary) 52%, transparent);
+  background-color: color-mix(in oklab, var(--core-color-black-950) 62%, transparent);
+  backdrop-filter: blur(var(--core-blur-subtle));
+}
+
+/* --- Status ------------------------------------------------------------- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin-left: auto;
+  padding: var(--core-space-1) var(--core-space-3);
+  border-radius: var(--semantic-radius-pill);
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.04em;
+  color: var(--semantic-color-text-primary);
+  background-color: color-mix(in oklab, var(--core-color-black-950) 66%, transparent);
+  backdrop-filter: blur(var(--core-blur-subtle));
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 18%, transparent);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--core-radius-full);
+  flex-shrink: 0;
+}
+
+/* Colour carries the status, but never alone — the adjacent text label is the
+   primary signal (WCAG 1.4.1: colour is not the only means of conveying
+   information). The dot is reinforcement. */
+.live .statusDot {
+  background-color: var(--semantic-color-text-success);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--semantic-color-text-success) 22%, transparent);
+}
+.active .statusDot {
+  background-color: var(--semantic-color-accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--semantic-color-accent-primary) 22%, transparent);
+}
+.maintained .statusDot {
+  background-color: var(--semantic-color-text-tertiary);
+}
+
+/* --- Content ------------------------------------------------------------ */
+
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  /* Pushes the footer to the card's bottom edge, so footers align across a
+     row regardless of how long each description runs. */
+  flex: 1;
+  padding: var(--semantic-space-padding-component-lg);
+  padding-bottom: var(--core-space-4);
+}
+
+/* Category · year. Small caps and wide tracking: the editorial register that
+   separates a considered layout from a data dump. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-3);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.category {
+  color: var(--semantic-color-accent-primary);
+}
+
+.eyebrowRule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--semantic-color-text-primary) 16%, transparent),
+    transparent
+  );
+}
+
+.year {
+  color: var(--semantic-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  letter-spacing: var(--core-type-h3-tracking);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.body {
+  margin: 0;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  /* Holds the measure inside the comfortable reading range even when a card
+     spans two columns. */
+  max-width: 58ch;
+  text-wrap: pretty;
+}
+
+/* --- Technology stack --------------------------------------------------- */
+
+/*
+ * Monochrome, not a row of coloured pills. Each entry is a hairline-outlined
+ * chip in the same neutral as the body: the stack is supporting information,
+ * and nine saturated pills above the title would out-shout it.
+ *
+ * The outline earns its place. Plain text with separators — the first attempt
+ * — left a single-entry stack ("Website") reading as an orphaned word rather
+ * than as a list of one; the chip makes it unambiguously a token whether
+ * there is one or six.
+ */
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin: var(--core-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stackItem {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px var(--core-space-2);
+  border-radius: var(--core-radius-sm);
+  font-size: var(--core-type-caption-size-mobile);
+  letter-spacing: 0.03em;
+  color: var(--semantic-color-text-secondary);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 4%, transparent);
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/* The small gold accent, spent only on hover and only on the outline — the
+   badges "react" without any of them becoming a coloured pill at rest. */
+.card:hover .stackItem,
+.card:focus-within .stackItem {
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 30%, transparent);
+  color: var(--semantic-color-text-primary);
+}
+
+/* --- Footer ------------------------------------------------------------- */
+
+.footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  padding: 0 var(--semantic-space-padding-component-lg)
+    var(--semantic-space-padding-component-lg);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-4);
+  padding-top: var(--core-space-4);
+  border-top: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  font-size: var(--core-type-caption-size-mobile);
+  /* text-secondary, not tertiary: tertiary (gray.600) measures 3.88:1 on this
+     surface, below the 4.5:1 AA floor for text this size. */
+  color: var(--semantic-color-text-secondary);
+}
+
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-2);
+}
+
+.factIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  flex-shrink: 0;
+  color: var(--semantic-color-text-tertiary);
+}
+
+.languageDot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--core-radius-full);
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-2);
+}
+
+.actionIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  /* Nudges forward on hover — the microinteraction that makes an action feel
+     like it leads somewhere. Scoped to the card so it fires on card hover,
+     matching the rest of the surface rather than lagging behind it. */
+  transition: transform var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.card:hover .actionIcon {
+  transform: translateX(2px);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Featured variant --------------------------------------------------- */
+
+/*
+ * At desktop the featured card runs as a two-column composition — thumbnail
+ * beside content rather than above it — which is what makes it read as a
+ * different class of object rather than as the same card enlarged.
+ *
+ * Below that width it stays the standard vertical stack: side-by-side in a
+ * single column would squeeze both halves.
+ */
+/*
+ * The featured card keeps the same vertical anatomy as a standard card —
+ * thumbnail above, content below — and earns its status through scale: twice
+ * the width, a far larger and genuinely cinematic image, a display-size
+ * title, and room for the long-form narrative.
+ *
+ * A side-by-side composition was built first and rejected on measure. At two
+ * of three columns the card is ~830px, so splitting it puts body copy in a
+ * ~340-415px column: roughly 30-40 characters, which wraps mid-phrase every
+ * line and reads as a newspaper gutter. Widening the text column to fix that
+ * narrows the image column, and a 2:1 source stretched into a near-square
+ * frame loses half its content to the crop. The two constraints have no
+ * overlap at this width, and readable copy beats a clever split.
+ *
+ * 2/1 is exactly the source aspect (GitHub OG cards are 1200x600), so
+ * `object-fit: cover` crops nothing at all.
+ */
+@media (min-width: 640px) {
+  .featured .thumbnail {
+    aspect-ratio: 2 / 1;
+  }
+
+  .featured .title {
+    font-size: var(--core-type-h2-size-mobile);
+    line-height: var(--core-type-h2-line-height);
+    letter-spacing: var(--core-type-h2-tracking);
+  }
+
+  .featured .body {
+    font-size: var(--core-type-body-large-size-mobile);
+    line-height: var(--core-type-body-large-line-height);
+    /* The card is wide; the paragraph should not be. Held to a comfortable
+       measure rather than running the full 830px, which would read as a
+       block of text rather than as an introduction. */
+    max-width: 62ch;
+  }
+}
+
+@media (min-width: 1024px) {
+  .featured .title {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+
+  .featured .body {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+
+  /* A little more room around the lead card's content than a standard card
+     gets — the spacing itself is part of what marks it out. */
+  .featured .content {
+    padding: var(--core-space-8);
+    padding-bottom: var(--core-space-4);
+  }
+
+  .featured .footer {
+    padding: 0 var(--core-space-8) var(--core-space-8);
+  }
+}
+
+/* --- Desktop type scale ------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .body {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .eyebrow,
+  .stackItem,
+  .facts,
+  .featuredMark,
+  .status {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+/* --- Reduced motion ----------------------------------------------------- */
+
+/*
+ * Ch.15 Mt-4 / Ag-3 — handled here, once, as a media query, never as a
+ * per-component JS branch.
+ *
+ * The entrance animation is removed rather than shortened: its `both` fill
+ * mode starts the card at opacity 0, so merely shortening the duration would
+ * still flash content in. `animation: none` leaves the card in its natural,
+ * fully-visible state.
+ *
+ * `transform: none` removes both the pointer tilt and the hover lift — every
+ * positional change on the card. The tilt is neutralised here as defence in
+ * depth: the pointer listener already declines to run under reduced motion,
+ * but a stylesheet that only works because a script agreed not to fight it is
+ * a fragile contract.
+ *
+ * What survives is everything non-positional: the border illumination, the
+ * sweep and the shadow still respond to hover and focus, as instant state
+ * changes. Those are affordance feedback rather than motion, and removing
+ * them would cost a real usability signal — particularly for the keyboard
+ * focus ring's supporting emphasis — to solve a motion-sensitivity problem
+ * that dropping the movement already solves.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+    transform: none;
+  }
+
+  .card,
+  .borderGlow,
+  .sweep,
+  .thumbnailImage,
+  .stackItem,
+  .actionIcon {
+    transition-duration: var(--motion-duration-instant);
+  }
+
+  .card:hover .thumbnailImage,
+  .card:focus-within .thumbnailImage,
+  .card:hover .actionIcon {
+    transform: none;
+  }
+}

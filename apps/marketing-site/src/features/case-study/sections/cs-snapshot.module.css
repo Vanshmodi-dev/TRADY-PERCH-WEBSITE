@@ -1,0 +1,239 @@
+/*
+ * Project Snapshot — a luxury specification panel, not a table.
+ *
+ * The whole design rests on one idea: a specification sheet becomes premium
+ * when the *labels* recede and the *values* carry the weight. So labels are
+ * small, letterspaced and secondary; values are large and primary. The eye
+ * lands on the answers and picks up the questions peripherally, which is what
+ * makes the panel scannable in seconds rather than readable in a minute.
+ */
+
+.section {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--semantic-space-padding-section-sm);
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-block: var(--core-space-24);
+  }
+}
+
+.container {
+  max-width: var(--core-container-width-content);
+  margin-inline: auto;
+  padding-inline: var(--core-space-4);
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-inline: var(--semantic-space-padding-section-sm);
+  }
+}
+
+/*
+ * The panel. Glass is used here and almost nowhere else in the case study —
+ * this is the one element that floats above the narrative rather than sitting
+ * in it, and the backdrop blur is what earns that separation. Overusing the
+ * treatment would flatten the distinction it exists to make.
+ */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-8);
+  padding: var(--semantic-space-padding-component-lg);
+  border-radius: var(--core-radius-xl);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 72%, transparent);
+  backdrop-filter: blur(var(--core-blur-moderate));
+  box-shadow: var(--semantic-elevation-card);
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    padding: var(--core-space-12);
+    gap: var(--core-space-12);
+  }
+}
+
+/* --- The fact grid ------------------------------------------------------ */
+
+/*
+ * `auto-fit` with a min track is what makes this future-proof. Six facts or
+ * sixteen, the grid finds a balanced column count on its own — adding
+ * "Compliance" or "Users served" later needs no layout change at all.
+ *
+ * Mobile is two columns rather than one: these values are short, and a single
+ * column would turn a scannable panel into a long list to scroll.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--core-space-8) var(--core-space-6);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: var(--core-space-8);
+  }
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  min-width: 0;
+  /* A hairline rule leading each fact, rather than boxes around every one.
+     Dividers instead of containers is what keeps sixteen facts from reading
+     as sixteen competing cards. */
+  padding-left: var(--core-space-4);
+  border-left: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent);
+  transition: border-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/* The subtle elevation on hover, expressed as light on the rule rather than
+   as a moving box — a specification panel that lifts under the cursor would
+   feel gimmicky where a card does not. */
+.fact:hover {
+  border-left-color: color-mix(in oklab, var(--semantic-color-accent-primary) 55%, transparent);
+}
+
+.factLabel {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-secondary);
+}
+
+.factValue {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: 1.2;
+  color: var(--semantic-color-text-primary);
+  /* Fixed-width digits so a counting number does not jitter its own column
+     width as the digits change. */
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.factNote {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+/* --- Technology row ----------------------------------------------------- */
+
+.stackRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  padding-top: var(--core-space-6);
+  border-top: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+}
+
+.stackLabel {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-secondary);
+}
+
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * `text-primary`, not `text-secondary`.
+ *
+ * These are technology names on a 4%-tinted chip over the glass panel, which
+ * resolves to #202022 — lighter than the page. Secondary text there measures
+ * 6.86:1: comfortably past the 4.5:1 AA floor, but a hair under the 7:1 AAA
+ * threshold, and the audit flagged it as the only AAA finding on the site.
+ *
+ * Since every other route clears AAA, matching them was worth one token step,
+ * and it is the right call independently: a specification panel exists to be
+ * read at a glance, and its most scannable row should not be its faintest.
+ * The `.stackBadge` in the Technology section already uses this token, so the
+ * two now agree.
+ */
+.stackItem {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--core-space-1) var(--core-space-3);
+  border-radius: var(--semantic-radius-pill);
+  font-size: var(--core-type-caption-size-mobile);
+  letter-spacing: 0.03em;
+  color: var(--semantic-color-text-primary);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 4%, transparent);
+  transition: border-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/* The soft badge animation: gold arrives on the outline only, never as a fill.
+   Triggered from the panel so the whole row responds together rather than
+   lighting up one badge at a time under the cursor. */
+.panel:hover .stackItem {
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 34%, transparent);
+}
+
+/* --- Actions ------------------------------------------------------------ */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-3);
+}
+
+.actionIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 1024px) {
+  .factLabel,
+  .factNote,
+  .stackLabel,
+  .stackItem {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .factValue {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fact,
+  .stackItem {
+    transition-duration: var(--motion-duration-instant);
+  }
+}

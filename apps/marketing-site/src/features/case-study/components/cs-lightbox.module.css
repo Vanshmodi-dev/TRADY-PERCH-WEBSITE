@@ -1,0 +1,160 @@
+/* Fullscreen gallery viewer. */
+
+.dialog {
+  /* A <dialog> is display:none until opened; this is its open state. */
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--semantic-color-text-primary);
+  overflow: hidden;
+}
+
+.dialog::backdrop {
+  background-color: color-mix(in oklab, var(--core-color-black-950) 88%, transparent);
+  backdrop-filter: blur(var(--core-blur-moderate));
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--core-space-4);
+  gap: var(--core-space-4);
+}
+
+@media (min-width: 1024px) {
+  .panel {
+    padding: var(--core-space-8);
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--core-space-4);
+  flex-shrink: 0;
+}
+
+.counter {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  letter-spacing: 0.06em;
+  color: var(--semantic-color-text-secondary);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px — the WCAG 2.2 SC 2.5.8 target minimum. A close control that is hard
+     to hit is the single most frustrating thing in a fullscreen overlay. */
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--core-radius-full);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 20%, transparent);
+  background-color: color-mix(in oklab, var(--core-color-black-900) 70%, transparent);
+  color: var(--semantic-color-text-primary);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    border-color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.close:hover {
+  background-color: var(--core-color-black-800);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 50%, transparent);
+}
+
+.close:focus-visible,
+.navButton:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.closeIcon {
+  width: var(--core-icon-size-20);
+  height: var(--core-icon-size-20);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--core-space-4);
+  margin: 0;
+  /* Takes the space the toolbar and nav leave, so the image is centred in the
+     remainder rather than overflowing the viewport. */
+  flex: 1;
+  min-height: 0;
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--core-radius-md);
+  box-shadow: var(--semantic-elevation-overlay);
+}
+
+.caption {
+  margin: 0;
+  max-width: 60ch;
+  text-align: center;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: var(--core-space-4);
+  flex-shrink: 0;
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--core-radius-full);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 20%, transparent);
+  background-color: color-mix(in oklab, var(--core-color-black-900) 70%, transparent);
+  color: var(--semantic-color-text-primary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    border-color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.navButton:hover {
+  background-color: var(--core-color-black-800);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 50%, transparent);
+}
+
+@media (min-width: 1024px) {
+  .counter,
+  .caption {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .close,
+  .navButton {
+    transition-duration: var(--motion-duration-instant);
+  }
+}

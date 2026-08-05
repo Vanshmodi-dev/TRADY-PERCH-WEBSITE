@@ -1,0 +1,167 @@
+/* Screenshot gallery. */
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-12);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+}
+
+.groupTitle {
+  margin: 0;
+  padding-bottom: var(--core-space-3);
+  border-bottom: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent);
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-secondary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--core-space-8);
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  min-width: 0;
+}
+
+.tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  background-color: var(--core-color-black-900);
+  cursor: zoom-in;
+  transition:
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.tile:hover,
+.tile:focus-visible {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 40%, transparent);
+  box-shadow: var(--semantic-elevation-card-hover);
+}
+
+/* Ch.42 Kb-2 — the ring is on top of the hover treatment, not instead of it,
+   so a keyboard user gets both the affordance and an unambiguous focus mark. */
+.tile:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 3px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform var(--motion-duration-ceremonial) var(--motion-easing-ceremonial);
+}
+
+.tile:hover .image,
+.tile:focus-visible .image {
+  transform: scale(1.03);
+}
+
+/* The zoom affordance. Hidden until hover or focus so a grid of nine tiles is
+   not nine floating glyphs at rest. */
+.zoom {
+  position: absolute;
+  right: var(--core-space-3);
+  bottom: var(--core-space-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--core-radius-full);
+  color: var(--semantic-color-text-primary);
+  background-color: color-mix(in oklab, var(--core-color-black-950) 72%, transparent);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 22%, transparent);
+  backdrop-filter: blur(var(--core-blur-subtle));
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.tile:hover .zoom,
+.tile:focus-visible .zoom {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.zoomIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+}
+
+.caption {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+}
+
+@media (min-width: 1024px) {
+  .groupTitle,
+  .caption {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .image,
+  .zoom {
+    transition-duration: var(--motion-duration-instant);
+  }
+  .tile:hover,
+  .tile:focus-visible {
+    transform: none;
+  }
+  .tile:hover .image,
+  .tile:focus-visible .image {
+    transform: none;
+  }
+  /* The zoom affordance still appears — it is information, not decoration —
+     but arrives without travel. */
+  .zoom {
+    transform: none;
+  }
+}

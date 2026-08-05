@@ -1,0 +1,413 @@
+/* Prose and card chapters. See cs-blocks.tsx for why these share a module. */
+
+/* --- Prose -------------------------------------------------------------- */
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+}
+
+.prose p {
+  margin: 0;
+  /* 68ch is the upper end of a comfortable measure; long-form narrative is
+     the one place on this site that earns it. */
+  max-width: 68ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+/* --- Challenge cards ---------------------------------------------------- */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--core-space-8);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  padding: var(--semantic-space-padding-component-lg);
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--semantic-color-surface-card) 100%, white 3%),
+    var(--semantic-color-surface-card) 70%
+  );
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 30%, transparent);
+}
+
+/* Large, low-contrast numerals. Set as a quiet watermark rather than a badge:
+   the sequence should register as order without competing with the title. */
+.cardIndex {
+  font-size: var(--core-type-h3-size-desktop);
+  font-weight: var(--core-type-h2-weight);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--semantic-color-accent-primary) 45%, transparent);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--core-type-body-large-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  line-height: 1.35;
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.cardBody {
+  margin: 0;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+/* --- Decisions ---------------------------------------------------------- */
+
+.decisions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-8);
+}
+
+@media (min-width: 1024px) {
+  .decisions {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--core-space-12);
+  }
+}
+
+.decision {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  padding-left: var(--core-space-6);
+  /* A gold rule down the left edge rather than a card. Decisions are prose,
+     and boxing them would break the reading rhythm the chapter depends on. */
+  border-left: var(--core-border-default) solid
+    color-mix(in oklab, var(--semantic-color-accent-primary) 34%, transparent);
+}
+
+.decisionQuestion {
+  margin: 0;
+  font-size: var(--core-type-body-large-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  line-height: 1.35;
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.decisionChoice,
+.decisionTradeoff,
+.decisionBody {
+  margin: 0;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.decisionChoice {
+  color: var(--semantic-color-text-primary);
+}
+
+/* Small caps run-in label. Reads as a marginal note set inline, which keeps
+   "Chose" and "Tradeoff" scannable without giving either its own line. */
+.decisionLabel {
+  display: inline-block;
+  margin-right: var(--core-space-2);
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+}
+
+.decisionTradeoff .decisionLabel {
+  color: var(--semantic-color-text-tertiary);
+}
+
+.decisionTradeoff {
+  padding-top: var(--core-space-2);
+  border-top: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 8%, transparent);
+}
+
+/* --- Engineering layers ------------------------------------------------- */
+
+.layers {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.layer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-3);
+  padding-block: var(--core-space-8);
+  border-top: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+}
+
+.layer:last-child {
+  border-bottom: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+}
+
+/* Two-column at desktop: the layer name sits in a narrow left rail and the
+   detail runs in a wide right column. A specification read as a conversation
+   rather than as a bulleted dump. */
+@media (min-width: 1024px) {
+  .layer {
+    grid-template-columns: 14rem 1fr;
+    gap: var(--core-space-12);
+    padding-block: var(--core-space-12);
+  }
+}
+
+.layerArea {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+}
+
+.layerBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  margin: 0;
+  min-width: 0;
+}
+
+.layerSummary {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-primary);
+  text-wrap: pretty;
+}
+
+.layerDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 62ch;
+}
+
+.layerDetail li {
+  position: relative;
+  padding-left: var(--core-space-6);
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+}
+
+/* A gold en-dash marker instead of a bullet. `list-style: none` removes the
+   list role in Safari's VoiceOver, which is why the marker is drawn here and
+   the semantic list is preserved by the ul itself carrying real li children. */
+.layerDetail li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: var(--core-space-3);
+  height: 1px;
+  background-color: color-mix(in oklab, var(--semantic-color-accent-primary) 60%, transparent);
+}
+
+/* --- Technology stack --------------------------------------------------- */
+
+.stackGroups {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-8);
+}
+
+@media (min-width: 640px) {
+  .stackGroups {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stackGroups {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--core-space-12);
+  }
+}
+
+.stackGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+}
+
+.stackGroupTitle {
+  margin: 0;
+  padding-bottom: var(--core-space-3);
+  border-bottom: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent);
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-secondary);
+}
+
+.stackList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stackBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--core-space-1) var(--core-space-3);
+  border-radius: var(--core-radius-sm);
+  font-size: var(--core-type-caption-size-mobile);
+  letter-spacing: 0.02em;
+  color: var(--semantic-color-text-primary);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 4%, transparent);
+  transition: border-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.stackGroup:hover .stackBadge {
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 30%, transparent);
+}
+
+/* --- Testimonials ------------------------------------------------------- */
+
+.quotes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-8);
+}
+
+@media (min-width: 1024px) {
+  .quotes {
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  }
+}
+
+.quote {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+  margin: 0;
+  padding: var(--semantic-space-padding-component-lg);
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  background-color: var(--semantic-color-surface-card);
+}
+
+.quoteBody {
+  margin: 0;
+}
+
+.quoteBody p {
+  margin: 0;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-primary);
+  text-wrap: pretty;
+}
+
+.quoteAttribution {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+}
+
+.quoteName {
+  font-weight: var(--core-type-label-weight);
+  color: var(--semantic-color-text-primary);
+}
+
+.quoteRole {
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+/* --- Desktop type scale ------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .prose p,
+  .layerSummary,
+  .quoteBody p {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+  .cardTitle,
+  .decisionQuestion {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+  .cardBody,
+  .decisionChoice,
+  .decisionBody,
+  .decisionTradeoff,
+  .layerDetail li {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .decisionLabel,
+  .layerArea,
+  .stackGroupTitle,
+  .stackBadge,
+  .quoteRole {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .stackBadge {
+    transition-duration: var(--motion-duration-instant);
+  }
+  .card:hover {
+    transform: none;
+  }
+}

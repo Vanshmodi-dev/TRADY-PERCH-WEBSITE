@@ -1,0 +1,264 @@
+/*
+ * Loading, empty and error presentation for the portfolio grid.
+ *
+ * The skeleton's geometry deliberately mirrors project-card.module.css — same
+ * aspect-ratio media, same radius, same padding — so replacing a skeleton
+ * with a real card produces no layout shift.
+ */
+
+/* --- Shared grid (skeleton mirrors the real one in projects-section) ----- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--core-space-8);
+  }
+  .skeletonItemFeatured {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: row dense;
+    gap: var(--core-space-8);
+  }
+  .skeletonItemFeatured {
+    grid-column: span 2;
+  }
+}
+
+/* --- Skeleton ----------------------------------------------------------- */
+
+.skeletonItem {
+  display: flex;
+}
+
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: var(--core-radius-xl);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: var(--semantic-color-surface-card);
+}
+
+.skeletonContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  flex: 1;
+  padding: var(--semantic-space-padding-component-lg);
+  padding-bottom: var(--core-space-4);
+}
+
+.skeletonFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  padding: 0 var(--semantic-space-padding-component-lg)
+    var(--semantic-space-padding-component-lg);
+}
+
+/*
+ * The shimmer. A single translating highlight over a flat base, driven by
+ * background-position so it composites on the GPU rather than repainting
+ * geometry every frame.
+ *
+ * The per-item delay is negative, not positive: a positive delay would leave
+ * later skeletons visibly inert for the first half-second, which reads as
+ * broken. A negative delay starts each one already part-way through the same
+ * loop, producing the diagonal sweep the stagger is actually for.
+ */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--core-radius-sm);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 100%, white 5%);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--semantic-color-text-tertiary) 14%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: shimmer-sweep 1600ms linear infinite;
+  animation-delay: calc(min(var(--card-index, 0), 8) * -120ms);
+}
+
+@keyframes shimmer-sweep {
+  from {
+    background-position: -100% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* Mirrors project-card.module.css's thumbnail exactly — same inset margin,
+   same 16/10 ratio, same radius — so swapping a skeleton for a real card
+   shifts nothing (a direct CLS win, not just a nicety). */
+.skeletonMedia {
+  margin: var(--core-space-3);
+  margin-bottom: 0;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--core-radius-lg);
+}
+
+.skeletonEyebrow {
+  height: 0.75rem;
+  width: 38%;
+}
+
+.skeletonTitle {
+  height: 1.5rem;
+  width: 65%;
+}
+
+.skeletonFacts {
+  height: 0.875rem;
+  width: 70%;
+}
+
+.skeletonLine {
+  height: 0.875rem;
+  width: 100%;
+}
+
+.skeletonLineShort {
+  height: 0.875rem;
+  width: 78%;
+}
+
+.skeletonTags {
+  display: flex;
+  gap: var(--core-space-2);
+}
+
+.skeletonTag {
+  height: 1.375rem;
+  width: 4.5rem;
+  border-radius: var(--semantic-radius-pill);
+}
+
+.skeletonActions {
+  height: 2.25rem;
+  width: 60%;
+  border-radius: var(--semantic-radius-control);
+}
+
+/* --- Empty / error panel ------------------------------------------------ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--semantic-space-gap-related-items);
+  padding: var(--semantic-space-padding-section-sm) var(--semantic-space-padding-component-lg);
+  border-radius: var(--semantic-radius-card);
+  /* A dashed hairline reads as "nothing here yet" rather than "a container
+     that failed to fill" — the standard, quiet empty-state convention. */
+  border: var(--core-border-hairline) dashed var(--semantic-color-border-default);
+  background-image: radial-gradient(
+    80% 100% at 50% 0%,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 6%, transparent),
+    transparent 70%
+  );
+}
+
+/* The error variant tints toward the error token without shouting: a failed
+   third-party feed on a marketing page is not a destructive event, and a
+   full crimson panel would read as far more alarming than the situation is. */
+.panelError {
+  border-style: solid;
+  border-color: color-mix(in oklab, var(--semantic-color-text-error) 28%, transparent);
+  background-image: radial-gradient(
+    80% 100% at 50% 0%,
+    color-mix(in oklab, var(--semantic-color-text-error) 7%, transparent),
+    transparent 70%
+  );
+}
+
+.illustration {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  /* Inherited by every `currentColor` inside the SVG, so the illustration
+     can never drift from the palette. */
+  color: var(--semantic-color-text-tertiary);
+}
+
+.panelError .illustration {
+  color: var(--semantic-color-text-error);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+}
+
+.panelBody {
+  margin: 0;
+  max-width: 46ch;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+}
+
+.panelActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--core-space-3);
+  margin-top: var(--core-space-2);
+}
+
+@media (min-width: 1024px) {
+  .panelTitle {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .panelBody {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+ * Ch.15 Mt-4 / Ag-3. The shimmer stops entirely rather than slowing: it is an
+ * infinite loop, and an infinite animation is exactly what
+ * prefers-reduced-motion exists to suppress. The skeleton keeps its shape and
+ * base colour, so it still communicates "content is loading here" — the
+ * information survives, only the motion is removed.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+    background-image: none;
+  }
+}

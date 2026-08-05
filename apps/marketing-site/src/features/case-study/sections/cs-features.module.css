@@ -1,0 +1,227 @@
+/* Feature showcase: alternating image bands plus a compact card grid. */
+
+.bands {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-16);
+}
+
+@media (min-width: 1024px) {
+  .bands {
+    gap: var(--core-space-32);
+  }
+}
+
+.band {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-8);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .band {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--core-space-16);
+  }
+
+  /*
+   * The alternation. Every other band puts its media in column 1 and its
+   * content in column 2, walking the eye left-right-left down the page
+   * instead of straight down one rail.
+   *
+   * Crucially this is `grid-column` on the visual layer only — the DOM order
+   * stays content-then-media for every band, so reading order and tab order
+   * are unchanged. Reordering with `order` or `direction` would desynchronise
+   * them and is the usual way this pattern breaks for keyboard users.
+   */
+  .band:nth-child(even) .bandMedia {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .band:nth-child(even) .bandContent {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+.bandContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  min-width: 0;
+}
+
+.bandTitle {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.bandBody {
+  margin: 0;
+  max-width: 54ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.bandMedia {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  background-color: var(--core-color-black-900);
+  box-shadow: var(--semantic-elevation-card);
+}
+
+.bandImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform var(--motion-duration-ceremonial) var(--motion-easing-ceremonial);
+}
+
+.band:hover .bandImage {
+  transform: scale(1.02);
+}
+
+/* --- Compact grid ------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--core-space-8);
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  padding: var(--semantic-space-padding-component-lg);
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--semantic-color-surface-card) 100%, white 3%),
+    var(--semantic-color-surface-card) 70%
+  );
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 28%, transparent);
+}
+
+/* The icon's frame brightens with its card, so the microinteraction reads as
+   one surface responding rather than two elements reacting separately. */
+.card:hover .icon,
+.band:hover .icon {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 55%, transparent);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--core-type-body-large-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  line-height: 1.35;
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.cardBody {
+  margin: 0;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+/* --- Benefits ----------------------------------------------------------- */
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  margin: var(--core-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.benefits li {
+  position: relative;
+  padding-left: var(--core-space-6);
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+}
+
+.benefits li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--core-radius-full);
+  border: 1px solid color-mix(in oklab, var(--semantic-color-accent-primary) 70%, transparent);
+}
+
+@media (min-width: 1024px) {
+  .bandTitle {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .bandBody {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+  .cardTitle {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+  .cardBody,
+  .benefits li {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .bandImage,
+  .icon {
+    transition-duration: var(--motion-duration-instant);
+  }
+  .card:hover,
+  .card:hover .icon,
+  .band:hover .icon {
+    transform: none;
+  }
+  .band:hover .bandImage {
+    transform: none;
+  }
+}

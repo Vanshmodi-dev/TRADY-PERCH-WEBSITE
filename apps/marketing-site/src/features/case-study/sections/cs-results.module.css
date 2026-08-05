@@ -1,0 +1,87 @@
+/* Results. Numerals carry the section; everything else recedes. */
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--core-space-8);
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .metrics {
+    gap: var(--core-space-12);
+  }
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  min-width: 0;
+  padding-top: var(--core-space-6);
+  /* A rule above each figure rather than a box around it. Boxes would turn a
+     row of results into a row of competing cards; the rule groups them into
+     one horizontal band, which is what a results row should read as. */
+  border-top: var(--core-border-default) solid
+    color-mix(in oklab, var(--semantic-color-accent-primary) 40%, transparent);
+}
+
+.value {
+  margin: 0;
+  /* The largest type on the page after the h1. Results are the payoff of the
+     whole narrative and should be legible from across a room. */
+  font-size: var(--core-type-h1-size-mobile);
+  font-weight: var(--core-type-h1-weight);
+  line-height: 1;
+  letter-spacing: var(--core-type-h1-tracking);
+  color: var(--semantic-color-text-primary);
+  /* Fixed-width digits so a counting figure holds its column width steady
+     instead of jittering as digits change. */
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  margin: 0;
+  font-size: var(--core-type-body-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+}
+
+.prose p {
+  margin: 0;
+  max-width: 68ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+@media (min-width: 1024px) {
+  .value {
+    font-size: var(--core-type-h1-size-desktop);
+  }
+  .label {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .note {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .prose p {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}

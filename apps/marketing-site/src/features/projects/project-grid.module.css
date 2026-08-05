@@ -1,0 +1,97 @@
+/*
+ * The asymmetric project grid.
+ *
+ * Breakpoints are literals because CSS forbids `var()` inside a media query
+ * condition — this is a language limitation, not a lapse from Ch.13. The
+ * values match core.breakpoint.tablet (640px) and core.breakpoint.desktop
+ * (1024px), plus a wide tier at 1600px.
+ */
+
+/*
+ * The pointer field's wrapper.
+ *
+ * NOT `display: contents`, which was the first instinct and is a real bug: an
+ * element with `display: contents` generates no box, so it cannot be the
+ * target of `pointerleave` — the pointer never "leaves" something that was
+ * never entered. Cards would keep their tilt and highlight permanently after
+ * the cursor moved off the grid.
+ *
+ * A plain block wrapper costs nothing here: the grid is `display: grid` on the
+ * <ul> inside it, and the wrapper is the container's only child at this
+ * position, so it changes no layout.
+ */
+.field {
+  display: block;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  /* Generous gutters. The section's premise is that it breathes; a tight
+     gap here would undo the spacing every other rule is buying. */
+  gap: var(--core-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  /*
+   * `start`, not the default `stretch`.
+   *
+   * Stretching makes every card in a row as tall as the tallest, and the
+   * featured card is roughly 60% taller than a standard one by design. Its
+   * neighbour was therefore being inflated with ~240px of empty space between
+   * its stack chips and its footer — a card with a hollow middle, which reads
+   * as a rendering fault rather than as a layout.
+   *
+   * Letting cards take their natural height moves that space outside the card,
+   * where it is simply the gutter of an asymmetric grid. Ragged bottoms are
+   * what visual rhythm looks like here; hollow cards are not.
+   */
+  align-items: start;
+}
+
+.item {
+  display: flex;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--core-space-8);
+  }
+
+  /* At two columns a featured card takes the full width — it is still
+     visually dominant, and halving it would make the side-by-side featured
+     composition unreadable. */
+  .itemFeatured {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    /* Backfills the hole a two-column span leaves when it cannot start in
+       the final column. See project-grid.tsx for the accessibility note. */
+    grid-auto-flow: row dense;
+    gap: var(--core-space-8);
+  }
+
+  .itemFeatured {
+    grid-column: span 2;
+  }
+}
+
+/*
+ * Ultra-wide. Past ~1600px a three-column grid inside the 1280px content
+ * container stops growing, so nothing here changes the column count — the
+ * container is the constraint, deliberately. What does change is the gutter,
+ * which opens up so the composition keeps the same optical density rather
+ * than looking cramped against the extra whitespace around it.
+ */
+@media (min-width: 1600px) {
+  .grid {
+    gap: var(--core-space-12);
+  }
+}

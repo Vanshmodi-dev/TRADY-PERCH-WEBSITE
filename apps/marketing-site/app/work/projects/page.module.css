@@ -1,0 +1,109 @@
+/* Page-level scaffolding only. Everything visual about the cards and the
+   grid lives with the feature, in src/features/projects/. */
+
+/*
+ * The hero keeps its top padding but gives up its bottom padding.
+ *
+ * On the other /work pages, hero and grid are separated by a background
+ * change (`sectionAlt`), which is what makes two full section paddings read
+ * as a deliberate break. Here the grid is on the same surface and the
+ * section's own heading is visually hidden, so stacking both paddings left a
+ * void between the introduction and the first card with nothing in it to
+ * justify the distance. The grid section's own top padding provides the
+ * separation.
+ */
+.hero {
+  composes: section from "../../../src/shared/components/section.module.css";
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding-block-end: 0;
+}
+
+.heroContainer {
+  composes: container from "../../../src/shared/components/section.module.css";
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-3);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+}
+
+/* A short gold rule leading into the label. The one piece of pure ornament on
+   the page, and it earns its place by giving the eyebrow a starting edge that
+   aligns with nothing else — which is what makes the header read as set
+   rather than stacked. */
+.eyebrowMark {
+  width: var(--core-space-8);
+  height: 1px;
+  background: linear-gradient(to right, var(--semantic-color-accent-primary), transparent);
+}
+
+.title {
+  margin: 0;
+  /* Display scale is a homepage-only signal of primacy (Ch.20.8), so this
+     interior page's h1 sits one step down at the h1 token — larger than any
+     section heading, smaller than the homepage hero. */
+  max-width: 20ch;
+  font-size: var(--core-type-h1-size-mobile);
+  font-weight: var(--core-type-h1-weight);
+  line-height: var(--core-type-h1-line-height);
+  letter-spacing: var(--core-type-h1-tracking);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+/* The second clause recedes rather than the first advancing — the statement
+   lands harder when its emphasis is subtractive. */
+.titleAccent {
+  color: var(--semantic-color-text-secondary);
+}
+
+.lede {
+  margin: 0;
+  /* Narrower than the heading on purpose: a lede that runs as wide as its
+     title reads as a paragraph that happens to be underneath one. */
+  max-width: 54ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+@media (min-width: 1024px) {
+  .eyebrow {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .title {
+    font-size: var(--core-type-h1-size-desktop);
+  }
+  .lede {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+/* Mirrors ProjectsSection's own section/container pair so the Suspense
+   fallback occupies exactly the footprint the real grid will. */
+.skeletonSection {
+  composes: section from "../../../src/shared/components/section.module.css";
+}
+
+.skeletonContainer {
+  composes: container from "../../../src/shared/components/section.module.css";
+}
+
+.srOnly {
+  composes: srOnly from "../../../src/shared/components/section.module.css";
+}
