@@ -10,7 +10,15 @@
 # Gate coverage vs. Ch.49 §2:
 #   1. Static checks .................. `static` job (lint, typecheck, deps)
 #   2. Unit + integration tests ....... `test` and `accessibility` jobs
-#   3. Build-time budget checks ....... NOT WIRED (see note below)
+#   3. Build-time budget checks ....... PARTIAL — `static` now runs a real
+#                                       production build (added after a merge
+#                                       to `main` went green here while
+#                                       production kept serving the previous
+#                                       deployment; nothing in CI had ever run
+#                                       `next build`). The *budget* half of
+#                                       this gate — asserting shipped bytes
+#                                       against packages/config/performance-
+#                                       budget.json — is still not wired.
 #   4. E2E + performance .............. NOT WIRED (see note below)
 #   5. Visual regression .............. does not exist yet (Ch.62 suite unbuilt)
 #   6. Human/AI review ................ branch protection, configured in the
@@ -80,6 +88,28 @@ jobs:
       # blocking every PR on one would make this gate noise.
       - name: Dependency vulnerability scan
         run: npm audit --omit=dev --audit-level=high
+
+      # Ch.49 §2 gate 3 ("build-time budget checks") was recorded in this
+      # file's own header as NOT WIRED, and the consequence turned out to be
+      # sharper than a missing budget check: nothing in CI ran `next build` at
+      # all. Lint, typecheck, Vitest, and the axe audit (which boots `next
+      # dev`) all pass on a tree whose production build fails, because none of
+      # them is a production build — Turbopack's prod pipeline, static
+      # prerendering, and `"use client"` boundary enforcement are only
+      # exercised here.
+      #
+      # That gap is why a green tick on `main` could never be read as "this
+      # deploys". It said the code was well-formed, not that it builds. A
+      # merge could go green and the hosted build fail, leaving production
+      # silently serving the previous deployment with no failing signal
+      # anywhere in GitHub.
+      #
+      # Placed last in Gate 1 rather than in its own job: it needs the same
+      # `npm ci` this job already paid for, and it is the most expensive step
+      # here, so the cheap checks above still fail first per Ch.49 §2's
+      # "fastest and cheapest first" ordering.
+      - name: Production build
+        run: npm run build
 
   # ---------------------------------------------------------------- Gate 2
   test:
