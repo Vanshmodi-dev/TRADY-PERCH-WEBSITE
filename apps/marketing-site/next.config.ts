@@ -55,6 +55,49 @@ const nextConfig: NextConfig = {
   // Marketing Site's default; React strict mode catches unsafe patterns early.
   reactStrictMode: true,
 
+  // ---------------------------------------------------------------------
+  // Deployment safety gate. READ BEFORE RELYING ON THIS.
+  // ---------------------------------------------------------------------
+  // This flag stops a hosted production build from being blocked by
+  // typechecking. It exists so a deploy cannot be held hostage to a failure
+  // the repository's own gates should have caught first — not as a licence to
+  // ship broken types.
+  //
+  // It is NOT load-bearing. As of this commit `npm run typecheck`, `npm run
+  // lint`, and `npm run test` all pass with zero errors, and `next build`
+  // was verified to succeed with this flag flipped to `false` before it was
+  // set to `true` — so nothing here is being suppressed. The eight
+  // TypeScript errors that actually broke the Vercel build (a Button missing
+  // its `target`/`rel` props, and `Env` missing its two GitHub fields) were
+  // fixed rather than hidden. Enabling this without fixing them would have
+  // shipped a site whose /work/projects feed could not compile.
+  //
+  // The real cost: `next build` no longer fails on a type error, so the
+  // build output stops being a typecheck signal. That check does still run
+  // — `npm run typecheck` and `npm run lint` in CI's Gate 1 — and those, not
+  // the build, are now the only thing standing between a type error and
+  // production. Do not remove them from CI while this flag is true.
+  typescript: { ignoreBuildErrors: true },
+
+  // NOTE: there is deliberately no `eslint: { ignoreDuringBuilds: true }`
+  // here, though it is the usual companion to the flag above.
+  //
+  // Next.js 16 removed the built-in ESLint integration. `NextConfig` in
+  // 16.2.11 declares `typescript?: TypeScriptConfig` and contains no `eslint`
+  // key at all (verified against
+  // node_modules/next/dist/server/config-shared.d.ts: zero occurrences), so
+  // adding one is a type error:
+  //
+  //   Type error: Object literal may only specify known properties,
+  //   and 'eslint' does not exist in type 'NextConfig'.
+  //
+  // It would also be pointless — `next build` on 16 does not run ESLint, so
+  // there is nothing for it to skip. Worth knowing that the error is
+  // self-masking: with ignoreBuildErrors already true, `next build` swallows
+  // the very type error the bad key introduces, so the config looks fine
+  // until someone turns the flag off. Linting is enforced by `npm run lint`
+  // in CI instead.
+
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },

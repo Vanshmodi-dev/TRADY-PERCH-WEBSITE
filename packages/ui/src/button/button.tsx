@@ -23,6 +23,8 @@ export function Button({
   children,
   href,
   linkComponent,
+  target,
+  rel,
   onClick,
   type = "button",
   className,
@@ -68,6 +70,12 @@ export function Button({
       <Link
         href={href}
         linkComponent={linkComponent}
+        target={target}
+        // Applied here rather than at each call site: a security default that
+        // depends on every future caller remembering it is not a default.
+        // `noopener` denies the opened page a `window.opener` handle back to
+        // this one (reverse tabnabbing). An explicit `rel` still wins.
+        rel={rel ?? (target === "_blank" ? "noopener noreferrer" : undefined)}
         className={composedClassName}
         id={id}
         aria-label={ariaLabel}

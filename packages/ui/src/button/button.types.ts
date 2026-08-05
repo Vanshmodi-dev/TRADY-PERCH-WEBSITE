@@ -41,6 +41,21 @@ export interface ButtonProps {
    */
   href?: string;
   linkComponent?: LinkComponent;
+  /**
+   * Anchor target, honoured only alongside `href`. Added for genuinely
+   * off-site destinations (the GitHub portfolio's repository and live-demo
+   * actions) where staying in-tab would navigate a visitor away from the
+   * site entirely.
+   *
+   * `_blank` implies `rel="noopener noreferrer"` unless `rel` is given
+   * explicitly — `noopener` denies the opened page a `window.opener` handle
+   * back to this one (a reverse-tabnabbing vector), and it is applied here
+   * rather than left to each call site because a security default that
+   * depends on every future caller remembering it is not a default.
+   */
+  target?: "_blank" | "_self";
+  /** Overrides the `rel` implied by `target="_blank"`. */
+  rel?: string;
   onClick?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
   /** Only meaningful when rendered as `<button>` (no `href`). @default "button" */
   type?: "button" | "submit" | "reset";
