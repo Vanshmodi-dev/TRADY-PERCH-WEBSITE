@@ -1,0 +1,336 @@
+/*
+ * README typography.
+ *
+ * A README is the only place on this site where the content is written by
+ * someone else, in an unknown shape, and must still look like it belongs. The
+ * approach is to set a real reading measure and a strict vertical rhythm, then
+ * let every construct inherit from it — rather than styling each element as if
+ * it were a component.
+ *
+ * Every value is a token. Breakpoint literals are the documented exception
+ * (CSS forbids `var()` inside a media condition — see core.json breakpoint).
+ */
+
+.markdown {
+  color: var(--semantic-color-text-secondary);
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  /* Holds the measure at a comfortable ~70 characters even when the column is
+     wider. Long-form prose set to the full container width is the single most
+     common reason a documentation page feels unreadable. */
+  max-width: 74ch;
+  overflow-wrap: break-word;
+}
+
+/*
+ * The rhythm, expressed once as a sibling rule rather than as a margin on
+ * every element. `* + *` gives each block its space from the one above, so a
+ * README that opens with a heading has no stray leading margin and one that
+ * opens with a badge row has no collapsed gap.
+ */
+.markdown > * + * {
+  margin-top: var(--core-space-6);
+}
+
+.paragraph {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+/* --- Headings ----------------------------------------------------------- */
+
+.heading {
+  margin: 0;
+  color: var(--semantic-color-text-primary);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  letter-spacing: var(--core-type-h3-tracking);
+  text-wrap: balance;
+  /* Anchored headings must not sit under the fixed header when jumped to. */
+  scroll-margin-top: var(--core-space-24);
+}
+
+/* Sized by rendered level rather than by markdown depth: the renderer shifts
+   `#` to `<h3>`, so these are the tags that actually appear. */
+.markdown h3.heading {
+  font-size: var(--core-type-h3-size-mobile);
+  /* A hairline above the top-level sections gives the document structure the
+     eye can find while scanning, without a heavier type step. */
+  padding-top: var(--core-space-6);
+  border-top: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 9%, transparent);
+}
+
+/* The first heading has nothing above it to be separated from. */
+.markdown > h3.heading:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.markdown h4.heading {
+  font-size: calc(var(--core-type-body-large-size-mobile) + 1px);
+}
+
+.markdown h5.heading,
+.markdown h6.heading {
+  font-size: var(--core-type-body-size-mobile);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-secondary);
+}
+
+/* --- Links -------------------------------------------------------------- */
+
+.link {
+  color: var(--semantic-color-accent-primary);
+  text-decoration: underline;
+  /* Offset and hairline thickness — an underline sitting on the baseline
+     collides with descenders and reads as a redaction. */
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  border-radius: var(--core-radius-sm);
+  transition: color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.link:hover {
+  color: var(--semantic-color-accent-secondary);
+}
+
+/* Ch.42 Kb-2 — every focusable element carries a visible ring. */
+.link:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* --- Code --------------------------------------------------------------- */
+
+.inlineCode {
+  padding: 2px var(--core-space-1);
+  border-radius: var(--core-radius-sm);
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+  /* 0.9em, not a fixed size: a monospace face at the same nominal size as the
+     surrounding text renders visibly larger, so inline code inside an h4 needs
+     to scale with its context rather than against it. */
+  font-size: 0.9em;
+  color: var(--semantic-color-text-primary);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 8%, transparent);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+}
+
+.codeBlock {
+  position: relative;
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: var(--core-color-black-950);
+  overflow: hidden;
+}
+
+/* The language tag. Sits inside the block's padding rather than above it, so
+   a code sample reads as one object instead of a labelled pair. */
+.codeLanguage {
+  position: absolute;
+  top: var(--core-space-2);
+  right: var(--core-space-3);
+  font-size: var(--core-type-caption-size-mobile);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-tertiary);
+  pointer-events: none;
+}
+
+.pre {
+  margin: 0;
+  padding: var(--core-space-4);
+  /* The one place horizontal scrolling is correct: wrapping code changes what
+     it means. The container scrolls; the page never does. */
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.pre:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.code {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: 1.7;
+  color: var(--semantic-color-text-secondary);
+  white-space: pre;
+  /* Tabs at 8 columns (the browser default) throw indentation off by a mile
+     in any file that mixes them with spaces. */
+  tab-size: 2;
+}
+
+/* --- Blockquote --------------------------------------------------------- */
+
+.blockquote {
+  margin: 0;
+  padding: var(--core-space-4) var(--core-space-6);
+  border-left: 2px solid
+    color-mix(in oklab, var(--semantic-color-accent-primary) 55%, transparent);
+  border-radius: 0 var(--core-radius-md) var(--core-radius-md) 0;
+  background-color: color-mix(in oklab, var(--semantic-color-accent-primary) 5%, transparent);
+  color: var(--semantic-color-text-secondary);
+}
+
+.blockquote > * + * {
+  margin-top: var(--core-space-3);
+}
+
+/* --- Lists -------------------------------------------------------------- */
+
+.list {
+  margin: 0;
+  padding-left: var(--core-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+}
+
+.listItem {
+  /* `list-item` rather than the flex default: an <li> inside a flex column
+     loses its marker entirely, which is how a bulleted list silently becomes
+     an unbulleted one. */
+  display: list-item;
+}
+
+.listItem::marker {
+  color: var(--semantic-color-accent-primary);
+}
+
+/* Nested list content is block-level (an item can hold paragraphs and code),
+   but a single-paragraph item must not gain a paragraph's margin. */
+.listItemContent {
+  display: inline;
+}
+
+.listItemContent > p {
+  display: inline;
+}
+
+.listItemContent > *:not(p) {
+  display: block;
+  margin-top: var(--core-space-3);
+}
+
+/* Task lists carry their own checkbox, so the marker would be a second bullet. */
+.taskList {
+  list-style: none;
+  padding-left: 0;
+}
+
+.taskList .listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--core-space-2);
+}
+
+.taskCheckbox {
+  margin-top: 5px;
+  flex-shrink: 0;
+  accent-color: var(--semantic-color-accent-primary);
+  /* Read-only by construction (see markdown-view.tsx); the cursor should say
+     so rather than inviting a click that does nothing. */
+  cursor: default;
+}
+
+/* --- Tables ------------------------------------------------------------- */
+
+.tableScroll {
+  overflow-x: auto;
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  scrollbar-width: thin;
+}
+
+.tableScroll:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--core-type-caption-size-mobile);
+}
+
+.table th,
+.table td {
+  padding: var(--core-space-3) var(--core-space-4);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 8%, transparent);
+}
+
+.table th {
+  color: var(--semantic-color-text-primary);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 4%, transparent);
+}
+
+/* No trailing hairline against the container's own border. */
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* --- Media -------------------------------------------------------------- */
+
+.image {
+  /* The renderer declares a nominal 1200x675 because intrinsic dimensions are
+     unknowable without fetching the file; these two lines are what make the
+     rendered size follow the real aspect instead of that placeholder. */
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--core-radius-md);
+}
+
+/* A paragraph containing nothing but images — the centred logo/badge row that
+   opens most READMEs. */
+.figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-2);
+}
+
+.rule {
+  height: 0;
+  border: 0;
+  border-top: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent);
+}
+
+/* --- Desktop type scale ------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .markdown {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .markdown h3.heading {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .markdown h4.heading {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+  .markdown h5.heading,
+  .markdown h6.heading {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .code,
+  .table,
+  .codeLanguage {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition-duration: var(--motion-duration-instant);
+  }
+}

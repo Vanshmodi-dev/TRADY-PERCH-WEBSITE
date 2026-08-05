@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { CASE_STUDIES } from "@/features/case-studies/case-studies-data";
+import { getProjects } from "@/features/projects/github-service";
 import { SITE_URL } from "@/shared/site-config";
 
 /**
@@ -30,6 +31,7 @@ const STATIC_ROUTES: Array<{
   { path: "/industries/legal", priority: 0.6, changeFrequency: "monthly" },
   { path: "/industries/manufacturing", priority: 0.6, changeFrequency: "monthly" },
   { path: "/work", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/work/projects", priority: 0.8, changeFrequency: "daily" },
   { path: "/work/case-studies", priority: 0.8, changeFrequency: "weekly" },
   { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.9, changeFrequency: "monthly" },
@@ -39,7 +41,18 @@ const STATIC_ROUTES: Array<{
   { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+/**
+ * Async because the project pages are generated from the live GitHub feed
+ * rather than from a checked-in registry.
+ *
+ * `getProjects()` reads the same hour-cached fetch every other consumer does,
+ * so this adds no upstream request — and it means a repository pushed today is
+ * in the sitemap within the hour, without a deploy. A failing or unconfigured
+ * feed yields no project entries rather than failing the sitemap: the rest of
+ * the site is still perfectly indexable, and advertising URLs that would 404
+ * is worse than briefly omitting them.
+ */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries = STATIC_ROUTES.map(({ path, priority, changeFrequency }) => ({
     url: `${SITE_URL}${path}`,
     lastModified: new Date(),
@@ -54,5 +67,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticEntries, ...caseStudyEntries];
+  const result = await getProjects();
+  const projectEntries =
+    result.status === "ok"
+      ? result.projects.map((project) => ({
+          url: `${SITE_URL}/work/projects/${project.slug}`,
+          // The repository's own last push, not the build time: this is the
+          // date a crawler should use to decide whether to re-fetch, and it is
+          // the only honest answer for a page generated from that repository.
+          lastModified: new Date(project.updatedAt),
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        }))
+      : [];
+
+  return [...staticEntries, ...caseStudyEntries, ...projectEntries];
 }

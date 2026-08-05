@@ -201,6 +201,19 @@ export function toBuildYear(repo: GitHubRepository): number {
   return new Date().getUTCFullYear();
 }
 
+/**
+ * A count GitHub may have omitted, as a number that cannot poison arithmetic.
+ *
+ * `forks_count` and `open_issues_count` are declared non-optional on the wire
+ * type and are not checked by `isGitHubRepository` — the same latitude
+ * `topics` already gets, and for the same reason: a field missing from an
+ * otherwise valid payload should cost that one figure, not the whole card.
+ * Without this, an absent count reaches the UI as `NaN` and renders literally.
+ */
+function safeCount(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
+
 function toProject(repo: GitHubRepository, categories: string[]): Project {
   const editorial = editorialFor(repo.name);
   const liveUrl = toLiveUrl(repo.homepage);
@@ -208,6 +221,11 @@ function toProject(repo: GitHubRepository, categories: string[]): Project {
   return {
     id: repo.id,
     repoName: repo.name,
+    // Lowercased repo name. Kept in step with `projectSlug` in
+    // project-detail-service.ts by `github-service.test.ts`, which asserts the
+    // two agree — the detail route resolves with one and the grid links with
+    // the other, so a divergence would 404 every card.
+    slug: repo.name.toLowerCase(),
     // Editorial title wins over the humanised repo name: `MODI-STORE`
     // humanises to "Modi Store", but a repo named `tp-lg-v2` cannot be
     // rescued by any casing rule and needs a human to name it.
@@ -222,8 +240,15 @@ function toProject(repo: GitHubRepository, categories: string[]): Project {
     description: editorial.summary ?? (repo.description?.trim() || null),
     tags: toTags(repo, categories),
     language: repo.language,
-    stars: repo.stargazers_count,
+    stars: safeCount(repo.stargazers_count),
+    forks: safeCount(repo.forks_count),
+    topics: normaliseTopics(repo.topics),
+    license: repo.license?.spdx_id ?? repo.license?.name ?? null,
+    // A constant, not `repo.private`: `isPublishableRepository` has already
+    // rejected every private repository by the time this runs.
+    visibility: "Public",
     updatedAt: repo.pushed_at ?? repo.updated_at,
+    createdAt: repo.created_at,
     githubUrl: repo.html_url,
     liveUrl,
     openGraphImageUrl: toOpenGraphImageUrl(repo),

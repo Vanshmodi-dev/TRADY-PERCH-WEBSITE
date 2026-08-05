@@ -35,6 +35,10 @@ export interface GitHubRepository {
   language: string | null;
   topics: string[];
   stargazers_count: number;
+  forks_count: number;
+  /** Issues *plus* open pull requests — GitHub conflates the two here. */
+  open_issues_count: number;
+  license: { spdx_id: string | null; name: string } | null;
   updated_at: string;
   pushed_at: string;
   /** ISO 8601. The only source for a project's build year. */
@@ -65,6 +69,14 @@ export interface Project {
   id: number;
   /** Raw repository name, used for the GitHub URL and the `og:` image path. */
   repoName: string;
+  /**
+   * The repository's URL segment under `/work/projects/`.
+   *
+   * Carried on the domain object rather than derived at each call site so the
+   * grid, the JSON-LD, the sitemap and the detail route cannot disagree about
+   * what a project's canonical URL is. See `projectSlug` for the derivation.
+   */
+  slug: string;
   /** `repoName` humanised for display: `lead-generation` -> `Lead Generation`. */
   title: string;
   /** `null` when the repository has no description set on GitHub. */
@@ -77,8 +89,26 @@ export interface Project {
   /** GitHub's detected primary language, or `null` for an unclassified repo. */
   language: string | null;
   stars: number;
+  forks: number;
+  /**
+   * The repository's own topics, lowercase-hyphenated exactly as GitHub stores
+   * them. Distinct from `tags` (display-cased and mixed with inferred
+   * categories) and from `categories` (this codebase's inference): the filter
+   * bar matches on these because they are the author's own labels.
+   */
+  topics: string[];
+  /** SPDX identifier where GitHub knows one — "MIT" — else the licence name. */
+  license: string | null;
+  /**
+   * Always "Public". Private repositories are excluded by
+   * `isPublishableRepository`, so this is a statement of a guarantee the
+   * pipeline already enforces rather than a value read from the payload.
+   */
+  visibility: "Public";
   /** ISO 8601. Rendered through `formatRelativeTime` at the component boundary. */
   updatedAt: string;
+  /** ISO 8601 creation date, for the detail page's timeline and JSON-LD. */
+  createdAt: string;
   githubUrl: string;
   /** The repo's `homepage`, but only when it is a syntactically valid https URL. */
   liveUrl: string | null;

@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { repositoryPayload } from "@/test/project-fixtures";
@@ -299,12 +300,15 @@ describe("client-bundle safety", () => {
   const read = (relativePath: string) =>
     readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), "utf8");
 
-  it.each(["./github-api.ts", "./github-service.ts"])(
-    "%s is marked server-only",
-    (path) => {
-      expect(read(path)).toMatch(/^import ["']server-only["'];$/m);
-    },
-  );
+  it.each([
+    "./github-api.ts",
+    "./github-service.ts",
+    "./github-contributions.ts",
+    "./project-detail-service.ts",
+    "./portfolio-stats-service.ts",
+  ])("%s is marked server-only", (path) => {
+    expect(read(path)).toMatch(/^import ["']server-only["'];$/m);
+  });
 
   it("never gives the token a NEXT_PUBLIC_ prefix, which would inline it into the client bundle", () => {
     const envSource = read("../../shared/env.ts");
@@ -321,12 +325,53 @@ describe("client-bundle safety", () => {
     }
   });
 
-  it("keeps the only client component in the feature free of any service import", () => {
-    // projects-retry.tsx is the feature's single "use client" module. If it
-    // ever imports the service, the whole server-only chain enters the
-    // client graph and the build breaks — better to catch it here, named.
-    const retry = read("./projects-retry.tsx");
-    expect(retry).toContain('"use client"');
-    expect(retry).not.toMatch(/from ["']\.\/github-(api|service)["']/);
+  /**
+   * The feature's complete set of `"use client"` modules.
+   *
+   * If any of them imports the service or API layer, the whole server-only
+   * chain enters the client graph and the build breaks — which is the correct
+   * outcome, but a named test failure explains it in a second where a
+   * `server-only` build error takes ten minutes to trace.
+   *
+   * The list is asserted to be exhaustive below, so a new client component
+   * cannot quietly escape this check.
+   */
+  const CLIENT_MODULES = [
+    "./projects-retry.tsx",
+    "./projects-explorer.tsx",
+    "./count-up.tsx",
+    "./project-pointer-field.tsx",
+  ];
+
+  it.each(CLIENT_MODULES)("%s is a client component with no server imports", (file) => {
+    const source = read(file);
+    expect(source).toContain('"use client"');
+    expect(source).not.toMatch(
+      /from ["']\.\/(github-api|github-service|github-contributions|project-detail-service|portfolio-stats-service)["']/,
+    );
+    expect(source).not.toContain("MARKETING_SITE_GITHUB_TOKEN");
+  });
+
+  it("has no client component outside the audited list", () => {
+    /*
+     * `process.cwd()` rather than `import.meta.url`.
+     *
+     * Vite statically rewrites the `new URL(<string literal>, import.meta.url)`
+     * pattern at transform time. It resolves a file specifier correctly — which
+     * is why `read()` above works — but a bare directory specifier comes back
+     * as a dev-server URL (`http://localhost:3000/src/features/projects`), and
+     * `fileURLToPath` then throws "The URL must be of scheme file".
+     *
+     * Vitest's `root` is this app, so cwd is stable regardless of which
+     * directory the runner was invoked from.
+     */
+    const featureDir = join(process.cwd(), "src", "features", "projects");
+    const found = readdirSync(featureDir, { recursive: true, encoding: "utf8" })
+      .filter((entry) => entry.endsWith(".tsx") && !entry.endsWith(".test.tsx"))
+      .filter((entry) => readFileSync(join(featureDir, entry), "utf8").includes('"use client"'))
+      // Normalise Windows separators so the comparison holds on either OS.
+      .map((entry) => `./${entry.replace(/\\/g, "/")}`);
+
+    expect(found.sort()).toEqual([...CLIENT_MODULES].sort());
   });
 });

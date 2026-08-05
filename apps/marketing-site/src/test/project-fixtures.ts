@@ -28,6 +28,12 @@ export function githubRepository(overrides: Partial<GitHubRepository> = {}): Git
     language: "TypeScript",
     topics: [],
     stargazers_count: 0,
+    forks_count: 0,
+    open_issues_count: 0,
+    // Null by default for the same reason `description` is: a licence is what
+    // the "Open source" filter matches on, so a fixture that carried one would
+    // silently place every test repository in that category.
+    license: null,
     updated_at: "2026-07-01T00:00:00Z",
     pushed_at: "2026-07-01T00:00:00Z",
     created_at: "2025-03-14T00:00:00Z",
@@ -46,12 +52,18 @@ export function project(overrides: Partial<Project> = {}): Project {
   return {
     id: 1,
     repoName: "ai-booking-agent",
+    slug: "ai-booking-agent",
     title: "AI Booking Agent",
     description: "Books appointments from inbound email.",
     tags: ["Automation", "AI"],
     language: "Python",
     stars: 12,
+    forks: 3,
+    topics: [],
+    license: null,
+    visibility: "Public",
     updatedAt: "2026-07-28T00:00:00Z",
+    createdAt: "2025-03-14T00:00:00Z",
     githubUrl: "https://github.com/acme/ai-booking-agent",
     liveUrl: "https://demo.example.com/",
     openGraphImageUrl: "https://opengraph.githubassets.com/1/acme/ai-booking-agent",

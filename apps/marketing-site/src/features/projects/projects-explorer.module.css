@@ -1,0 +1,410 @@
+/*
+ * Filter bar, search field and the filtered grid.
+ *
+ * The grid rules deliberately mirror `project-grid.module.css` rather than
+ * composing from it: that module's `.grid` is a bare three-column track, while
+ * this one has to animate on filter change and dim during a deferred update.
+ * Composing and then overriding half the declarations reads worse than the
+ * twenty lines it saves — and the two are asserted to stay in step by eye at
+ * the same breakpoints, which are the tokens' own.
+ */
+
+.explorer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-8);
+}
+
+/* --- Controls ----------------------------------------------------------- */
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+}
+
+@media (min-width: 1024px) {
+  .controls {
+    /* Search left, chips right, on one line — with the chips allowed to wrap
+       under themselves rather than pushing the field out of the row. */
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--core-space-8);
+  }
+}
+
+/* --- Search ------------------------------------------------------------- */
+
+.search {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .search {
+    max-width: 22rem;
+  }
+}
+
+/* Visible to assistive technology, not to the eye: the field's placeholder
+   and icon make its purpose obvious visually, but a placeholder is not a
+   label and disappears the moment anyone types. */
+.searchLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.searchField {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-3);
+  padding: var(--core-space-3) var(--core-space-4);
+  border-radius: var(--semantic-radius-pill);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 70%, transparent);
+  backdrop-filter: blur(var(--core-blur-subtle));
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    background-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.searchField:hover,
+.searchField[data-filled="true"] {
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 28%, transparent);
+}
+
+/*
+ * The ring is drawn on the wrapper, not the input, because the input has no
+ * border of its own — but it must still only appear for *keyboard* focus.
+ * `:focus-within:has(:focus-visible)` is what expresses that: focus is inside
+ * this element AND the focused descendant qualifies for a visible ring.
+ */
+.searchField:focus-within:has(:focus-visible) {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.searchIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  flex-shrink: 0;
+  color: var(--semantic-color-text-tertiary);
+  transition: color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.searchField:focus-within .searchIcon,
+.searchField[data-filled="true"] .searchIcon {
+  color: var(--semantic-color-accent-primary);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--core-type-body-size-mobile);
+  color: var(--semantic-color-text-primary);
+}
+
+.searchInput::placeholder {
+  color: var(--semantic-color-text-tertiary);
+}
+
+/* The engine's own clear button is replaced by `.clearButton`, which is
+   labelled and keyboard-reachable in every browser rather than only in some. */
+.searchInput::-webkit-search-cancel-button,
+.searchInput::-webkit-search-decoration {
+  appearance: none;
+}
+
+.clearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 24px visually, but the padding takes the hit area past the 44px minimum
+     touch target when combined with the field's own padding (Ch.43). */
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--core-radius-full);
+  cursor: pointer;
+  color: var(--semantic-color-text-tertiary);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 8%, transparent);
+  transition:
+    color var(--motion-duration-quick) var(--motion-easing-entrance),
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.clearButton:hover {
+  color: var(--semantic-color-text-primary);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 16%, transparent);
+}
+
+.clearButton:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.clearIcon {
+  width: 12px;
+  height: 12px;
+}
+
+/*
+ * A gold hairline that draws itself across the field's lower edge on focus.
+ *
+ * `scaleX` from the centre rather than an animated `width`: a transform
+ * composites on the GPU and never triggers layout, which is the difference
+ * between a line that draws smoothly and one that stutters against a
+ * scrolling page.
+ */
+.searchUnderline {
+  position: absolute;
+  left: var(--core-space-6);
+  right: var(--core-space-6);
+  bottom: -1px;
+  height: 1px;
+  transform: scaleX(0);
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--semantic-color-accent-primary),
+    transparent
+  );
+  transition: transform var(--motion-duration-deliberate) var(--motion-easing-entrance);
+}
+
+.searchField:focus-within .searchUnderline {
+  transform: scaleX(1);
+}
+
+/* --- Filter chips ------------------------------------------------------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  padding: var(--core-space-2) var(--core-space-4);
+  border-radius: var(--semantic-radius-pill);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.04em;
+  color: var(--semantic-color-text-secondary);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 3%, transparent);
+  transition:
+    color var(--motion-duration-standard) var(--motion-easing-entrance),
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    background-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.chip:hover {
+  color: var(--semantic-color-text-primary);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 34%, transparent);
+  transform: translateY(-1px);
+}
+
+.chip:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+/*
+ * The active chip. Gold, but held to a tinted fill with a gold hairline and
+ * gold text rather than a solid gold pill — a filled accent chip at this size
+ * out-weighs the section heading above it.
+ *
+ * Selection is carried by border, fill AND text colour together, so it does
+ * not depend on hue alone (WCAG 1.4.1). `aria-pressed` carries it
+ * non-visually.
+ */
+.chip[data-active="true"] {
+  color: var(--semantic-color-accent-primary);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 52%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-accent-primary) 12%, transparent);
+}
+
+.chipCount {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--core-type-caption-size-mobile);
+  opacity: 0.6;
+}
+
+/* --- Result count ------------------------------------------------------- */
+
+.results {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Grid --------------------------------------------------------------- */
+
+.field {
+  display: block;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-items: start;
+  transition: opacity var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/*
+ * A deferred filter pass is in flight. The dimming is slight on purpose: it
+ * acknowledges the keystroke without making the grid look disabled, and on a
+ * list this size it is usually never seen at all.
+ */
+.grid[data-pending="true"] {
+  opacity: 0.55;
+}
+
+.item {
+  display: flex;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--core-space-8);
+  }
+  .itemFeatured {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-flow: row dense;
+    gap: var(--core-space-8);
+  }
+  .itemFeatured {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1600px) {
+  .grid {
+    gap: var(--core-space-12);
+  }
+}
+
+/* --- No results --------------------------------------------------------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--core-space-4);
+  padding: var(--core-space-24) var(--core-space-6);
+  text-align: center;
+  border-radius: var(--core-radius-xl);
+  border: var(--core-border-hairline) dashed
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+  color: var(--semantic-color-text-tertiary);
+}
+
+.emptyIllustration {
+  width: 96px;
+  height: auto;
+  color: var(--semantic-color-accent-primary);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: var(--core-type-body-large-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+.emptyQuery {
+  color: var(--semantic-color-text-primary);
+  font-weight: var(--core-type-label-weight);
+}
+
+.emptyReset {
+  padding: var(--core-space-2) var(--core-space-4);
+  border-radius: var(--semantic-radius-pill);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  color: var(--semantic-color-accent-primary);
+  background: transparent;
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-accent-primary) 40%, transparent);
+  transition: background-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.emptyReset:hover {
+  background-color: color-mix(in oklab, var(--semantic-color-accent-primary) 12%, transparent);
+}
+
+.emptyReset:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (min-width: 1024px) {
+  .searchInput,
+  .chip,
+  .chipCount,
+  .results,
+  .emptyReset {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .searchInput {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+/* --- Reduced motion ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .searchField,
+  .searchIcon,
+  .clearButton,
+  .grid {
+    transition-duration: var(--motion-duration-instant);
+  }
+  .chip:hover {
+    transform: none;
+  }
+  /* The underline still appears on focus — it is a focus affordance, not
+     decoration — but it arrives rather than draws. */
+  .searchUnderline {
+    transition: none;
+  }
+}

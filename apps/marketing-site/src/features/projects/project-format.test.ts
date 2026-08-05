@@ -4,7 +4,9 @@ import {
   formatAbsoluteDate,
   formatDemoHost,
   formatRelativeTime,
-  formatStarCount,
+  formatCount,
+  formatMonthYear,
+  formatShare,
 } from "./project-format";
 
 describe("formatRelativeTime", () => {
@@ -68,7 +70,7 @@ describe("formatAbsoluteDate", () => {
   });
 });
 
-describe("formatStarCount", () => {
+describe("formatCount", () => {
   it.each([
     [0, "0"],
     [1, "1"],
@@ -79,12 +81,44 @@ describe("formatStarCount", () => {
     [10000, "10k"],
     [125_000, "125k"],
   ])("renders %i as %s", (stars, expected) => {
-    expect(formatStarCount(stars)).toBe(expected);
+    expect(formatCount(stars)).toBe(expected);
   });
 
   it("never renders a negative or non-finite count", () => {
-    expect(formatStarCount(-5)).toBe("0");
-    expect(formatStarCount(Number.NaN)).toBe("0");
+    expect(formatCount(-5)).toBe("0");
+    expect(formatCount(Number.NaN)).toBe("0");
+  });
+});
+
+describe("formatMonthYear", () => {
+  it("drops the day, which is noise on a project timeline", () => {
+    expect(formatMonthYear("2025-03-14T09:12:00Z")).toBe("March 2025");
+  });
+
+  it("degrades rather than throwing on an invalid date", () => {
+    expect(formatMonthYear("nonsense")).toBe("unknown");
+  });
+});
+
+describe("formatShare", () => {
+  it("renders a whole percentage without a trailing zero", () => {
+    expect(formatShare(64)).toBe("64%");
+    expect(formatShare(12.5)).toBe("12.5%");
+  });
+
+  /**
+   * The distinction this function exists for: a language that is present but
+   * tiny must not be labelled 0%, which reads as "absent" — the one thing a
+   * language breakdown is there to disprove.
+   */
+  it("floors a present-but-tiny share at <1% rather than 0%", () => {
+    expect(formatShare(0.4)).toBe("<1%");
+    expect(formatShare(0.04)).toBe("<1%");
+  });
+
+  it("renders a genuine zero as 0%", () => {
+    expect(formatShare(0)).toBe("0%");
+    expect(formatShare(Number.NaN)).toBe("0%");
   });
 });
 

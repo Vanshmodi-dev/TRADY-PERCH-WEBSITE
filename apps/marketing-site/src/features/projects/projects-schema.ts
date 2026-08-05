@@ -1,5 +1,11 @@
+import type { ProjectDetail } from "./github-detail-types";
 import type { Project } from "./github-types";
 import { SITE_URL } from "@/shared/site-config";
+
+/** The canonical, absolute URL of a project's case study page. */
+export function projectUrl(slug: string): string {
+  return `${SITE_URL}/work/projects/${slug}`;
+}
 
 /**
  * schema.org structured data for `/work/projects` (Ch.40 §3).
@@ -41,7 +47,10 @@ export function buildProjectsSchema(projects: readonly Project[]): Record<string
           name: project.title,
           description: project.description ?? `${project.categories.join(", ")} project.`,
           codeRepository: project.githubUrl,
-          url: project.liveUrl ?? project.githubUrl,
+          // The case study on this site, not the repository: `url` is the
+          // canonical page *about* the item, and pointing it at GitHub tells a
+          // crawler this site has no page for something it demonstrably does.
+          url: projectUrl(project.slug),
           // Omitted entirely rather than emitted as null when GitHub has not
           // detected a language — an empty value is worse than an absent one.
           ...(project.language ? { programmingLanguage: project.language } : {}),
@@ -51,5 +60,88 @@ export function buildProjectsSchema(projects: readonly Project[]): Record<string
         },
       })),
     },
+  };
+}
+
+/**
+ * Structured data for one project's case study page.
+ *
+ * `SoftwareSourceCode` again rather than `Article`, for the same reason: the
+ * page's subject is a repository, and this is the type carrying
+ * `codeRepository`, `programmingLanguage` and `codeSampleType`. The written
+ * case studies under `/work/<slug>` remain `Article`, because their subject is
+ * a piece of writing about an engagement.
+ *
+ * Every value is projected from the same `ProjectDetail` the page renders. No
+ * `aggregateRating`, no `offers` — the first would need reviews this site does
+ * not collect, and the second is barred site-wide by `scripts/schema-audit.mjs`.
+ */
+export function buildProjectDetailSchema(detail: ProjectDetail): Record<string, unknown> {
+  const { project, stats } = detail;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    name: project.title,
+    alternateName: project.repoName,
+    description: project.description ?? `${project.categories.join(", ")} project.`,
+    url: projectUrl(project.slug),
+    codeRepository: project.githubUrl,
+    dateCreated: stats.createdAt,
+    dateModified: stats.pushedAt,
+    ...(project.language ? { programmingLanguage: project.language } : {}),
+    ...(detail.topics.length > 0 ? { keywords: detail.topics.join(", ") } : {}),
+    // Only when the repository declares a licence. A missing licence is a
+    // meaningful absence — see the "Open source" filter's own reasoning.
+    ...(stats.license ? { license: stats.license } : {}),
+    // The generated OG card doubles as the page's social image, so the two
+    // cannot drift apart.
+    image: project.openGraphImageUrl,
+    author: { "@type": "Organization", name: "Trady Perch", url: SITE_URL },
+    maintainer: { "@type": "Organization", name: "Trady Perch", url: SITE_URL },
+    isPartOf: {
+      "@type": "CollectionPage",
+      name: "Projects",
+      url: `${SITE_URL}/work/projects`,
+    },
+    ...(project.liveUrl
+      ? {
+          // A reachable deployment is genuinely a different entity from the
+          // source, so it is expressed as one rather than folded into `url`.
+          targetProduct: {
+            "@type": "SoftwareApplication",
+            name: project.title,
+            url: project.liveUrl,
+            applicationCategory: "WebApplication",
+            operatingSystem: "Any",
+          },
+        }
+      : {}),
+  };
+}
+
+/**
+ * The breadcrumb trail for a project page.
+ *
+ * Mirrors the visible `<nav aria-label="Breadcrumb">` in `detail-hero.tsx`
+ * exactly. Structured data describing a trail the page does not show is the
+ * textbook mismatch Google demotes for.
+ */
+export function buildProjectBreadcrumbSchema(project: Project): Record<string, unknown> {
+  const trail = [
+    { name: "Work", url: `${SITE_URL}/work` },
+    { name: "Projects", url: `${SITE_URL}/work/projects` },
+    { name: project.title, url: projectUrl(project.slug) },
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((crumb, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: crumb.name,
+      item: crumb.url,
+    })),
   };
 }

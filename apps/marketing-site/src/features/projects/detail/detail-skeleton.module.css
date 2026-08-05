@@ -1,0 +1,236 @@
+/*
+ * The case study page's loading geometry.
+ *
+ * Every block mirrors a real element's size and spacing from
+ * project-detail-page.module.css, detail-hero.module.css and
+ * detail-stats.module.css, so the swap from skeleton to content shifts nothing.
+ *
+ * The shimmer is duplicated from projects-states.module.css rather than
+ * composed from it. CSS Modules `composes` can only pull a whole class, and
+ * that one carries `--card-index`-based stagger geometry meant for a grid of
+ * cards; this page staggers nothing. Copying twelve lines is cheaper than
+ * making the grid skeleton's rule serve two shapes.
+ */
+
+.page {
+  position: relative;
+  padding-block: var(--semantic-space-padding-section-sm);
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding-block: var(--core-space-24) var(--semantic-space-padding-section-lg);
+  }
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-padding-section-sm);
+}
+
+@media (min-width: 1024px) {
+  .container {
+    gap: var(--core-space-16);
+  }
+}
+
+/* --- Shimmer ------------------------------------------------------------ */
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--core-radius-sm);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 100%, white 5%);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--semantic-color-text-tertiary) 14%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: shimmer-sweep 1600ms linear infinite;
+}
+
+@keyframes shimmer-sweep {
+  from {
+    background-position: -100% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* --- Hero --------------------------------------------------------------- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+}
+
+.crumbs {
+  height: 0.8rem;
+  width: 14rem;
+  max-width: 70%;
+}
+
+.eyebrow {
+  height: 0.8rem;
+  width: 9rem;
+}
+
+/* Matches h1 at the mobile scale; the desktop override below tracks the
+   type ramp so the reserved height stays correct at both. */
+.title {
+  height: 2.6rem;
+  width: 60%;
+  min-width: 12rem;
+  border-radius: var(--core-radius-md);
+}
+
+.repo {
+  height: 0.9rem;
+  width: 18rem;
+  max-width: 80%;
+}
+
+.lede {
+  height: 1.1rem;
+  width: 100%;
+  max-width: 46rem;
+  margin-top: var(--core-space-2);
+}
+
+.ledeShort {
+  height: 1.1rem;
+  width: 62%;
+  max-width: 28rem;
+}
+
+.actions {
+  display: flex;
+  gap: var(--core-space-3);
+  margin-top: var(--core-space-4);
+}
+
+.button {
+  height: 2.75rem;
+  width: 9rem;
+  border-radius: var(--semantic-radius-control);
+}
+
+/* --- Statistics grid ---------------------------------------------------- */
+
+/* The same lattice the real grid draws: hairline gaps over a tinted
+   container, so the loading state has the identical footprint. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: var(--core-border-hairline);
+  border-radius: var(--core-radius-xl);
+  overflow: hidden;
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.statTile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  padding: var(--semantic-space-padding-component-md);
+  background-color: var(--semantic-color-surface-card);
+}
+
+.statLabel {
+  height: 0.8rem;
+  width: 70%;
+}
+
+.statValue {
+  height: 1.5rem;
+  width: 45%;
+}
+
+/* --- Body --------------------------------------------------------------- */
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-12);
+}
+
+@media (min-width: 1024px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: var(--core-space-16);
+    align-items: start;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  min-width: 0;
+}
+
+.sectionTitle {
+  height: 1.9rem;
+  width: 12rem;
+  margin-bottom: var(--core-space-4);
+  border-radius: var(--core-radius-md);
+}
+
+.line {
+  height: 0.95rem;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-8);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  padding: var(--semantic-space-padding-component-md);
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 62%, transparent);
+}
+
+.panelTitle {
+  height: 0.8rem;
+  width: 55%;
+}
+
+.panelBody {
+  height: 5rem;
+  border-radius: var(--core-radius-md);
+}
+
+.srOnly {
+  composes: srOnly from "../../../shared/components/section.module.css";
+}
+
+@media (min-width: 1024px) {
+  .title {
+    height: 4rem;
+  }
+}
+
+/*
+ * Ch.15 Mt-4 / Ag-3. The shimmer is removed rather than slowed: a looping
+ * animation is exactly what reduced motion is asking not to see, and a flat
+ * placeholder still communicates "content is coming" through its shape.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}

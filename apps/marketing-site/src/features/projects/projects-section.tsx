@@ -2,9 +2,13 @@ import { Button } from "@trady-perch/ui";
 import { NextLinkAdapter } from "@/shared/components/next-link-adapter";
 import { JsonLd } from "@/shared/json-ld";
 import { getAccountUrl, getFeaturedProjects, getProjects } from "./github-service";
+import { getPortfolioStats } from "./portfolio-stats-service";
+import { PortfolioStatsBar } from "./portfolio-stats-bar";
 import type { ProjectsFailureReason } from "./github-types";
+import { ProjectCard } from "./project-card";
 import { ProjectGrid } from "./project-grid";
 import { ProjectsAtmosphere } from "./projects-atmosphere";
+import { ProjectsExplorer } from "./projects-explorer";
 import { ProjectsRetryButton } from "./projects-retry";
 import { buildProjectsSchema } from "./projects-schema";
 import { ProjectsEmpty, ProjectsError } from "./projects-states";
@@ -45,7 +49,9 @@ const ERROR_MESSAGE: Record<ProjectsFailureReason, string> = {
 /* ------------------------------------------------------------------ */
 
 export async function ProjectsSection() {
-  const result = await getProjects();
+  // In parallel: the stats aggregate reads the same cached feed, so this costs
+  // one extra GraphQL call for the contribution calendar and nothing else.
+  const [result, stats] = await Promise.all([getProjects(), getPortfolioStats()]);
   const accountUrl = getAccountUrl();
 
   return (
@@ -77,7 +83,22 @@ export async function ProjectsSection() {
                 describing an empty ItemList, or describing projects the page
                 failed to render, contradicts the visible page. */}
             <JsonLd data={buildProjectsSchema(result.projects)} />
-            <ProjectGrid projects={result.projects} headingLevel="h3" />
+
+            <PortfolioStatsBar stats={stats} />
+
+            {/*
+              Every card is rendered here, on the server, and handed to the
+              client explorer as a finished element. The explorer decides which
+              ones to mount; it never builds one. That is what keeps the whole
+              card — its copy, its SVGs, `next/image` — out of the browser
+              bundle while still supporting live filtering.
+            */}
+            <ProjectsExplorer
+              items={result.projects.map((project) => ({
+                project,
+                card: <ProjectCard project={project} headingLevel="h3" />,
+              }))}
+            />
 
             <p className={styles.footnote}>
               {result.projects.length}{" "}

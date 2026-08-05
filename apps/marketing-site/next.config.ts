@@ -46,10 +46,83 @@ const SECURITY_HEADERS = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
+/**
+ * Remote image hosts the optimizer may fetch from.
+ *
+ * ── Why this list is short, and why it exists at all ──────────────────────
+ *
+ * `next/image` refuses to optimise an image from an unconfigured host and
+ * throws at render time. The projects feature renders three kinds of remote
+ * image — GitHub's generated repository cards, contributor avatars, and
+ * whatever a README embeds — so without this list the whole `/work/projects`
+ * tree fails to render rather than degrading.
+ *
+ * Left open (or set to `**`), the optimizer becomes a public proxy: anyone able
+ * to influence a rendered README could route arbitrary remote fetches, and
+ * their bandwidth cost, through this origin. Restricting it to GitHub-owned
+ * hosts plus the one badge service READMEs actually use bounds that to content
+ * this account already publishes.
+ *
+ * This list is mirrored by `RENDERABLE_IMAGE_HOSTS` in
+ * `src/features/projects/markdown/markdown-url.ts`, which decides what the
+ * renderer will even emit an `<Image>` for. `markdown-url.test.ts` asserts the
+ * two agree — a host in one and not the other is either a broken image or a
+ * silently dropped one.
+ */
+const GITHUB_IMAGE_HOSTS = [
+  "opengraph.githubassets.com",
+  "raw.githubusercontent.com",
+  "user-images.githubusercontent.com",
+  "avatars.githubusercontent.com",
+  "camo.githubusercontent.com",
+  "github.githubassets.com",
+  "github.com",
+  "img.shields.io",
+];
+
 const nextConfig: NextConfig = {
   // Workspace packages ship TypeScript source directly (no separate JS build
   // step for them) — Next.js transpiles them as part of the app build.
   transpilePackages: ["@trady-perch/tokens", "@trady-perch/motion", "@trady-perch/ui"],
+
+  images: {
+    remotePatterns: GITHUB_IMAGE_HOSTS.map((hostname) => ({
+      protocol: "https" as const,
+      hostname,
+    })),
+
+    /**
+     * SVG passthrough, with the mitigation that makes it safe.
+     *
+     * Off by default because an SVG is a document that can carry script, and
+     * serving one from this origin would run that script in this origin. It is
+     * enabled because the badge row at the top of almost every README is SVG,
+     * and the alternative — refusing to render them — visibly breaks the one
+     * piece of a README everyone looks at first.
+     *
+     * `contentSecurityPolicy` below is Next's documented neutraliser and is
+     * what makes the trade acceptable: every optimised image is served with
+     * `script-src 'none'` and `sandbox`, so an SVG containing a `<script>` or
+     * an `onload=` executes nothing. `contentDispositionType: attachment`
+     * covers the remaining case — someone navigating directly to the optimizer
+     * URL gets a download rather than a rendered document on this origin.
+     *
+     * Combined with the host allowlist above, the exposure is: an SVG from a
+     * repository this account owns, or from shields.io, rendered inert.
+     */
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    contentDispositionType: "attachment",
+
+    // A README image is displayed at one of two widths (rail or main column),
+    // and an avatar at exactly one. Trimming the default ladder cuts the
+    // number of variants the optimizer generates and caches per image.
+    imageSizes: [32, 64, 96, 128, 256],
+    // Thirty days. These are third-party images whose URLs already carry a
+    // cache-busting segment (see `toOpenGraphImageUrl`), so a long TTL cannot
+    // pin a stale card — a changed repository produces a different URL.
+    minimumCacheTTL: 2_592_000,
+  },
 
   // Product Implementation Constitution Ch.2 §4 — static generation is the
   // Marketing Site's default; React strict mode catches unsafe patterns early.

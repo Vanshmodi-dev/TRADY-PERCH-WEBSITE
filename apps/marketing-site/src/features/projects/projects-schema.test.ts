@@ -38,14 +38,28 @@ describe("buildProjectsSchema", () => {
     expect(list.itemListElement[0]?.item).not.toHaveProperty("programmingLanguage");
   });
 
-  it("points url at the live demo when there is one, and the repo otherwise", () => {
+  /**
+   * `url` is the canonical page *about* the item, and every project now has
+   * one on this site. Pointing it at the live demo — or at GitHub — told a
+   * crawler this site had no page for something it demonstrably does, and
+   * split the ranking signal between two origins we do not control.
+   *
+   * `codeRepository` still carries the repository, which is the property that
+   * actually means "where the source lives".
+   */
+  it("points url at the project's own case study page, not at GitHub or the demo", () => {
     const withDemo = buildProjectsSchema([project()]);
     const withoutDemo = buildProjectsSchema([project({ liveUrl: null })]);
-    const url = (schema: Record<string, unknown>) =>
-      (schema.mainEntity as { itemListElement: Array<{ item: { url: string } }> }).itemListElement[0]?.item.url;
+    const item = (schema: Record<string, unknown>) =>
+      (
+        schema.mainEntity as {
+          itemListElement: Array<{ item: { url: string; codeRepository: string } }>;
+        }
+      ).itemListElement[0]?.item;
 
-    expect(url(withDemo)).toBe("https://demo.example.com/");
-    expect(url(withoutDemo)).toBe("https://github.com/acme/ai-booking-agent");
+    expect(item(withDemo)?.url).toBe("https://tradyperch.com/work/projects/ai-booking-agent");
+    expect(item(withoutDemo)?.url).toBe("https://tradyperch.com/work/projects/ai-booking-agent");
+    expect(item(withDemo)?.codeRepository).toBe("https://github.com/acme/ai-booking-agent");
   });
 
   /**

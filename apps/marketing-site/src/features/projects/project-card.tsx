@@ -1,16 +1,17 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@trady-perch/ui";
-import { NextLinkAdapter } from "@/shared/components/next-link-adapter";
 import type { Project } from "./github-types";
+import { languageColor } from "./language-colors";
 import {
   STATUS_COPY,
   describeProject,
   formatAbsoluteDate,
+  formatCount,
   formatDemoHost,
   formatRelativeTime,
-  formatStarCount,
 } from "./project-format";
-import { ArrowIcon, ExternalIcon, GitHubIcon, StarIcon } from "./project-icons";
+import { ExternalIcon, ForkIcon, GitHubIcon, RepoIcon, StarIcon } from "./project-icons";
 import styles from "./project-card.module.css";
 
 /**
@@ -25,45 +26,26 @@ import styles from "./project-card.module.css";
  *
  * ── Zero client JavaScript ────────────────────────────────────────────────
  *
- * A Server Component. Lift, glow, light sweep, border illumination and the
- * thumbnail's slow zoom are CSS; the pointer tilt comes from custom
- * properties written by the grid's single delegated listener
- * (`project-pointer-field.tsx`). A nine-card grid therefore produces nine
- * cards and zero hydration roots.
+ * A Server Component, and it stays one even inside the filter island: the
+ * explorer receives the *rendered element* and only chooses whether to mount
+ * it (see `projects-explorer.tsx`). Lift, glow, light sweep, border
+ * illumination and the thumbnail's slow zoom are CSS; the pointer tilt comes
+ * from custom properties written by the grid's single delegated listener
+ * (`project-pointer-field.tsx`).
  *
- * ── Why the card is not one big link ──────────────────────────────────────
+ * ── The click target ──────────────────────────────────────────────────────
  *
- * Ch.19 Cd-1 makes an Interactive card a single link over its whole surface.
- * This card has up to three independent destinations — repository, live
- * deployment, case study — and nesting those inside an outer anchor is
- * invalid HTML that gives keyboard and screen-reader users an ambiguous
- * target. So the surface is inert and each action is a real, separately
- * focusable control.
+ * The whole card opens the case study, but the card is not an anchor. Ch.19
+ * Cd-1's single-link-over-the-surface rule cannot apply to a card carrying
+ * three independent destinations — nesting anchors is invalid HTML and gives
+ * keyboard and screen-reader users an ambiguous target.
+ *
+ * Instead the *title* is the link, and it projects a transparent overlay
+ * (`.title a::after`) across the card at a z-index below the footer actions.
+ * A pointer anywhere on the surface therefore hits the case study; the Live
+ * demo and Source buttons sit above the overlay and keep their own targets;
+ * and the tab order contains exactly three real, separately labelled controls.
  */
-
-/**
- * GitHub's linguist colours for the languages this account publishes, so the
- * language dot reads as familiar rather than invented. An unlisted language
- * falls back to the accent token — a missing entry is a cosmetic default,
- * never a broken render.
- */
-const LANGUAGE_COLORS: Record<string, string> = {
-  typescript: "#3178c6",
-  javascript: "#f1e05a",
-  python: "#3572a5",
-  html: "#e34c26",
-  css: "#563d7c",
-  go: "#00add8",
-  rust: "#dea584",
-  java: "#b07219",
-  "c#": "#178600",
-  php: "#4f5d95",
-  ruby: "#701516",
-  shell: "#89e051",
-  svelte: "#ff3e00",
-  vue: "#41b883",
-  astro: "#ff5a03",
-};
 
 interface ProjectCardProps {
   project: Project;
@@ -81,9 +63,7 @@ interface ProjectCardProps {
 export function ProjectCard({ project, headingLevel = "h3" }: ProjectCardProps) {
   const { featured } = project;
   const status = STATUS_COPY[project.status];
-  const languageColor = project.language
-    ? (LANGUAGE_COLORS[project.language.toLowerCase()] ?? "var(--semantic-color-accent-primary)")
-    : null;
+  const detailHref = `/work/projects/${project.slug}`;
 
   // A featured card has the vertical room for the long-form paragraph; a
   // standard one does not, and would clamp it into a ragged three lines.
@@ -158,7 +138,27 @@ export function ProjectCard({ project, headingLevel = "h3" }: ProjectCardProps) 
           </span>
         </p>
 
-        <HeadingTag className={styles.title}>{project.title}</HeadingTag>
+        <HeadingTag className={styles.title}>
+          {/*
+            The card's primary link. `next/link` rather than the Button's link
+            adapter because this one is a bare text link that also has to
+            project the surface overlay — a Button would bring its own control
+            chrome into the middle of a heading.
+          */}
+          <Link href={detailHref} className={styles.titleLink}>
+            {project.title}
+          </Link>
+        </HeadingTag>
+
+        {/* The real repository name, alongside the editorial title that may
+            have replaced it. Small, muted, and above the description: it is
+            the fact that makes the whole page verifiable. */}
+        <p className={styles.repoLine}>
+          <RepoIcon className={styles.repoIcon} />
+          <span className={styles.repoName}>{project.repoName}</span>
+          <span className={styles.visibility}>{project.visibility}</span>
+        </p>
+
         <p className={styles.body}>{body}</p>
 
         {project.tags.length > 0 ? (
@@ -181,7 +181,7 @@ export function ProjectCard({ project, headingLevel = "h3" }: ProjectCardProps) 
             <span className={styles.fact}>
               <span
                 className={styles.languageDot}
-                style={{ backgroundColor: languageColor ?? undefined }}
+                style={{ backgroundColor: languageColor(project.language) }}
                 aria-hidden="true"
               />
               {project.language}
@@ -193,10 +193,16 @@ export function ProjectCard({ project, headingLevel = "h3" }: ProjectCardProps) 
               unremarkable fact. */}
           <span className={styles.fact}>
             <StarIcon className={styles.factIcon} />
-            <span>{formatStarCount(project.stars)}</span>
+            <span>{formatCount(project.stars)}</span>
             <span className={styles.srOnly}>
               {project.stars === 1 ? "star" : "stars"} on GitHub
             </span>
+          </span>
+
+          <span className={styles.fact}>
+            <ForkIcon className={styles.factIcon} />
+            <span>{formatCount(project.forks)}</span>
+            <span className={styles.srOnly}>{project.forks === 1 ? "fork" : "forks"}</span>
           </span>
 
           {/* dateTime carries the exact instant and title a readable absolute
@@ -213,23 +219,10 @@ export function ProjectCard({ project, headingLevel = "h3" }: ProjectCardProps) 
         </div>
 
         <div className={styles.actions}>
-          {project.caseStudySlug ? (
-            <Button
-              href={`/work/projects/${project.caseStudySlug}`}
-              linkComponent={NextLinkAdapter}
-              emphasis="secondary"
-              size="sm"
-              trailingIcon={<ArrowIcon className={styles.actionIcon} />}
-              aria-label={`Read the case study for ${project.title}`}
-            >
-              Case study
-            </Button>
-          ) : null}
-
           {project.liveUrl ? (
             <Button
               href={project.liveUrl}
-              emphasis={project.caseStudySlug ? "ghost" : "secondary"}
+              emphasis="secondary"
               size="sm"
               target="_blank"
               trailingIcon={<ExternalIcon className={styles.actionIcon} />}

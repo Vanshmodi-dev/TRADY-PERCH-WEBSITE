@@ -64,13 +64,52 @@ export function formatAbsoluteDate(isoDate: string): string {
   }).format(timestamp);
 }
 
-/** `1400` -> `1.4k`. Keeps the stars pill to a fixed width as counts grow. */
-export function formatStarCount(stars: number): string {
-  if (!Number.isFinite(stars) || stars < 0) return "0";
-  if (stars < 1000) return String(Math.floor(stars));
-  const thousands = stars / 1000;
+/**
+ * `1400` -> `1.4k`. Keeps a count pill to a fixed width as the figure grows.
+ *
+ * Named for counts generally rather than for stars: the card now renders forks
+ * through the same function, and the detail page renders issues, pull requests
+ * and commits. One abbreviation rule across every number on the page is what
+ * stops "1.4k stars" sitting next to "1400 commits".
+ */
+export function formatCount(value: number): string {
+  if (!Number.isFinite(value) || value < 0) return "0";
+  if (value < 1000) return String(Math.floor(value));
+  const thousands = value / 1000;
   // `10.4k` reads as noise; past 10k the tenth is not information anyone uses.
   return thousands >= 10 ? `${Math.floor(thousands)}k` : `${thousands.toFixed(1)}k`;
+}
+
+/**
+ * A month and year — "July 2026".
+ *
+ * The detail page's timeline shows creation and last-push dates, where the day
+ * is noise: what a reader takes from "created March 2025" is the age of the
+ * project, and the exact day adds a digit without adding meaning. The full
+ * date is still on the `<time>` element's `dateTime` attribute.
+ */
+export function formatMonthYear(isoDate: string): string {
+  const timestamp = Date.parse(isoDate);
+  if (!Number.isFinite(timestamp)) return "unknown";
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(timestamp);
+}
+
+/**
+ * A whole-number percentage share, with a floor of `<1%` rather than `0%`.
+ *
+ * A language that is genuinely present in a repository should never be
+ * labelled as zero percent of it — that reads as a rendering fault, and the
+ * distinction between "absent" and "present but small" is the one thing a
+ * language chart exists to show.
+ */
+export function formatShare(percentage: number): string {
+  if (!Number.isFinite(percentage) || percentage <= 0) return "0%";
+  if (percentage < 1) return "<1%";
+  return `${percentage % 1 === 0 ? percentage : percentage.toFixed(1)}%`;
 }
 
 /**

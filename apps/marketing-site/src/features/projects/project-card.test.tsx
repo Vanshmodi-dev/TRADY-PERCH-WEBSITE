@@ -137,19 +137,34 @@ describe("ProjectCard", () => {
     });
 
     /**
-     * A case-study link is rendered only once real content exists behind it.
-     * Linking to an empty page is worse than showing no link.
+     * The card's primary destination is its own generated case study, which
+     * now exists for *every* published project — so this is the title link
+     * rather than a conditional fourth button.
+     *
+     * The previous version of this card rendered a "Case study" button only
+     * when a hand-written study existed, and pointed it at
+     * `/work/projects/<study-slug>`. That route did not exist: the written
+     * studies live at `/work/<slug>`, so the button 404'd for every project
+     * that had one. The link is now derived from `project.slug`, which is the
+     * segment the `/work/projects/[repo]` route actually resolves.
      */
-    it("omits the case-study action when no case study exists", () => {
-      render(<ProjectCard project={project({ caseStudySlug: null })} />);
-      expect(screen.queryByRole("link", { name: /case study/i })).not.toBeInTheDocument();
+    it("makes the title a link to the project's case study page", () => {
+      render(<ProjectCard project={project({ slug: "ai-booking-agent" })} />);
+      expect(screen.getByRole("link", { name: "AI Booking Agent" })).toHaveAttribute(
+        "href",
+        "/work/projects/ai-booking-agent",
+      );
     });
 
-    it("links to the case study when one exists", () => {
-      render(<ProjectCard project={project({ caseStudySlug: "booking-agent" })} />);
-      expect(screen.getByRole("link", { name: /Read the case study for AI Booking Agent/ })).toHaveAttribute(
+    it("derives the case study href from the slug, not from the display title", () => {
+      // An editorial title must never leak into a URL — the route resolves on
+      // the repository name.
+      render(
+        <ProjectCard project={project({ slug: "tp-lg-v2", title: "Lead Generation Engine" })} />,
+      );
+      expect(screen.getByRole("link", { name: "Lead Generation Engine" })).toHaveAttribute(
         "href",
-        "/work/projects/booking-agent",
+        "/work/projects/tp-lg-v2",
       );
     });
   });

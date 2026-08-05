@@ -1,0 +1,203 @@
+/*
+ * The case study page shell: hero, statistics, and the two-column body.
+ *
+ * The column ratio is `minmax(0, 1fr) 20rem` rather than a percentage split.
+ * `minmax(0, ...)` on the main column is load-bearing: a grid track's default
+ * `min-width: auto` refuses to shrink below its content's intrinsic width, and
+ * a single long line inside a README code block would otherwise push the
+ * entire layout wider than the viewport. This is the specific fix for that.
+ */
+
+.page {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-padding-section-sm);
+  padding-bottom: var(--semantic-space-padding-section-lg);
+}
+
+@media (min-width: 1024px) {
+  .container {
+    gap: var(--core-space-16);
+  }
+}
+
+/* --- Body --------------------------------------------------------------- */
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-12);
+}
+
+@media (min-width: 1024px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: var(--core-space-16);
+    align-items: start;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--semantic-space-padding-section-sm);
+  min-width: 0;
+}
+
+/* --- Rail --------------------------------------------------------------- */
+
+.rail {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .railInner {
+    position: sticky;
+    /* Clears the fixed header plus a comfortable margin, so a panel scrolled
+       to the top of its travel is not tucked under the navigation. */
+    top: var(--core-space-24);
+    display: flex;
+    flex-direction: column;
+    gap: var(--core-space-8);
+    /* A rail taller than the viewport must scroll within itself rather than
+       trapping content permanently below the fold. */
+    max-height: calc(100vh - var(--core-space-32));
+    overflow-y: auto;
+    scrollbar-width: thin;
+    /* Room for the scrollbar without the panels' hairlines touching it. */
+    padding-right: var(--core-space-2);
+  }
+}
+
+/* Below desktop the rail is an ordinary stacked block under the README. */
+.railInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-8);
+}
+
+/* --- README section ----------------------------------------------------- */
+
+.readme,
+.noReadme {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+  min-width: 0;
+}
+
+.noReadme {
+  align-items: flex-start;
+  padding: var(--semantic-space-padding-component-lg);
+  border-radius: var(--core-radius-xl);
+  border: var(--core-border-hairline) dashed
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  padding-bottom: var(--core-space-4);
+  border-bottom: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  letter-spacing: var(--core-type-h2-tracking);
+  color: var(--semantic-color-text-primary);
+}
+
+.sectionNote {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+}
+
+/* The repository and branch names, set as identifiers rather than prose. */
+.mono {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+  font-size: 0.95em;
+  color: var(--semantic-color-text-primary);
+}
+
+.buttonIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+}
+
+/* --- Closing block ------------------------------------------------------ */
+
+.pageFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--core-space-4);
+  padding: var(--semantic-space-padding-section-sm) var(--core-space-6);
+  text-align: center;
+  border-radius: var(--core-radius-xl);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 60%, transparent);
+  background-image: radial-gradient(
+    80% 120% at 50% 0%,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 9%, transparent),
+    transparent 62%
+  );
+}
+
+.footerTitle {
+  margin: 0;
+  max-width: 26ch;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.footerBody {
+  margin: 0;
+  max-width: 56ch;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.footerActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--core-space-3);
+  margin-top: var(--core-space-2);
+}
+
+@media (min-width: 1024px) {
+  .sectionTitle {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+  .sectionNote {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .footerTitle {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+  .footerBody {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
