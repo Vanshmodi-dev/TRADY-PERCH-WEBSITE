@@ -42,14 +42,6 @@ export function CaseStudyHeroSection({ hero }: CaseStudyHeroProps) {
               /
             </li>
             <li>
-              <Link href="/work/projects" linkComponent={NextLinkAdapter} className={styles.crumb}>
-                Projects
-              </Link>
-            </li>
-            <li aria-hidden="true" className={styles.crumbSeparator}>
-              /
-            </li>
-            <li>
               {/* aria-current marks the terminal crumb; it is not a link,
                   because a link to the page you are on is a dead control. */}
               <span className={styles.crumbCurrent} aria-current="page">

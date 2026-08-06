@@ -171,7 +171,7 @@ export async function ProjectsTeaser() {
         <ProjectGrid projects={result.projects} headingLevel="h3" />
 
         <div className={styles.footer}>
-          <Button href="/work/projects" linkComponent={NextLinkAdapter} emphasis="secondary">
+          <Button href="/work" linkComponent={NextLinkAdapter} emphasis="secondary">
             See every project
           </Button>
         </div>

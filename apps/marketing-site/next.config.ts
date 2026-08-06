@@ -174,6 +174,34 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
+
+  async redirects() {
+    return [
+      {
+        /**
+         * The live portfolio moved from `/work/projects` to `/work`.
+         *
+         * It had to move: the navigation's only "Work" link points at
+         * `/work`, and nothing anywhere pointed at `/work/projects`, so the
+         * rebuilt section was unreachable unless you already knew the URL.
+         *
+         * Permanent (308), not temporary — the old path is retired, and a
+         * 308 tells search engines to transfer the indexed URL rather than
+         * keep polling this one. 308 rather than 301 preserves the request
+         * method, which costs nothing here and is the correct default.
+         *
+         * `source` is the exact path, so the generated case studies at
+         * `/work/projects/<repo>` are NOT caught by it. That is deliberate:
+         * those URLs are already indexed and shared, and the obvious
+         * alternative — `/work/<repo>` — would collide with the hand-written
+         * case studies that already own that segment.
+         */
+        source: "/work/projects",
+        destination: "/work",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

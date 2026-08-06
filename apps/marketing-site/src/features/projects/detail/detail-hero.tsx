@@ -38,19 +38,17 @@ export function DetailHero({ project, stats, caseStudySlug }: DetailHeroProps) {
           the same path, so the visible navigation and the structured data
           cannot disagree — which is exactly what a search engine penalises.
         */}
+        {/*
+          Two crumbs, not three. `/work` is the portfolio itself now, so a
+          separate "Projects" crumb pointed at the same page under a different
+          name — and after the move it pointed at a redirect. The JSON-LD
+          breadcrumb in `projects-schema.ts` mirrors exactly this trail.
+        */}
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <ol className={styles.breadcrumbList}>
             <li>
               <Link href="/work" className={styles.breadcrumbLink}>
                 Work
-              </Link>
-            </li>
-            <li aria-hidden="true" className={styles.breadcrumbSeparator}>
-              /
-            </li>
-            <li>
-              <Link href="/work/projects" className={styles.breadcrumbLink}>
-                Projects
               </Link>
             </li>
             <li aria-hidden="true" className={styles.breadcrumbSeparator}>

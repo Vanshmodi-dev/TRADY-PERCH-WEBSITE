@@ -88,10 +88,10 @@ describe("CaseStudyLayout", () => {
       render(<CaseStudyLayout study={study()} project={null} related={[]} />);
       const nav = screen.getByRole("navigation", { name: /breadcrumb/i });
       expect(within(nav).getByRole("link", { name: "Work" })).toHaveAttribute("href", "/work");
-      expect(within(nav).getByRole("link", { name: "Projects" })).toHaveAttribute(
-        "href",
-        "/work/projects",
-      );
+      // No "Projects" crumb: /work is the portfolio itself now, so a second
+      // crumb would point at the same page under a different name — and after
+      // the move it would point at a redirect.
+      expect(within(nav).queryByRole("link", { name: "Projects" })).not.toBeInTheDocument();
       // The terminal crumb is not a link — a link to the page you are on is a
       // dead control.
       expect(within(nav).queryByRole("link", { name: "Example System" })).not.toBeInTheDocument();
@@ -248,12 +248,10 @@ describe("structured data", () => {
     const schema = buildBreadcrumbSchema(study()) as {
       itemListElement: Array<{ position: number; name: string }>;
     };
-    expect(schema.itemListElement.map((entry) => entry.name)).toEqual([
-      "Work",
-      "Projects",
-      "Example System",
-    ]);
+    // Two crumbs, matching the rendered trail: /work is the portfolio itself,
+    // so a "Projects" crumb would name the same page twice.
+    expect(schema.itemListElement.map((entry) => entry.name)).toEqual(["Work", "Example System"]);
     // 1-based: Google's validator rejects position 0.
-    expect(schema.itemListElement.map((entry) => entry.position)).toEqual([1, 2, 3]);
+    expect(schema.itemListElement.map((entry) => entry.position)).toEqual([1, 2]);
   });
 });

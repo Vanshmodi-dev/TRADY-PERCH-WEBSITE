@@ -50,7 +50,7 @@ export function CaseStudyCta({ cta }: CaseStudyCtaProps) {
           <Button href="/contact" linkComponent={NextLinkAdapter} size="lg">
             Start a conversation
           </Button>
-          <Button href="/work/projects" linkComponent={NextLinkAdapter} emphasis="ghost" size="lg">
+          <Button href="/work" linkComponent={NextLinkAdapter} emphasis="ghost" size="lg">
             See more work
           </Button>
         </div>

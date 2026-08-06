@@ -135,7 +135,16 @@
   font-size: var(--core-type-caption-size-mobile);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--semantic-color-text-tertiary);
+  /*
+   * text-secondary, not tertiary.
+   *
+   * The code block's surface is core.color.black.950 (#0B0B0D), the darkest
+   * in the palette, and tertiary (gray.600, #6E6E74) measures 3.88:1 against
+   * it — under the 4.5:1 AA floor for text this size. The axe gate caught it
+   * on a real README. text-secondary (gray.400) measures ~8:1 on the same
+   * surface and still reads as a quiet label rather than as content.
+   */
+  color: var(--semantic-color-text-secondary);
   pointer-events: none;
 }
 

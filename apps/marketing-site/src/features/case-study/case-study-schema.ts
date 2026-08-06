@@ -65,7 +65,11 @@ export function buildCaseStudyArticleSchema(
  * Mirrors the visible `<nav aria-label="Breadcrumb">` in the hero exactly.
  * Breadcrumb markup with no on-page counterpart is precisely the mismatch
  * Google's structured-data guidelines call out, so the two are built to the
- * same three-item shape and a test asserts they stay that way.
+ * same two-item shape and a test asserts they stay that way.
+ *
+ * Two items, not three. The trail used to run Work / Projects / Title, but
+ * `/work` *is* the portfolio now — a "Projects" crumb would point at the same
+ * page under a second name, and at a redirect besides.
  */
 export function buildBreadcrumbSchema(study: CaseStudy): Record<string, unknown> {
   return {
@@ -73,10 +77,9 @@ export function buildBreadcrumbSchema(study: CaseStudy): Record<string, unknown>
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Work", item: `${SITE_URL}/work` },
-      { "@type": "ListItem", position: 2, name: "Projects", item: `${SITE_URL}/work/projects` },
       {
         "@type": "ListItem",
-        position: 3,
+        position: 2,
         name: study.hero.title,
         item: caseStudyUrl(study.slug),
       },

@@ -32,7 +32,7 @@ export function buildProjectsSchema(projects: readonly Project[]): Record<string
     name: "Projects",
     description:
       "Open-source websites, AI agents and automation systems built by Trady Perch, generated directly from our public GitHub repositories.",
-    url: `${SITE_URL}/work/projects`,
+    url: `${SITE_URL}/work`,
     isPartOf: { "@type": "WebSite", name: "Trady Perch", url: SITE_URL },
     mainEntity: {
       "@type": "ItemList",
@@ -102,7 +102,7 @@ export function buildProjectDetailSchema(detail: ProjectDetail): Record<string, 
     isPartOf: {
       "@type": "CollectionPage",
       name: "Projects",
-      url: `${SITE_URL}/work/projects`,
+      url: `${SITE_URL}/work`,
     },
     ...(project.liveUrl
       ? {
@@ -128,9 +128,11 @@ export function buildProjectDetailSchema(detail: ProjectDetail): Record<string, 
  * textbook mismatch Google demotes for.
  */
 export function buildProjectBreadcrumbSchema(project: Project): Record<string, unknown> {
+  // Two crumbs. `/work` is the portfolio itself, so the "Projects" crumb this
+  // trail used to carry would name the same page twice — and point at a
+  // redirect. `detail-hero.tsx` renders exactly this trail.
   const trail = [
     { name: "Work", url: `${SITE_URL}/work` },
-    { name: "Projects", url: `${SITE_URL}/work/projects` },
     { name: project.title, url: projectUrl(project.slug) },
   ];
 

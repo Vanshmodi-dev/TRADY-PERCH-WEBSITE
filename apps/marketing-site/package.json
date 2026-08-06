@@ -19,12 +19,15 @@
     "test:schema": "node scripts/schema-audit.mjs"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
     "@trady-perch/motion": "*",
     "@trady-perch/tokens": "*",
     "@trady-perch/ui": "*",
     "next": "^16.2.11",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
