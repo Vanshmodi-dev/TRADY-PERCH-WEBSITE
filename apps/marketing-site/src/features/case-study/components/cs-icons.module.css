@@ -1,0 +1,39 @@
+/*
+ * Feature icon frame.
+ *
+ * The glyph sits inside a soft, hairline-outlined tile rather than floating
+ * loose. A framed icon holds its own against a large heading; a bare 24px
+ * stroke next to h3 type just looks small.
+ */
+
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--core-radius-md);
+  color: var(--semantic-color-accent-primary);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-accent-primary) 26%, transparent);
+  background-image: linear-gradient(
+    145deg,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 12%, transparent),
+    transparent 70%
+  );
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.svg {
+  width: var(--core-icon-size-24);
+  height: var(--core-icon-size-24);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrapper {
+    transition-duration: var(--motion-duration-instant);
+  }
+}

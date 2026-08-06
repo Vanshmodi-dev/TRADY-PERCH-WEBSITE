@@ -1,0 +1,292 @@
+/*
+ * The sticky rail's panels: contents, languages, contributors, activity,
+ * topics.
+ *
+ * One stylesheet for all five because they are one visual object — a stack of
+ * hairline-separated panels sharing a title treatment, a spacing rhythm and a
+ * hover language. Five near-identical stylesheets is how that consistency
+ * quietly stops being true.
+ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  padding: var(--semantic-space-padding-component-md);
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 62%, transparent);
+  backdrop-filter: blur(var(--core-blur-subtle));
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-secondary);
+}
+
+.panelCount {
+  padding: 1px var(--core-space-2);
+  border-radius: var(--semantic-radius-pill);
+  font-size: var(--core-type-label-size-mobile);
+  letter-spacing: 0;
+  color: var(--semantic-color-accent-primary);
+  background-color: color-mix(in oklab, var(--semantic-color-accent-primary) 14%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.panelNote {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-tertiary);
+}
+
+/* --- Contents ----------------------------------------------------------- */
+
+.outline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* A long README's contents list must not push the rail past the viewport. */
+  max-height: 18rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.outlineItem {
+  /* Indentation tracks heading depth, computed relative to the document's own
+     shallowest level — see detail-outline.tsx. */
+  padding-left: calc(var(--outline-depth, 0) * var(--core-space-3));
+}
+
+.outlineLink {
+  display: block;
+  padding: var(--core-space-1) 0;
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--core-radius-sm);
+  /* A wrapped four-line entry makes the list unscannable; one line each,
+     truncated, keeps the shape of the document legible. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.outlineLink:hover {
+  color: var(--semantic-color-accent-primary);
+}
+
+.outlineLink:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* --- Languages ---------------------------------------------------------- */
+
+.bar {
+  display: flex;
+  height: 8px;
+  border-radius: var(--core-radius-full);
+  overflow: hidden;
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 8%, transparent);
+}
+
+.barSlice {
+  /* `flex-basis: 0` with a percentage `flex-grow` is what makes the slices
+     total exactly the track width even when the rounded percentages do not
+     total 100. */
+  flex-basis: 0;
+  min-width: 2px;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+  min-width: 0;
+}
+
+.legendDot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--core-radius-full);
+  flex-shrink: 0;
+}
+
+.legendName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legendValue {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--semantic-color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Contributors ------------------------------------------------------- */
+
+.people {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.personLink {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-3);
+  padding: var(--core-space-2);
+  margin: 0 calc(-1 * var(--core-space-2));
+  border-radius: var(--core-radius-md);
+  text-decoration: none;
+  color: var(--semantic-color-text-secondary);
+  transition:
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.personLink:hover {
+  color: var(--semantic-color-text-primary);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 6%, transparent);
+}
+
+.personLink:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: -2px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--core-radius-full);
+  flex-shrink: 0;
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+}
+
+.personName {
+  font-size: var(--core-type-caption-size-mobile);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.personMeta {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Activity sparkline ------------------------------------------------- */
+
+.sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 48px;
+}
+
+.sparkBar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 28%, transparent),
+    var(--semantic-color-accent-primary)
+  );
+}
+
+/* --- Topics ------------------------------------------------------------- */
+
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topic {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px var(--core-space-2);
+  border-radius: var(--core-radius-sm);
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 4%, transparent);
+  transition:
+    color var(--motion-duration-quick) var(--motion-easing-entrance),
+    border-color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.topic:hover {
+  color: var(--semantic-color-text-primary);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 40%, transparent);
+}
+
+.topic:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.srOnly {
+  composes: srOnly from "../../../shared/components/section.module.css";
+}
+
+@media (min-width: 1024px) {
+  .panelTitle,
+  .panelNote,
+  .legendItem,
+  .personName,
+  .personMeta,
+  .outlineLink,
+  .topic {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outlineLink,
+  .personLink,
+  .topic {
+    transition-duration: var(--motion-duration-instant);
+  }
+}

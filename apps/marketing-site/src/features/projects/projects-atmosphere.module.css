@@ -1,0 +1,123 @@
+/*
+ * Ambient depth behind the projects section.
+ *
+ * ── Entirely CSS ──────────────────────────────────────────────────────────
+ *
+ * No canvas, no requestAnimationFrame, no particle library. Three stacked
+ * layers — a soft light source, an almost-invisible engineering grid, and a
+ * sparse dot field — each a background-image on one absolutely-positioned
+ * element. That is zero JavaScript, zero main-thread cost after paint, and
+ * nothing for the profiler to find.
+ *
+ * The temptation here is a WebGL particle field. This section already sits on
+ * a page whose hero runs a three.js scene; a second animated canvas would
+ * compete for the same frame budget to decorate content the visitor came to
+ * read. Restraint is the more premium answer and the faster one.
+ *
+ * ── Why it is this subtle ─────────────────────────────────────────────────
+ *
+ * Every value is at the threshold of perception on purpose. The grid is 3%
+ * white; the dots are 4%. Read individually they are nearly invisible, which
+ * is the intent — they register as depth and texture rather than as pattern.
+ * If you can name the effect while reading the cards, it is too strong.
+ */
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  /* Never announced or reachable; purely a painted surface. */
+  user-select: none;
+}
+
+/*
+ * Layer 1 — the light source. A wide, very soft accent bloom rising from
+ * behind the section's heading, giving the whole block a top-lit direction
+ * that the cards' own gradients then agree with.
+ */
+.glow {
+  position: absolute;
+  top: -22%;
+  left: 50%;
+  width: min(1400px, 130%);
+  height: 78%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 9%, transparent) 0%,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 3%, transparent) 42%,
+    transparent 72%
+  );
+}
+
+/*
+ * Layer 2 — the engineering grid. Two repeating linear gradients rather than
+ * an SVG or a tiled PNG: no request, and the cell size is a single value to
+ * change.
+ *
+ * Masked to fade out toward every edge, so the grid never collides with the
+ * section boundary as a hard rectangle of texture — it emerges and recedes.
+ */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--semantic-color-text-primary) 3%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--semantic-color-text-primary) 3%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 72px 72px;
+  mask-image: radial-gradient(120% 90% at 50% 25%, #000 0%, #000 42%, transparent 78%);
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 25%, #000 0%, #000 42%, transparent 78%);
+}
+
+/*
+ * Layer 3 — the dot field. A single small radial-gradient tile repeated at a
+ * deliberately non-multiple offset from the grid's 72px cell, so dots do not
+ * land on intersections and produce a regular, obviously-tiled pattern.
+ */
+.particles {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at center,
+    color-mix(in oklab, var(--semantic-color-text-primary) 22%, transparent) 0.6px,
+    transparent 0.6px
+  );
+  background-size: 53px 47px;
+  opacity: 0.5;
+  mask-image: radial-gradient(100% 80% at 50% 30%, #000 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(100% 80% at 50% 30%, #000 0%, transparent 72%);
+}
+
+/*
+ * Grades the section's bottom edge back into the page background so the
+ * atmosphere ends by dissolving rather than by stopping.
+ */
+.fade {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 30%;
+  background: linear-gradient(to bottom, transparent, var(--semantic-color-background-primary));
+}
+
+/*
+ * Forced-colors (Windows High Contrast). The whole atmosphere is decorative
+ * texture that carries no information; in a forced palette these layers can
+ * only render as unintended solid fills behind the content. Removing them
+ * entirely is the correct behaviour, not a degradation.
+ */
+@media (forced-colors: active) {
+  .atmosphere {
+    display: none;
+  }
+}

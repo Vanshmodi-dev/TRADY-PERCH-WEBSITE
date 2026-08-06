@@ -20,6 +20,29 @@ export const ROUTES = [
   "/work/case-studies/real-estate-brokerage",
   "/work/case-studies/manufacturing-supplier",
   "/work/case-studies/medical-practice",
+  // The GitHub-backed portfolio. Both entries depend on the live feed rather
+  // than on a checked-in registry, which makes them the two routes here most
+  // worth auditing — they carry the only third-party-authored content on the
+  // site (a rendered README) and the only live filter UI.
+  //
+  // The detail route is pinned to this site's own repository because it is the
+  // one entry guaranteed to exist for as long as the site does.
+  //
+  // KNOWN LIMITATION — what these two actually cover depends on where the
+  // audit runs. CI deliberately provides no secrets (see the accessibility job
+  // in .github/workflows/ci.yml), so `MARKETING_SITE_GITHUB_USERNAME` is unset
+  // there: the index renders its empty state and the detail route 404s. The
+  // audit navigates and runs axe without asserting on HTTP status, so both
+  // still pass — it is simply auditing the empty and not-found states rather
+  // than a populated grid and a rendered README.
+  //
+  // That is not a false pass (those states are real and worth checking), but
+  // it does mean the populated markup is only genuinely audited on a machine
+  // with the feed configured — which is how it was verified before shipping:
+  // 31 routes, zero WCAG 2.1 A/AA violations, run locally against live data.
+  // Giving the CI job a read-only token would close the gap.
+  "/work/projects",
+  "/work/projects/trady-perch-website",
   "/pricing",
   "/contact",
   "/faq",

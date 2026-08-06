@@ -1,0 +1,110 @@
+/*
+ * The account statistics strip.
+ *
+ * Set as a hairline-ruled row rather than as a set of cards. Six bordered
+ * boxes above a grid of bordered cards is two competing container languages on
+ * one screen; a ruled row reads as a masthead and lets the cards below stay
+ * the only objects on the page.
+ */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-8);
+}
+
+.grid {
+  display: grid;
+  /* Two up on the narrowest phone, filling out to six across as room allows.
+     `auto-fit` rather than a fixed count so the tiles never end up with one
+     orphan on its own row. */
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--core-space-6) var(--core-space-4);
+  margin: 0;
+  padding: var(--core-space-6) 0;
+  border-block: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--core-space-1);
+  min-width: 0;
+
+  /* Sequential reveal, matching the card grid's rhythm. `column-reverse`
+     above puts the value first visually while keeping <dt> before <dd> in the
+     DOM, which is the order the specification requires. */
+  animation: tile-enter var(--motion-duration-deliberate) var(--motion-easing-ceremonial) both;
+  animation-delay: calc(min(var(--tile-index, 0), 6) * 60ms);
+}
+
+@keyframes tile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--core-space-3));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.label {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* text-secondary rather than tertiary: tertiary (gray.600) measures 3.88:1
+     against the page background, under the 4.5:1 AA floor at this size. */
+  color: var(--semantic-color-text-secondary);
+}
+
+.value {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  margin: 0;
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: 1.1;
+  color: var(--semantic-color-text-primary);
+  /* Tabular figures are what stop the tile jittering horizontally while the
+     counter animates — proportional digits change width as they cycle. */
+  font-variant-numeric: tabular-nums;
+}
+
+.suffix {
+  font-size: 0.5em;
+  color: var(--semantic-color-accent-primary);
+  letter-spacing: 0.04em;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 1024px) {
+  .value {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+  .label {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    animation: none;
+  }
+}

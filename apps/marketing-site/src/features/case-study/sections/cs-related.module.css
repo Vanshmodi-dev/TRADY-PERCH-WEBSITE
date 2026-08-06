@@ -1,0 +1,131 @@
+/* Related case studies. */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--core-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--core-space-8);
+  }
+}
+
+.item {
+  display: flex;
+  min-width: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  width: 100%;
+  padding: var(--semantic-space-padding-component-lg);
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--semantic-color-surface-card) 100%, white 3%),
+    var(--semantic-color-surface-card) 70%
+  );
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 34%, transparent);
+  box-shadow: var(--semantic-elevation-card-hover);
+}
+
+.card:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 3px;
+}
+
+.category {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.body {
+  margin: 0;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  /* Pushed to the card's bottom edge so the call to action lines up across a
+     row whatever length each standfirst runs to. */
+  margin-top: auto;
+  padding-top: var(--core-space-4);
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.04em;
+  color: var(--semantic-color-accent-primary);
+}
+
+.actionIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  transition: transform var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.card:hover .actionIcon,
+.card:focus-visible .actionIcon {
+  transform: translateX(3px);
+}
+
+@media (min-width: 1024px) {
+  .category,
+  .action {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .title {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .body {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .actionIcon {
+    transition-duration: var(--motion-duration-instant);
+  }
+  .card:hover,
+  .card:hover .actionIcon,
+  .card:focus-visible .actionIcon {
+    transform: none;
+  }
+}

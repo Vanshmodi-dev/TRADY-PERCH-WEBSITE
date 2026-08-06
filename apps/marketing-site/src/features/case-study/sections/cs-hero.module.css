@@ -1,0 +1,263 @@
+/*
+ * The cinematic hero.
+ *
+ * Entrance is a shared keyframe plus a per-element `--enter-index` stagger,
+ * so five elements arrive in sequence from one animation definition and zero
+ * JavaScript. Mount-triggered rather than scroll-triggered: the hero is above
+ * the fold by definition, so there is nothing to "reveal".
+ */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding-block-start: var(--semantic-space-padding-section-sm);
+  padding-block-end: 0;
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    padding-block-start: var(--core-space-24);
+  }
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: var(--core-container-width-content);
+  margin-inline: auto;
+  padding-inline: var(--core-space-4);
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-inline: var(--semantic-space-padding-section-sm);
+  }
+}
+
+/* --- Breadcrumb --------------------------------------------------------- */
+
+.breadcrumb {
+  margin-bottom: var(--core-space-8);
+}
+
+.breadcrumbList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--core-type-caption-size-mobile);
+}
+
+.crumb {
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--core-radius-sm);
+  transition: color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.crumb:hover {
+  color: var(--semantic-color-text-primary);
+}
+
+.crumb:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 3px;
+}
+
+.crumbSeparator {
+  color: var(--semantic-color-text-tertiary);
+}
+
+.crumbCurrent {
+  color: var(--semantic-color-text-primary);
+  /* The trail can get long on a narrow screen; the current page truncates
+     rather than wrapping the whole list onto three lines. */
+  display: inline-block;
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* --- Intro -------------------------------------------------------------- */
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+  max-width: 52rem;
+}
+
+.category,
+.title,
+.standfirst,
+.actions,
+.media {
+  animation: hero-enter var(--motion-duration-deliberate) var(--motion-easing-ceremonial) both;
+  animation-delay: calc(var(--enter-index, 0) * 90ms);
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--core-space-4));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.category {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-3);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+}
+
+.categoryMark {
+  width: var(--core-space-8);
+  height: 1px;
+  flex-shrink: 0;
+  background: linear-gradient(to right, var(--semantic-color-accent-primary), transparent);
+}
+
+.title {
+  margin: 0;
+  /* Display scale is reserved for the homepage hero (Ch.20.8), so this page's
+     h1 sits one step down — larger than any chapter heading, smaller than the
+     homepage's. */
+  max-width: 18ch;
+  font-size: var(--core-type-h1-size-mobile);
+  font-weight: var(--core-type-h1-weight);
+  line-height: var(--core-type-h1-line-height);
+  letter-spacing: var(--core-type-h1-tracking);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.standfirst {
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-3);
+}
+
+.actionIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+}
+
+/* --- Cinematic media ---------------------------------------------------- */
+
+.media {
+  position: relative;
+  z-index: 1;
+  /* Breaks out of the content container to a wider canvas measure — the one
+     element on the page allowed to be bigger than the text column, which is
+     what makes it read as cinematic rather than as an illustration. */
+  max-width: var(--core-container-width-canvas);
+  margin-inline: auto;
+  margin-top: var(--core-space-16);
+  padding-inline: var(--core-space-4);
+}
+
+@media (min-width: 1024px) {
+  .media {
+    margin-top: var(--core-space-24);
+    padding-inline: var(--semantic-space-padding-section-sm);
+  }
+}
+
+.mediaFrame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent);
+  /* Two shadows: a tight contact shadow that seats the frame on the page, and
+     a wide diffuse one that gives it altitude. A single shadow reads flat. */
+  box-shadow:
+    0 2px 8px -2px color-mix(in oklab, var(--core-color-black-950) 80%, transparent),
+    0 48px 120px -40px color-mix(in oklab, var(--core-color-black-950) 90%, transparent);
+  background-color: var(--core-color-black-900);
+}
+
+@media (min-width: 1024px) {
+  .mediaFrame {
+    border-radius: var(--core-radius-xl);
+  }
+}
+
+.mediaImage {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* A soft accent bloom behind the frame's lower edge, so the image appears lit
+   from within the page rather than pasted onto it. */
+.mediaGlow {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: -8%;
+  width: 70%;
+  height: 45%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 16%, transparent),
+    transparent 70%
+  );
+  filter: blur(40px);
+}
+
+@media (min-width: 1024px) {
+  .breadcrumbList {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .category {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .title {
+    font-size: var(--core-type-h1-size-desktop);
+  }
+  .standfirst {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+}
+
+/*
+ * Ch.15 Mt-4 / Ag-3. The entrance is removed rather than shortened: its
+ * `both` fill mode starts every element at opacity 0, so a shorter duration
+ * would still flash the whole hero in.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .category,
+  .title,
+  .standfirst,
+  .actions,
+  .media {
+    animation: none;
+  }
+}

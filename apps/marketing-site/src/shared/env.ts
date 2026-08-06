@@ -34,6 +34,31 @@ export interface Env {
   MARKETING_SITE_RESEND_API_KEY: string | undefined;
   MARKETING_SITE_CONTACT_INBOX_EMAIL: string | undefined;
   /**
+   * GitHub personal access token for the /work/projects portfolio feed.
+   *
+   * Server-only, and structurally so: it is reachable exclusively through
+   * this module, this module is imported only by `src/features/projects/
+   * github-api.ts` and `app/api/contact/route.ts` (both server-only), and it
+   * carries no `NEXT_PUBLIC_` prefix — the only mechanism by which Next.js
+   * inlines an environment variable into the client bundle. A build-time
+   * assertion in `src/features/projects/github-api.test.ts` fails if the
+   * token identifier ever appears in a `"use client"` module.
+   *
+   * Optional, for the same Ch.10 §4 reason as the Resend key above: the
+   * portfolio degrades to its empty state without it, so a fresh clone and
+   * CI both build and test with no secret present. Unauthenticated requests
+   * to the GitHub REST API are also allowed (60/hour rather than 5,000), so
+   * local development against a public account works token-free.
+   */
+  MARKETING_SITE_GITHUB_TOKEN: string | undefined;
+  /**
+   * The GitHub account (user or organisation) whose public repositories are
+   * published as portfolio projects. Optional for the same reason as the
+   * token: absent, `github-service.ts` short-circuits to an empty result
+   * rather than issuing a request against an `undefined` username.
+   */
+  MARKETING_SITE_GITHUB_USERNAME: string | undefined;
+  /**
    * The envelope sender. Configurable rather than hardcoded because Resend
    * rejects any `from` address whose domain isn't verified in the account —
    * the previous hardcoded `contact@tradyperch.com` would have failed with a
@@ -53,4 +78,11 @@ export const env: Env = {
   MARKETING_SITE_CONTACT_INBOX_EMAIL: process.env.MARKETING_SITE_CONTACT_INBOX_EMAIL,
   MARKETING_SITE_RESEND_FROM_EMAIL:
     process.env.MARKETING_SITE_RESEND_FROM_EMAIL ?? DEFAULT_FROM_EMAIL,
+  // `|| undefined`, not `?? undefined`: an env var set to the empty string is
+  // how an unfilled row in a hosting dashboard arrives, and treating "" as
+  // "configured" would send `Authorization: Bearer ` on every request — which
+  // GitHub rejects with a 401 rather than falling back to the unauthenticated
+  // path that an absent token correctly takes.
+  MARKETING_SITE_GITHUB_TOKEN: process.env.MARKETING_SITE_GITHUB_TOKEN || undefined,
+  MARKETING_SITE_GITHUB_USERNAME: process.env.MARKETING_SITE_GITHUB_USERNAME || undefined,
 };

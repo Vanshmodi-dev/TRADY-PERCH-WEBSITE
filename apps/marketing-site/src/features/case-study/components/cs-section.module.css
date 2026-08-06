@@ -1,0 +1,132 @@
+/*
+ * Shared chapter shell. Owns the vertical rhythm of the whole case study.
+ *
+ * Breakpoint literals rather than token references throughout: CSS forbids
+ * `var()` inside a media query condition. Values match core.breakpoint.tablet
+ * (640px), .desktop (1024px) and a wide tier at 1600px.
+ */
+
+.section {
+  position: relative;
+  padding-block: var(--semantic-space-padding-section-sm);
+}
+
+.sectionAlt {
+  composes: section;
+  background-color: var(--semantic-color-background-secondary);
+}
+
+/*
+ * Cinematic spacing. At desktop a chapter gets roughly double the site's
+ * default section padding — this page is a long read, and the whitespace
+ * between chapters is what stops it feeling like documentation.
+ */
+@media (min-width: 1024px) {
+  .section {
+    padding-block: var(--core-space-32);
+  }
+}
+
+.container {
+  max-width: var(--core-container-width-content);
+  margin-inline: auto;
+  padding-inline: var(--core-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-8);
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-inline: var(--semantic-space-padding-section-sm);
+    gap: var(--core-space-16);
+  }
+}
+
+/* Long-form chapters hold a narrower column than grids and galleries do. */
+.containerProse {
+  max-width: 56rem;
+}
+
+.containerCenter {
+  align-items: center;
+  text-align: center;
+}
+
+/* --- Header ------------------------------------------------------------- */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+  /* Narrower than the content it introduces. A heading block that runs the
+     full width reads as a banner; held to ~46rem it reads as editorial. */
+  max-width: 46rem;
+}
+
+.containerCenter .header {
+  align-items: center;
+  max-width: 42rem;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-3);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+}
+
+/* The short gold rule that opens every chapter. Repeated across fourteen
+   sections it becomes the page's connective tissue — the mark that says
+   "a new chapter starts here" without needing a divider. */
+.eyebrowMark {
+  width: var(--core-space-8);
+  height: 1px;
+  flex-shrink: 0;
+  background: linear-gradient(to right, var(--semantic-color-accent-primary), transparent);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--core-type-h2-size-mobile);
+  font-weight: var(--core-type-h2-weight);
+  line-height: var(--core-type-h2-line-height);
+  letter-spacing: var(--core-type-h2-tracking);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+}
+
+.lede {
+  margin: 0;
+  max-width: 56ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-8);
+}
+
+@media (min-width: 1024px) {
+  .eyebrow {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .heading {
+    font-size: var(--core-type-h2-size-desktop);
+  }
+  .lede {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+  .body {
+    gap: var(--core-space-12);
+  }
+}

@@ -1,0 +1,274 @@
+/*
+ * The case study hero.
+ *
+ * Editorial rather than cinematic: this page's job is to be read, and a
+ * full-viewport hero would put the first sentence of the README two scrolls
+ * down. The page's atmosphere layer supplies the depth instead.
+ */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--semantic-space-padding-section-sm)
+    var(--semantic-space-padding-section-sm);
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    padding-block: var(--core-space-24) var(--semantic-space-padding-section-sm);
+  }
+}
+
+.container {
+  composes: container from "../../../shared/components/section.module.css";
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-4);
+}
+
+/* --- Breadcrumb --------------------------------------------------------- */
+
+.breadcrumb {
+  margin-bottom: var(--core-space-2);
+}
+
+.breadcrumbList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+.breadcrumbLink {
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--core-radius-sm);
+  transition: color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.breadcrumbLink:hover {
+  color: var(--semantic-color-accent-primary);
+}
+
+.breadcrumbLink:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.breadcrumbSeparator {
+  color: var(--semantic-color-text-tertiary);
+}
+
+.breadcrumbCurrent {
+  color: var(--semantic-color-text-primary);
+  /* A long project title should not push the trail onto three lines. */
+  max-width: 24ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Meta line ---------------------------------------------------------- */
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-3);
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.category {
+  color: var(--semantic-color-accent-primary);
+}
+
+.metaRule {
+  flex: 1;
+  max-width: 8rem;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--semantic-color-text-primary) 18%, transparent),
+    transparent
+  );
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  letter-spacing: 0.04em;
+  color: var(--semantic-color-text-secondary);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--core-radius-full);
+  flex-shrink: 0;
+}
+
+/* Colour reinforces the adjacent text label; it never carries the status
+   alone (WCAG 1.4.1). */
+.live .statusDot {
+  background-color: var(--semantic-color-text-success);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--semantic-color-text-success) 22%, transparent);
+}
+.active .statusDot {
+  background-color: var(--semantic-color-accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--semantic-color-accent-primary) 22%, transparent);
+}
+.maintained .statusDot {
+  background-color: var(--semantic-color-text-tertiary);
+}
+
+/* --- Title -------------------------------------------------------------- */
+
+.title {
+  margin: 0;
+  font-size: var(--core-type-h1-size-mobile);
+  font-weight: var(--core-type-h1-weight);
+  line-height: var(--core-type-h1-line-height);
+  letter-spacing: var(--core-type-h1-tracking);
+  color: var(--semantic-color-text-primary);
+  text-wrap: balance;
+  max-width: 20ch;
+}
+
+.repoLine {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-tertiary);
+  min-width: 0;
+}
+
+.repoIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  flex-shrink: 0;
+}
+
+.repoLink {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--core-radius-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.repoLink:hover {
+  color: var(--semantic-color-accent-primary);
+}
+
+.repoLink:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.visibility {
+  flex-shrink: 0;
+  padding: 1px var(--core-space-2);
+  border-radius: var(--semantic-radius-pill);
+  font-size: var(--core-type-label-size-mobile);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 14%, transparent);
+}
+
+.standfirst {
+  margin: var(--core-space-2) 0 0;
+  max-width: 62ch;
+  font-size: var(--core-type-body-large-size-mobile);
+  line-height: var(--core-type-body-large-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+/* --- Facts -------------------------------------------------------------- */
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-4);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+}
+
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-2);
+}
+
+/* A hairline separator between facts, drawn rather than typed so it cannot
+   end up read aloud as a bullet character. */
+.fact + .fact::before {
+  content: "";
+  width: 1px;
+  height: 0.9em;
+  margin-right: var(--core-space-2);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 18%, transparent);
+}
+
+.languageDot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--core-radius-full);
+  flex-shrink: 0;
+}
+
+/* --- Actions ------------------------------------------------------------ */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-3);
+  margin-top: var(--core-space-4);
+}
+
+.buttonIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+}
+
+.srOnly {
+  composes: srOnly from "../../../shared/components/section.module.css";
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: var(--core-type-h1-size-desktop);
+  }
+  .standfirst {
+    font-size: var(--core-type-body-large-size-desktop);
+  }
+  .breadcrumbList,
+  .meta,
+  .facts,
+  .repoLine {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breadcrumbLink,
+  .repoLink {
+    transition-duration: var(--motion-duration-instant);
+  }
+}

@@ -1,0 +1,81 @@
+/*
+ * Reading-progress indicator.
+ *
+ * ── Zero JavaScript ───────────────────────────────────────────────────────
+ *
+ * A CSS scroll-driven animation. `animation-timeline: scroll(root block)`
+ * binds the animation's progress to the document's scroll position, so the
+ * bar is driven entirely by the compositor — no scroll listener, no
+ * requestAnimationFrame, no React state, and no work on the main thread
+ * during the exact interaction where jank is most visible.
+ *
+ * The `@supports` gate makes the whole thing a progressive enhancement:
+ * where scroll-driven animations are unavailable the bar is `display: none`
+ * rather than a stuck 0%-width sliver. A progress indicator is a refinement,
+ * and the correct degradation is its absence, not a broken version of it.
+ * That is also why this is CSS rather than a JS fallback — the fallback would
+ * cost every visitor a scroll listener to serve a shrinking minority.
+ */
+
+.track {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .track {
+    display: block;
+    position: fixed;
+    /* Sits directly beneath the fixed site header, sharing the single
+       --header-clearance source of truth in globals.css so the two cannot
+       drift apart. */
+    top: calc(var(--header-clearance) - var(--core-space-6));
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 20;
+    pointer-events: none;
+    background-color: color-mix(in oklab, var(--semantic-color-text-primary) 8%, transparent);
+  }
+
+  .bar {
+    height: 100%;
+    width: 100%;
+    transform-origin: 0 50%;
+    background: linear-gradient(
+      to right,
+      var(--semantic-color-accent-primary),
+      var(--semantic-color-accent-secondary)
+    );
+    animation: cs-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes cs-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
+
+/*
+ * Ch.15 Mt-4 / Ag-3. The bar is removed rather than slowed: it is a
+ * continuously moving element tied to scroll, which is precisely the class of
+ * motion prefers-reduced-motion exists to suppress, and there is no "instant"
+ * version of a progress bar that still means anything.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    display: none;
+  }
+}
+
+/* Forced-colors: the gradient cannot render meaningfully in a forced palette,
+   and the bar conveys no information not already available from the scrollbar. */
+@media (forced-colors: active) {
+  .track {
+    display: none;
+  }
+}

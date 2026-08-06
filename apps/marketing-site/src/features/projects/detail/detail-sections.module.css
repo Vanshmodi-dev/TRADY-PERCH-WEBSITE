@@ -1,0 +1,305 @@
+/*
+ * The main column's supporting sections: commit history and releases.
+ *
+ * Both are lists of dated, linked records, so they share a header treatment
+ * and a row rhythm. The commit list adds a connecting rule down its left edge;
+ * the release list does not, because releases are discrete events rather than
+ * a continuous history.
+ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--core-space-4);
+  padding-bottom: var(--core-space-4);
+  border-bottom: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+}
+
+.headerLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  flex-shrink: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-accent-primary);
+  text-decoration: none;
+  border-radius: var(--core-radius-sm);
+}
+
+.headerLink:hover .headerLinkIcon {
+  transform: translateX(2px);
+}
+
+.headerLink:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.headerLinkIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  transition: transform var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+/* --- Commit timeline ---------------------------------------------------- */
+
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-6);
+  margin: 0;
+  /* Room for the dot and the connecting rule. */
+  padding: 0 0 0 var(--core-space-6);
+  list-style: none;
+}
+
+/*
+ * The connecting rule.
+ *
+ * Faded at both ends rather than drawn as a solid line: a hard stop at the
+ * first and last dot reads as a border, while a fade reads as history
+ * continuing beyond the ten commits shown — which it does.
+ */
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: var(--core-space-2);
+  bottom: var(--core-space-2);
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--semantic-color-text-primary) 16%, transparent) 12%,
+    color-mix(in oklab, var(--semantic-color-text-primary) 16%, transparent) 88%,
+    transparent
+  );
+}
+
+.commit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  min-width: 0;
+}
+
+.commitDot {
+  position: absolute;
+  left: calc(-1 * var(--core-space-6) + 1px);
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--core-radius-full);
+  background-color: var(--semantic-color-text-tertiary);
+  /* A ring in the page background punches the dot out of the rule behind it,
+     so the line appears to pass behind rather than through it. */
+  box-shadow: 0 0 0 3px var(--semantic-color-background-primary);
+  transition: background-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/* The most recent commit is the one that matters most on a portfolio. */
+.commit:first-child .commitDot {
+  background-color: var(--semantic-color-accent-primary);
+  box-shadow:
+    0 0 0 3px var(--semantic-color-background-primary),
+    0 0 8px -1px color-mix(in oklab, var(--semantic-color-accent-primary) 60%, transparent);
+}
+
+.commitSubject {
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-primary);
+  text-decoration: none;
+  border-radius: var(--core-radius-sm);
+  /* Long subjects wrap to at most two lines; the full text is on GitHub. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  transition: color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.commitSubject:hover {
+  color: var(--semantic-color-accent-primary);
+}
+
+.commitSubject:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.commitMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-3);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-tertiary);
+}
+
+.sha {
+  padding: 1px var(--core-space-2);
+  border-radius: var(--core-radius-sm);
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", monospace;
+  font-size: 0.92em;
+  color: var(--semantic-color-text-secondary);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 7%, transparent);
+}
+
+.commitAuthor {
+  color: var(--semantic-color-text-secondary);
+}
+
+.commitDate {
+  margin-left: auto;
+}
+
+/* --- Releases ----------------------------------------------------------- */
+
+.releases {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.releaseLink {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  padding: var(--semantic-space-padding-component-sm);
+  border-radius: var(--core-radius-lg);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  background-color: color-mix(in oklab, var(--semantic-color-surface-card) 55%, transparent);
+  text-decoration: none;
+  transition:
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    background-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.releaseLink:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 32%, transparent);
+  background-color: var(--semantic-color-surface-card);
+}
+
+.releaseLink:focus-visible {
+  outline: var(--core-border-default) solid var(--semantic-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.releaseHead {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  min-width: 0;
+}
+
+.releaseIcon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+  flex-shrink: 0;
+  color: var(--semantic-color-accent-primary);
+}
+
+.releaseTitle {
+  font-size: var(--core-type-body-size-mobile);
+  color: var(--semantic-color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.releaseBadge {
+  flex-shrink: 0;
+  padding: 1px var(--core-space-2);
+  border-radius: var(--semantic-radius-pill);
+  font-size: var(--core-type-label-size-mobile);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--semantic-color-text-success);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-success) 45%, transparent);
+}
+
+/* A prerelease is not a lesser release, but it is a different claim — the
+   gold marks it as provisional without implying something went wrong. */
+.releaseBadgePre {
+  color: var(--semantic-color-accent-primary);
+  border-color: color-mix(in oklab, var(--semantic-color-accent-primary) 45%, transparent);
+}
+
+.releaseMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--core-space-3);
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-tertiary);
+}
+
+.releaseSummary {
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .commitSubject,
+  .releaseTitle {
+    font-size: var(--core-type-body-size-desktop);
+  }
+  .commitMeta,
+  .releaseMeta,
+  .releaseSummary,
+  .headerLink {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .releaseLink,
+  .commitSubject,
+  .headerLinkIcon,
+  .commitDot {
+    transition-duration: var(--motion-duration-instant);
+  }
+  .releaseLink:hover {
+    transform: none;
+  }
+  .headerLink:hover .headerLinkIcon {
+    transform: none;
+  }
+}

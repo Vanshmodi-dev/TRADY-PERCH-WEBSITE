@@ -1,0 +1,116 @@
+/*
+ * The repository statistics grid.
+ *
+ * Bordered cells sharing a single hairline lattice rather than ten separate
+ * cards: at this count, ten independent boxes read as clutter, while one
+ * ruled table reads as a specification sheet — which is exactly the register
+ * this block should have.
+ *
+ * The lattice is drawn with `gap` over a background colour, so there is no
+ * double-border problem at the seams and no `:nth-child` arithmetic to keep in
+ * step with a changing column count.
+ */
+
+.section {
+  position: relative;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  /* The gap *is* the rule: 1px of the container's background showing through
+     between cells that each paint their own surface. */
+  gap: var(--core-border-hairline);
+  margin: 0;
+  border-radius: var(--core-radius-xl);
+  overflow: hidden;
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 10%, transparent);
+  border: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  padding: var(--semantic-space-padding-component-md);
+  background-color: var(--semantic-color-surface-card);
+  min-width: 0;
+
+  animation: stat-enter var(--motion-duration-deliberate) var(--motion-easing-ceremonial) both;
+  /* Capped so the tenth tile does not arrive half a second after the first. */
+  animation-delay: calc(min(var(--tile-index, 0), 9) * 45ms);
+  transition: background-color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.tile:hover {
+  background-color: var(--semantic-color-surface-card-hover);
+}
+
+@keyframes stat-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--core-space-2));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  /* text-secondary rather than tertiary: tertiary measures 3.88:1 on this
+     surface, below the 4.5:1 AA floor at caption size. */
+  color: var(--semantic-color-text-secondary);
+}
+
+.iconWrap {
+  display: inline-flex;
+  color: var(--semantic-color-text-tertiary);
+  transition: color var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.tile:hover .iconWrap {
+  color: var(--semantic-color-accent-primary);
+}
+
+.icon {
+  width: var(--core-icon-size-16);
+  height: var(--core-icon-size-16);
+}
+
+.value {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: 1.2;
+  color: var(--semantic-color-text-primary);
+  font-variant-numeric: tabular-nums;
+  /* A long licence name ("BSD 3-Clause...") must wrap rather than widen the
+     track and unbalance every other column. */
+  overflow-wrap: anywhere;
+}
+
+.srOnly {
+  composes: srOnly from "../../../shared/components/section.module.css";
+}
+
+@media (min-width: 1024px) {
+  .value {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .label {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    animation: none;
+    transition-duration: var(--motion-duration-instant);
+  }
+}

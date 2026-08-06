@@ -1,0 +1,184 @@
+/* Development timeline. */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: phase;
+}
+
+.phase {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--core-space-6);
+  padding-bottom: var(--core-space-12);
+}
+
+@media (min-width: 1024px) {
+  .phase {
+    gap: var(--core-space-8);
+    padding-bottom: var(--core-space-16);
+  }
+}
+
+.phase:last-child {
+  padding-bottom: 0;
+}
+
+/* --- The rail ----------------------------------------------------------- */
+
+.marker {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+/*
+ * The connecting line, drawn by each phase except the last.
+ *
+ * `scaleY` from a 0 origin at the top, bound to a `view()` timeline so it
+ * draws as the phase enters the viewport — on the compositor, no JavaScript.
+ */
+.phase:not(:last-child) .marker::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  bottom: calc(var(--core-space-12) * -1 + 20px);
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--semantic-color-accent-primary) 45%, transparent),
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent)
+  );
+  transform-origin: 50% 0;
+}
+
+@media (min-width: 1024px) {
+  .phase:not(:last-child) .marker::after {
+    bottom: calc(var(--core-space-16) * -1 + 20px);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .phase:not(:last-child) .marker::after {
+    animation: rail-draw linear both;
+    /* Draws across the band from the element entering the viewport's lower
+       third to it reaching the middle — so the line completes as the phase
+       becomes readable, not after it has scrolled past. */
+    animation-timeline: view();
+    animation-range: entry 20% cover 45%;
+  }
+
+  @keyframes rail-draw {
+    from {
+      transform: translateX(-50%) scaleY(0);
+    }
+    to {
+      transform: translateX(-50%) scaleY(1);
+    }
+  }
+}
+
+.node {
+  position: relative;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  margin-top: 6px;
+  border-radius: var(--core-radius-full);
+  background-color: var(--semantic-color-background-primary);
+  border: var(--core-border-default) solid var(--semantic-color-accent-primary);
+  /* A soft halo, so each node reads as a lit point on the rail rather than a
+     circle sitting on a line. */
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--semantic-color-accent-primary) 12%, transparent);
+}
+
+/* --- Content ------------------------------------------------------------ */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
+  min-width: 0;
+  /* Nudges the text baseline into line with the node's centre. */
+  padding-top: 1px;
+}
+
+.period {
+  margin: 0;
+  font-size: var(--core-type-caption-size-mobile);
+  font-weight: var(--core-type-label-weight);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semantic-color-accent-primary);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--core-type-h3-size-mobile);
+  font-weight: var(--core-type-h3-weight);
+  line-height: var(--core-type-h3-line-height);
+  color: var(--semantic-color-text-primary);
+}
+
+.summary {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-text-secondary);
+  text-wrap: pretty;
+}
+
+.outputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--core-space-2);
+  margin: var(--core-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outputs li {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--core-space-1) var(--core-space-3);
+  border-radius: var(--core-radius-sm);
+  font-size: var(--core-type-caption-size-mobile);
+  color: var(--semantic-color-text-secondary);
+  border: var(--core-border-hairline) solid
+    color-mix(in oklab, var(--semantic-color-text-primary) 12%, transparent);
+  background-color: color-mix(in oklab, var(--semantic-color-text-primary) 3%, transparent);
+}
+
+@media (min-width: 1024px) {
+  .period,
+  .outputs li {
+    font-size: var(--core-type-caption-size-desktop);
+  }
+  .name {
+    font-size: var(--core-type-h3-size-desktop);
+  }
+  .summary {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+/*
+ * Ch.15 Mt-4 / Ag-3. The rail renders fully drawn rather than animating —
+ * a line that draws itself is continuous motion tied to scroll, which is
+ * exactly what this preference asks to remove. The structure is unaffected.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .phase:not(:last-child) .marker::after {
+    animation: none;
+    transform: translateX(-50%) scaleY(1);
+  }
+}
