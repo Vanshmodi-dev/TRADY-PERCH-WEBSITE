@@ -13,7 +13,7 @@
  * separation.
  */
 .hero {
-  composes: section from "../../../src/shared/components/section.module.css";
+  composes: section from "../../shared/components/section.module.css";
   position: relative;
   isolation: isolate;
   overflow: clip;
@@ -21,7 +21,7 @@
 }
 
 .heroContainer {
-  composes: container from "../../../src/shared/components/section.module.css";
+  composes: container from "../../shared/components/section.module.css";
   position: relative;
   z-index: 1;
   display: flex;
@@ -97,13 +97,13 @@
 /* Mirrors ProjectsSection's own section/container pair so the Suspense
    fallback occupies exactly the footprint the real grid will. */
 .skeletonSection {
-  composes: section from "../../../src/shared/components/section.module.css";
+  composes: section from "../../shared/components/section.module.css";
 }
 
 .skeletonContainer {
-  composes: container from "../../../src/shared/components/section.module.css";
+  composes: container from "../../shared/components/section.module.css";
 }
 
 .srOnly {
-  composes: srOnly from "../../../src/shared/components/section.module.css";
+  composes: srOnly from "../../shared/components/section.module.css";
 }

@@ -1,34 +1,41 @@
 # ADR-0011: The Apex — a real-time render as the hero's identity object
 
-**Status:** Superseded — 2026-08-05, by the FIELD LINES hero rebuild (`461e1b1`)
+**Status:** Accepted — and, since 2026-08-06, actually wired to the hero
 **Date:** 2026-07-31
 
-> ## Superseded
+> ## Implementation note — read this before touching the hero
 >
-> The hero was rebuilt as FIELD LINES in `461e1b1`, which replaced the Apex as
-> the hero's resting object. The implementation this ADR describes —
-> `src/features/home/sections/hero/apex/`, fourteen files — was left in the
-> tree but wired to nothing: no module imported it, so it rendered on no route.
+> This decision spent a week in a state worth naming, because the failure mode
+> is easy to repeat and hard to see.
 >
-> It was removed on 2026-08-05. What forced the issue was not tidiness: the
-> same rebuild dropped `three`, `@react-three/fiber` and `@react-three/drei`
-> from `package.json` and the lockfile, so the orphaned directory imported
-> three packages the project no longer installed. That is invisible locally —
-> the packages linger in an existing `node_modules` — and invisible in the
-> Vercel build, which runs with `typescript: { ignoreBuildErrors: true }`. It
-> surfaced only in CI, where `npm ci` installs exactly the lockfile and `tsc`
-> raised 27 errors, blocking every merge to `main`.
+> The Apex was built exactly as described below, and this ADR was marked
+> Accepted. **But `hero.tsx` was never changed.** It went on rendering the
+> layered-CSS Core this document argues against, while
+> `src/features/home/sections/hero/apex/` sat in the tree importing three.js
+> and rendering on no route. The decision looked shipped. It was not.
 >
-> **The reasoning below is not withdrawn.** The argument for an identity object
-> that can be posed, lit and photographed (§7.6) still stands, as does the
-> critique of the CSS construction that preceded it. If a real-time render
-> returns, this document is the starting point — recover the implementation
-> from git history at `461e1b1~1`, and restore the three dependencies
-> *deliberately*, as declared dependencies with the bundle cost re-argued
-> against the numbers recorded under Consequences.
+> Nothing caught it. Typecheck passed, tests passed, the build passed, and the
+> page looked deliberate — because the thing it rendered *was* deliberate, just
+> the previous decision. Only a human looking at the homepage and asking where
+> the pyramid went surfaced it.
 >
-> What is withdrawn is the claim that the Apex is *currently* the hero. It is
-> not, and a decision record that says otherwise is worse than no record.
+> It then caused a second, unrelated failure. The FIELD LINES rebuild
+> (`461e1b1`) dropped `three`, `@react-three/fiber` and `@react-three/drei`
+> from `package.json` and the lockfile. The orphaned directory kept importing
+> them — invisible locally, where the packages linger in `node_modules`, and
+> invisible on Vercel, which builds with `typescript: { ignoreBuildErrors:
+> true }`. It surfaced only in CI, as 27 `tsc` errors that blocked every merge
+> to `main`. The directory was briefly deleted on 2026-08-05 to unblock it.
+>
+> Both are fixed as of 2026-08-06: the dependencies are declared, the
+> implementation is restored, and `hero.tsx` renders `<HeroApex />`. A source
+> assertion in `hero.test.tsx` now fails if that line reverts — a mock cannot
+> catch this, because mocking the module proves only that the test knows its
+> name.
+>
+> **If the hero object is ever replaced again, change `hero.tsx` and delete the
+> implementation in the same commit.** An ADR that describes something the site
+> does not render is worse than no ADR.
 **Origin:** Hero Experience Bible Ch.22 (3D Philosophy) Td-1 — "3D must be chosen, never assumed. A hero contains 3D only after an explicit decision recording what it delivers over a flat treatment." This ADR is that record. Also Ch.22 §3 (the 3D Decision Matrix), Ch.24 (Material Philosophy), Ch.23 (Lighting Philosophy), Design System Bible Ch.14 (Rd-1…Rd-4); [Hero Direction: FIELD LINES](../Trady-Perch-Hero-Direction-FIELD-LINES.md) §7.6; Product Implementation Constitution Ch.36 (Performance Budgets).
 
 ## Context

@@ -173,7 +173,7 @@ export function ProjectDetailPage({ detail }: ProjectDetailPageProps) {
               </Button>
             ) : null}
 
-            <Button href="/work/projects" linkComponent={NextLinkAdapter} emphasis="ghost">
+            <Button href="/work" linkComponent={NextLinkAdapter} emphasis="ghost">
               All projects
             </Button>
           </div>

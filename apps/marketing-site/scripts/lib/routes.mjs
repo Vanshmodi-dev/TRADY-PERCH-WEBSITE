@@ -41,7 +41,6 @@ export const ROUTES = [
   // with the feed configured — which is how it was verified before shipping:
   // 31 routes, zero WCAG 2.1 A/AA violations, run locally against live data.
   // Giving the CI job a read-only token would close the gap.
-  "/work/projects",
   "/work/projects/trady-perch-website",
   "/pricing",
   "/contact",

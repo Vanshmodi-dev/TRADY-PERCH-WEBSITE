@@ -192,17 +192,19 @@ function renderBlock(block: MarkdownBlock, key: number, context: RenderContext):
             </span>
           ) : null}
           {/*
-            `tabIndex={0}` on a scrollable region, per Ch.42: a code block wider
-            than its column is only reachable by keyboard if the scroll
-            container can hold focus. `role="region"` with a label is what stops
-            a screen reader announcing an unlabelled focusable div.
+            `tabIndex={0}` per Ch.42: a code block wider than its column is
+            only reachable by keyboard if the scroll container can hold focus.
+
+            Deliberately NOT `role="region"` with a label. That was the first
+            version and it failed the `landmark-unique` audit: a README with
+            three bash blocks produced three landmarks all named "bash code
+            sample". Beyond the audit, it is the worse experience — every code
+            block in a long README lands in the screen reader's landmark menu,
+            burying the handful of landmarks that actually aid navigation. A
+            focusable `<pre>` needs no accessible name of its own; its text
+            content is what gets announced.
           */}
-          <pre
-            className={styles.pre}
-            tabIndex={0}
-            role="region"
-            aria-label={block.language ? `${block.language} code sample` : "Code sample"}
-          >
+          <pre className={styles.pre} tabIndex={0}>
             <code className={styles.code}>{block.value}</code>
           </pre>
         </div>
@@ -253,7 +255,9 @@ function renderBlock(block: MarkdownBlock, key: number, context: RenderContext):
       return (
         // The scroll container, not the table itself: a wide table must scroll
         // inside its own box rather than making the page scroll sideways.
-        <div key={key} className={styles.tableScroll} tabIndex={0} role="region" aria-label="Table">
+        // No `role="region"` here either, for the same reason as the code
+        // block above: two tables in one README would collide on the name.
+        <div key={key} className={styles.tableScroll} tabIndex={0}>
           <table className={styles.table}>
             <thead>
               <tr>
