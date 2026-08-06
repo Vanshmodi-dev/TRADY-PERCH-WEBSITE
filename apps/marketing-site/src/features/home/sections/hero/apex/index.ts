@@ -1,1 +1,0 @@
-export { HeroApex } from "./apex";

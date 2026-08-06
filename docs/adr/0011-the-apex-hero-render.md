@@ -1,7 +1,34 @@
 # ADR-0011: The Apex — a real-time render as the hero's identity object
 
-**Status:** Accepted
+**Status:** Superseded — 2026-08-05, by the FIELD LINES hero rebuild (`461e1b1`)
 **Date:** 2026-07-31
+
+> ## Superseded
+>
+> The hero was rebuilt as FIELD LINES in `461e1b1`, which replaced the Apex as
+> the hero's resting object. The implementation this ADR describes —
+> `src/features/home/sections/hero/apex/`, fourteen files — was left in the
+> tree but wired to nothing: no module imported it, so it rendered on no route.
+>
+> It was removed on 2026-08-05. What forced the issue was not tidiness: the
+> same rebuild dropped `three`, `@react-three/fiber` and `@react-three/drei`
+> from `package.json` and the lockfile, so the orphaned directory imported
+> three packages the project no longer installed. That is invisible locally —
+> the packages linger in an existing `node_modules` — and invisible in the
+> Vercel build, which runs with `typescript: { ignoreBuildErrors: true }`. It
+> surfaced only in CI, where `npm ci` installs exactly the lockfile and `tsc`
+> raised 27 errors, blocking every merge to `main`.
+>
+> **The reasoning below is not withdrawn.** The argument for an identity object
+> that can be posed, lit and photographed (§7.6) still stands, as does the
+> critique of the CSS construction that preceded it. If a real-time render
+> returns, this document is the starting point — recover the implementation
+> from git history at `461e1b1~1`, and restore the three dependencies
+> *deliberately*, as declared dependencies with the bundle cost re-argued
+> against the numbers recorded under Consequences.
+>
+> What is withdrawn is the claim that the Apex is *currently* the hero. It is
+> not, and a decision record that says otherwise is worse than no record.
 **Origin:** Hero Experience Bible Ch.22 (3D Philosophy) Td-1 — "3D must be chosen, never assumed. A hero contains 3D only after an explicit decision recording what it delivers over a flat treatment." This ADR is that record. Also Ch.22 §3 (the 3D Decision Matrix), Ch.24 (Material Philosophy), Ch.23 (Lighting Philosophy), Design System Bible Ch.14 (Rd-1…Rd-4); [Hero Direction: FIELD LINES](../Trady-Perch-Hero-Direction-FIELD-LINES.md) §7.6; Product Implementation Constitution Ch.36 (Performance Budgets).
 
 ## Context
