@@ -11,6 +11,16 @@ import styles from "./contact-form.module.css";
 
 const EMPTY_FORM: ContactFormData = { name: "", email: "", company: "", message: "", website: "" };
 
+/**
+ * The address the form falls back to when the request never reaches the
+ * server at all (offline, DNS, a blocked request). The server supplies its
+ * own copy of this on a delivery failure it can actually report; this
+ * constant covers the case where nothing came back to read it from.
+ *
+ * Already published on /contact, /privacy and /terms.
+ */
+const FALLBACK_EMAIL = "hello@tradyperch.com";
+
 type SubmitStatus = "idle" | "submitting" | "success";
 
 /**
@@ -24,6 +34,9 @@ export function ContactForm() {
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [formError, setFormError] = useState<string | null>(null);
+  /* Set only when the server could not deliver. Turns the error from a
+     statement into an escape hatch — see the mailto below. */
+  const [fallbackEmail, setFallbackEmail] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   /**
@@ -62,6 +75,7 @@ export function ContactForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
+    setFallbackEmail(null);
 
     const fieldErrors = validateContactForm(data);
     if (Object.keys(fieldErrors).length > 0) {
@@ -80,11 +94,24 @@ export function ContactForm() {
       body.set("website", data.website);
 
       const response = await fetch("/api/contact", { method: "POST", body });
-      const result = (await response.json()) as { ok: boolean; errors?: ContactFormErrors };
+      const result = (await response.json()) as {
+        ok: boolean;
+        errors?: ContactFormErrors;
+        fallbackEmail?: string;
+      };
 
       if (!result.ok) {
-        setErrors(result.errors ?? {});
-        if (result.errors) focusFirstInvalidField(result.errors);
+        /* A delivery failure is not a validation failure. Marking the message
+           field invalid — which is what happened before — put a red error
+           under a message that was perfectly valid, and moved focus to it, so
+           the visitor's instinct was to rewrite text that was never the
+           problem. Only field-level errors go to `errors` now. */
+        const isDeliveryFailure = Boolean(result.fallbackEmail);
+        if (!isDeliveryFailure) {
+          setErrors(result.errors ?? {});
+          if (result.errors) focusFirstInvalidField(result.errors);
+        }
+        setFallbackEmail(result.fallbackEmail ?? null);
         setFormError(
           result.errors?.message ??
             "Something went wrong sending this. Try again, or email us directly.",
@@ -96,8 +123,15 @@ export function ContactForm() {
       setStatus("success");
       setData(EMPTY_FORM);
       setErrors({});
+      setFallbackEmail(null);
     } catch {
-      setFormError("Something went wrong sending this. Try again, or email us directly.");
+      /* The request never reached the server — offline, DNS, a blocked
+         request. The visitor still has a written message and deserves the
+         same escape hatch as a server-side delivery failure. */
+      setFallbackEmail(FALLBACK_EMAIL);
+      setFormError(
+        `We could not send this automatically. Please email ${FALLBACK_EMAIL} — your message is below, ready to copy.`,
+      );
       setStatus("idle");
     }
   }
@@ -173,9 +207,30 @@ export function ContactForm() {
       </div>
 
       {formError ? (
-        <p className={styles.formError} role="alert">
-          {formError}
-        </p>
+        <div className={styles.formError} role="alert">
+          <p className={styles.formErrorText}>{formError}</p>
+          {fallbackEmail ? (
+            /*
+              The escape hatch. The subject and body are prefilled from what
+              the visitor already typed, so recovering from our outage costs
+              them one click rather than retyping the message they just lost.
+            */
+            <a
+              className={styles.formErrorAction}
+              href={`mailto:${fallbackEmail}?subject=${encodeURIComponent(
+                `Enquiry from ${data.name || "the Trady Perch site"}`,
+              )}&body=${encodeURIComponent(
+                `${data.message}
+
+---
+Name: ${data.name}
+Company: ${data.company || "—"}`,
+              )}`}
+            >
+              Open this in your email app
+            </a>
+          ) : null}
+        </div>
       ) : null}
 
       <Button

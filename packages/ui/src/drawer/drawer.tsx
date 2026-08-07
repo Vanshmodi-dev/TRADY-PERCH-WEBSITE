@@ -1,8 +1,24 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import styles from "./drawer.module.css";
 import type { DrawerProps } from "./drawer.types";
+
+/**
+ * "Has this hydrated on the client yet?", as an external store rather than a
+ * `useState` + `useEffect` pair.
+ *
+ * The state version calls `setState` synchronously inside an effect, which
+ * React's own lint rule rejects for triggering a cascading render — and it is
+ * genuinely the wrong shape here, because whether `document` exists is not
+ * React state, it is a fact about the environment. `useSyncExternalStore`
+ * says exactly that: the snapshot differs between server and client, and
+ * nothing ever changes afterwards, so `subscribe` is a no-op.
+ */
+const NEVER_CHANGES = () => () => {};
+const onClient = () => true;
+const onServer = () => false;
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -31,6 +47,36 @@ export function Drawer({
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerElementRef = useRef<HTMLElement | null>(null);
   const isTrapped = backdrop === "dimmed";
+
+  /*
+   * ── Why this renders into <body> instead of where it is written ──────────
+   *
+   * A `position: fixed` element is only positioned against the viewport while
+   * NO ancestor establishes a containing block for it. Any ancestor carrying
+   * `transform`, `filter`, `backdrop-filter`, `perspective`, `contain`, or a
+   * `will-change` naming one of those silently becomes that containing block,
+   * and every fixed offset and percentage size inside resolves against the
+   * ancestor's box instead.
+   *
+   * That is not hypothetical here — it shipped. This drawer is written inside
+   * the site header, and the header is glass: it carries `backdrop-filter`.
+   * So `height: 100%` on the panel resolved against the header's 79px rather
+   * than the viewport's 844px. On a phone the menu opened as a 78px-tall
+   * sliver with 648px of navigation crushed into 48px of scrollable space —
+   * one item visible, the rest unreachable.
+   *
+   * Fixing the header's CSS would have fixed the symptom and left the trap
+   * armed for the next person who adds a filter, a transform, or a scroll
+   * animation to any wrapper between here and <body>. A portal removes the
+   * possibility instead of the instance: rendered as a direct child of
+   * <body>, this panel has no ancestor that could ever capture it.
+   *
+   * `hydrated` gates the portal because `document` does not exist during a
+   * server render. The first client render therefore matches the server's
+   * (nothing), and the drawer attaches immediately afterwards — invisible to
+   * a visitor, since a drawer is closed on arrival by definition.
+   */
+  const hydrated = useSyncExternalStore(NEVER_CHANGES, onClient, onServer);
 
   // Ch.42 Kb-3: focus moves into the trapped region on open, and returns
   // precisely to the triggering element on close — never the page top.
@@ -96,7 +142,9 @@ export function Drawer({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, isTrapped, onClose]);
 
-  return (
+  if (!hydrated) return null;
+
+  return createPortal(
     <>
       {backdrop === "dimmed" ? (
         <div
@@ -120,6 +168,7 @@ export function Drawer({
         <div className={styles.body}>{children}</div>
         {footer ? <div className={styles.footer}>{footer}</div> : null}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

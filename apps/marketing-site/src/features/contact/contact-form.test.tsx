@@ -119,9 +119,15 @@ describe("ContactForm", () => {
     );
     await user.click(screen.getByRole("button", { name: "Send message" }));
 
+    // A request that never reached the server gets the same escape hatch as a
+    // server-side delivery failure: the visitor has still written a message,
+    // and it must not be a dead end.
     await waitFor(() => {
-      expect(screen.getByText(/Something went wrong sending this/)).toBeInTheDocument();
+      expect(screen.getByText(/could not send this automatically/i)).toBeInTheDocument();
     });
+    expect(
+      screen.getByRole("link", { name: "Open this in your email app" }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("Name", { exact: false })).toHaveValue("Jamie Rivera");
   });
 
@@ -145,5 +151,51 @@ describe("ContactForm", () => {
     const honeypot = document.getElementById("contact-website");
     expect(honeypot).toHaveAttribute("tabindex", "-1");
     expect(honeypot?.closest('[aria-hidden="true"]')).toBeInTheDocument();
+  });
+  /**
+   * REGRESSION GUARD — production outage.
+   *
+   * The live endpoint returned 502 for every submission (an invalid Resend key
+   * plus a newline in the sender address). The visitor saw "Something went
+   * wrong sending this — email us directly instead", which named no address,
+   * and the message field was marked invalid even though nothing was wrong
+   * with it. The message was lost.
+   */
+  it("offers a prefilled mailto when the server cannot deliver", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            ok: false,
+            errors: { message: "We could not send this automatically. Please email hello@tradyperch.com — your message is below, ready to copy." },
+            fallbackEmail: "hello@tradyperch.com",
+          }),
+      }),
+    );
+    const user = userEvent.setup();
+    render(<ContactForm />);
+
+    await user.type(screen.getByLabelText("Name", { exact: false }), "Jamie Rivera");
+    await user.type(screen.getByLabelText("Email", { exact: false }), "jamie@example.com");
+    await user.type(
+      screen.getByLabelText("What are you looking to build?", { exact: false }),
+      "An agent that qualifies inbound leads.",
+    );
+    await user.click(screen.getByRole("button", { name: "Send message" }));
+
+    const escapeHatch = await screen.findByRole("link", { name: "Open this in your email app" });
+    const href = escapeHatch.getAttribute("href") ?? "";
+    expect(href.startsWith("mailto:hello@tradyperch.com")).toBe(true);
+    // The message the visitor already wrote is carried across, so recovering
+    // from our outage costs one click rather than retyping it.
+    expect(decodeURIComponent(href)).toContain("An agent that qualifies inbound leads.");
+    expect(decodeURIComponent(href)).toContain("Jamie Rivera");
+
+    // A delivery failure is not a validation failure: the message they wrote
+    // is still there, and is not flagged as the problem.
+    expect(
+      screen.getByLabelText("What are you looking to build?", { exact: false }),
+    ).toHaveValue("An agent that qualifies inbound leads.");
   });
 });
