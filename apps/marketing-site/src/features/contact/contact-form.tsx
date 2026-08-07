@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, TextField } from "@trady-perch/ui";
-import { CheckIcon } from "@/shared/components/icons";
 import {
   validateContactForm,
   type ContactFormData,
@@ -104,21 +103,7 @@ export function ContactForm() {
   }
 
   if (status === "success") {
-    return (
-      <div className={styles.success} role="status">
-        <p className={styles.successHeading}>
-          <CheckIcon className={styles.successIcon} aria-hidden="true" />
-          Message sent.
-        </p>
-        <p className={styles.successBody}>
-          We respond within one business day — usually faster. In the meantime, feel free to look
-          around the rest of the site.
-        </p>
-        <Button emphasis="secondary" onClick={() => setStatus("idle")}>
-          Send another message
-        </Button>
-      </div>
-    );
+    return <ContactSuccess onDismiss={() => setStatus("idle")} />;
   }
 
   return (
@@ -201,5 +186,95 @@ export function ContactForm() {
         Send message
       </Button>
     </form>
+  );
+}
+
+/** How long the confirmation is held before it returns to the form. */
+const SUCCESS_HOLD_MS = 7000;
+
+/**
+ * THE CONFIRMATION.
+ *
+ * The moment a visitor has just done the single thing this whole site exists
+ * to ask them to do. It gets one sentence of acknowledgement, one of
+ * expectation, and a mark that draws itself.
+ *
+ * ── The checkmark ─────────────────────────────────────────────────────────
+ *
+ * Drawn rather than revealed: the ring sweeps closed and the tick is written
+ * into it, on a stroke-dashoffset animation. That is the one place in this
+ * codebase where a property outside Ch.40 Ag-1's closed list animates, and it
+ * is the effect's whole point — `stroke-dashoffset` is neither layout- nor
+ * paint-expensive on a 24px two-path SVG, and there is no way to draw a line
+ * with transform or opacity. The alternative, a mark that fades in whole, is
+ * the thing every form does.
+ *
+ * ── Auto-dismiss ──────────────────────────────────────────────────────────
+ *
+ * Seven seconds, then back to a clean form — but the timer pauses whenever
+ * the panel has the pointer over it or focus inside it. A confirmation that
+ * vanishes while someone is still reading it is worse than one that never
+ * leaves, and a keyboard user tabbing to the dismiss button must not have it
+ * removed from under them mid-tab.
+ *
+ * Nothing is lost either way: the message conveys no information the visitor
+ * has to retain, and the panel is announced through `role="status"` the
+ * instant it mounts, so a screen reader has already read it aloud before any
+ * of this timing applies.
+ */
+function ContactSuccess({ onDismiss }: { onDismiss: () => void }) {
+  const [held, setHeld] = useState(false);
+
+  useEffect(() => {
+    if (held) return;
+    const timeoutId = window.setTimeout(onDismiss, SUCCESS_HOLD_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [held, onDismiss]);
+
+  return (
+    <div
+      className={styles.success}
+      role="status"
+      onMouseEnter={() => setHeld(true)}
+      onMouseLeave={() => setHeld(false)}
+      onFocusCapture={() => setHeld(true)}
+      onBlurCapture={() => setHeld(false)}
+    >
+      <span className={styles.successGlow} aria-hidden="true" />
+
+      <svg
+        className={styles.successMark}
+        viewBox="0 0 44 44"
+        fill="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <circle
+          className={styles.successMarkRing}
+          cx="22"
+          cy="22"
+          r="20"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path
+          className={styles.successMarkTick}
+          d="M13.5 22.5l5.5 5.5 11-11"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+
+      <div className={styles.successCopy}>
+        <p className={styles.successHeading}>Your strategy request has been received.</p>
+        <p className={styles.successBody}>We&rsquo;ll reach out shortly with the next steps.</p>
+      </div>
+
+      <Button emphasis="ghost" size="sm" onClick={onDismiss}>
+        Send another message
+      </Button>
+    </div>
   );
 }

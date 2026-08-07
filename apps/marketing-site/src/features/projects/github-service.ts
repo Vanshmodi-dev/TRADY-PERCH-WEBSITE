@@ -251,7 +251,9 @@ function toProject(repo: GitHubRepository, categories: string[]): Project {
     createdAt: repo.created_at,
     githubUrl: repo.html_url,
     liveUrl,
-    openGraphImageUrl: toOpenGraphImageUrl(repo),
+    // Editorial override first, GitHub's generated card as the automatic
+    // default — see ProjectEditorial.heroImage for when to reach for one.
+    openGraphImageUrl: editorial.heroImage ?? toOpenGraphImageUrl(repo),
     categories,
 
     featured: editorial.featured ?? false,
@@ -259,6 +261,7 @@ function toProject(repo: GitHubRepository, categories: string[]): Project {
     // uncurated repo still gets a discipline label rather than a blank slot.
     category: editorial.category ?? categories[0] ?? "Engineering",
     narrative: editorial.narrative ?? null,
+    impact: editorial.impact ?? null,
     status: toStatus(liveUrl, repo.pushed_at ?? repo.updated_at),
     buildYear: toBuildYear(repo),
     // Derived from the case-study registry rather than duplicated in the

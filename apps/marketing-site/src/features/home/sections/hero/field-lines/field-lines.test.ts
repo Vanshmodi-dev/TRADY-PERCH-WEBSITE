@@ -113,7 +113,7 @@ describe("atlasIndexForAngle", () => {
 
 describe("graceful degradation", () => {
   it("returns no poles when a canvas cannot be created", () => {
-    const poles = sampleWordmarkPoles("TRADY PERCH", { width: 800, height: 400, scale: 1 }, () => null);
+    const poles = sampleWordmarkPoles("TRADY PERCH", { width: 800, height: 400, scale: 1, fontFamily: "sans-serif" }, () => null);
     expect(poles).toEqual([]);
   });
 
@@ -129,7 +129,7 @@ describe("graceful degradation", () => {
       height: 0,
       getContext: () => null,
     } as unknown as HTMLCanvasElement;
-    const poles = sampleWordmarkPoles("TRADY PERCH", { width: 800, height: 400, scale: 1 }, () => fakeCanvas);
+    const poles = sampleWordmarkPoles("TRADY PERCH", { width: 800, height: 400, scale: 1, fontFamily: "sans-serif" }, () => fakeCanvas);
     expect(poles).toEqual([]);
   });
 });

@@ -1,4 +1,4 @@
-import type { FooterColumn, FooterLink, NavItem } from "@trady-perch/ui";
+import type { FooterColumn, FooterLink, NavItem, SocialLink } from "@trady-perch/ui";
 
 /**
  * Single source of truth for site navigation, per
@@ -48,6 +48,26 @@ export const PRIMARY_CTA = {
 };
 
 export const FOOTER_COLUMNS: FooterColumn[] = [
+  /*
+   * The five primary destinations, repeated verbatim from PRIMARY_NAV_ITEMS.
+   *
+   * The duplication with the Work column below is intentional and is what a
+   * "quick links" column IS: a visitor who has scrolled to the bottom of a
+   * long page should not have to scroll back up to reach the main sections,
+   * and the header's own dropdowns are not reachable from down here at all.
+   * Kept flat and in header order, so the two read as the same site rather
+   * than as two different ones.
+   */
+  {
+    heading: "Quick Links",
+    links: [
+      { label: "Solutions", href: "/solutions" },
+      { label: "Industries", href: "/industries" },
+      { label: "Work", href: "/work" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Contact", href: "/contact" },
+    ],
+  },
   {
     heading: "Company",
     links: [
@@ -78,4 +98,25 @@ export const FOOTER_LEGAL_LINKS: FooterLink[] = [
   { label: "Legal", href: "/legal" },
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
+];
+
+/**
+ * ── FILL THESE IN ─────────────────────────────────────────────────────────
+ *
+ * Social profiles for the footer. Each entry renders only when its `href` is
+ * a non-empty string, so an account that does not exist yet simply does not
+ * appear — no dead icon, no link to a 404.
+ *
+ * They are deliberately left blank rather than guessed. A premium site's
+ * footer linking to a profile that does not resolve is a worse first
+ * impression than one showing two icons instead of three, and a plausible-
+ * looking URL is the kind of thing that ships and is never noticed.
+ *
+ * Set the full profile URL, e.g.
+ *   { platform: "LinkedIn", href: "https://www.linkedin.com/company/tradyperch" }
+ */
+export const FOOTER_SOCIAL_LINKS: SocialLink[] = [
+  { platform: "GitHub", href: "" },
+  { platform: "LinkedIn", href: "" },
+  { platform: "Instagram", href: "" },
 ];

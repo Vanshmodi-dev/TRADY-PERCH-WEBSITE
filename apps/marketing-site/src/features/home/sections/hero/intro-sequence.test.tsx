@@ -54,10 +54,23 @@ async function settleEnvironmentCheck() {
   });
 }
 
+/**
+ * The wordmark is a vector `<text>` run split into per-letter `<tspan>`s for
+ * the reveal, so its content is spread across child elements. Testing
+ * Library's default text query reads only an element's *own* text nodes, so a
+ * plain string matcher finds nothing — this asks the run itself.
+ */
+function wordmarkRuns() {
+  return screen.queryAllByText(
+    (_content, element) =>
+      element?.tagName.toLowerCase() === "text" && element.textContent === "TRADY PERCH",
+  );
+}
+
 describe("IntroSequence", () => {
   it("renders the wordmark and tagline in the initial markup", () => {
     render(<IntroSequence />);
-    expect(screen.getByText("TRADY PERCH")).toBeInTheDocument();
+    expect(wordmarkRuns()).toHaveLength(1);
     expect(screen.getByText("Build. Automate. Grow.")).toBeInTheDocument();
   });
 
@@ -135,7 +148,7 @@ describe("IntroSequence", () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByText("TRADY PERCH")).not.toBeInTheDocument();
+      expect(wordmarkRuns()).toHaveLength(0);
     });
     expect(sessionStorage.getItem("tp-intro-shown")).toBe("1");
   });
@@ -151,7 +164,7 @@ describe("IntroSequence", () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByText("TRADY PERCH")).not.toBeInTheDocument();
+      expect(wordmarkRuns()).toHaveLength(0);
     });
   });
 
@@ -178,7 +191,7 @@ describe("IntroSequence", () => {
     await settleEnvironmentCheck();
 
     // Content present, no canvas, no ceremony.
-    expect(screen.getByText("TRADY PERCH")).toBeInTheDocument();
+    expect(wordmarkRuns()).toHaveLength(1);
     expect(container.querySelector("canvas")).toBeNull();
 
     await act(async () => {

@@ -69,10 +69,41 @@ describe("ContactForm", () => {
     );
     await user.click(screen.getByRole("button", { name: "Send message" }));
 
-    expect(await screen.findByText("Message sent.")).toBeInTheDocument();
     expect(
-      screen.getByText(/We respond within one business day/),
+      await screen.findByText("Your strategy request has been received."),
     ).toBeInTheDocument();
+    // The copy uses a typographic apostrophe (&rsquo;), not an ASCII one.
+    expect(screen.getByText(/reach out shortly with the next steps/)).toBeInTheDocument();
+    // Announced, not merely rendered — a visitor using a screen reader has to
+    // learn the submit succeeded without seeing the panel replace the form.
+    expect(screen.getByRole("status")).toBeInTheDocument();
+  });
+
+  it("returns to a clean form once the confirmation has been held", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ json: () => Promise.resolve({ ok: true }) }),
+    );
+    const user = userEvent.setup();
+    render(<ContactForm />);
+
+    await user.type(screen.getByLabelText("Name", { exact: false }), "Jamie Rivera");
+    await user.type(screen.getByLabelText("Email", { exact: false }), "jamie@example.com");
+    await user.type(
+      screen.getByLabelText("What are you looking to build?", { exact: false }),
+      "An agent that qualifies inbound leads.",
+    );
+    await user.click(screen.getByRole("button", { name: "Send message" }));
+    await screen.findByRole("status");
+
+    // The explicit control, rather than the timer: the auto-dismiss is a
+    // convenience and this is the path that must always work.
+    await user.click(screen.getByRole("button", { name: "Send another message" }));
+
+    expect(screen.getByRole("button", { name: "Send message" })).toBeInTheDocument();
+    // Cleared, not repopulated — a returning form holding the last message
+    // invites an accidental duplicate submit.
+    expect(screen.getByLabelText("Name", { exact: false })).toHaveValue("");
   });
 
   it("shows a form-level error and preserves the entered data when the request fails", async () => {

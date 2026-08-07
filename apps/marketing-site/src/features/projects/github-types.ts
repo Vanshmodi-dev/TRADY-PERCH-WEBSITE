@@ -140,6 +140,18 @@ export interface Project {
    * summary a standard card shows, rather than padding with filler.
    */
   narrative: string | null;
+  /**
+   * The one line of business outcome this project can stand behind — "Runs
+   * unattended", "Serves live customer traffic". Rendered on the card as a
+   * marked, distinct fact rather than as prose.
+   *
+   * `null` for most projects, and that is the intended resting state. See
+   * project-editorial.ts's `impact` field for the standard a line has to meet
+   * before it goes in: this page's entire premise is that a visitor can click
+   * through and check, so an impact claim that cannot survive that click costs
+   * more than the empty space it would have filled.
+   */
+  impact: string | null;
   status: ProjectStatus;
   /** Four-digit year the repository was created. */
   buildYear: number;

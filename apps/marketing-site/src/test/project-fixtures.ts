@@ -71,6 +71,7 @@ export function project(overrides: Partial<Project> = {}): Project {
     featured: false,
     category: "Applied AI",
     narrative: null,
+    impact: null,
     status: "live",
     buildYear: 2025,
     caseStudySlug: null,

@@ -161,6 +161,25 @@ export function ProjectCard({ project, headingLevel = "h3" }: ProjectCardProps) 
 
         <p className={styles.body}>{body}</p>
 
+        {/*
+          BUSINESS IMPACT — what the work is worth, on the one card where a
+          visitor can also check what the work *is*.
+
+          Set apart from the description rather than folded into it, and
+          marked with the accent, because it answers a different question:
+          the paragraph above says what was built, this says what it does for
+          whoever runs it. Rendered only when the editorial layer supplies one
+          — see project-editorial.ts for the standard a line has to meet, and
+          why most projects should honestly have none.
+        */}
+        {project.impact ? (
+          <p className={styles.impact}>
+            <span className={styles.impactRule} aria-hidden="true" />
+            <span className={styles.srOnly}>Business impact: </span>
+            {project.impact}
+          </p>
+        ) : null}
+
         {project.tags.length > 0 ? (
           /* A real list, not a row of spans: these are enumerable
              technologies, and "list, 4 items" conveys to a screen reader the

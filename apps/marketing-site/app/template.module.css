@@ -4,14 +4,37 @@
 @keyframes page-fade-in {
   from {
     opacity: 0;
+    /* Six pixels, and not one more.
+     *
+     * The distance is doing a specific job: a pure cross-fade between two
+     * dark pages reads as a flicker, because the two frames share most of
+     * their pixels and the only cue that anything changed is a brief dip in
+     * brightness. A small upward settle gives the arrival a direction, so it
+     * reads as a new page arriving rather than as the old one blinking.
+     *
+     * It stays at six because anything larger starts to look like content
+     * loading in — and because the animation wraps each route's LCP
+     * candidate (see the note below), so its travel is also the distance by
+     * which the largest element on the page is displaced at first paint. */
+    transform: translateY(var(--page-transition-distance, 6px));
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .pageTransition {
   animation: page-fade-in var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/* Ch.15 Mt-4. The fade is kept (at the reduced tier's own duration, resolved
+   by the motion package's media query) and the travel is removed — arrival
+   still reads as arrival, nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+  .pageTransition {
+    --page-transition-distance: 0px;
+  }
 }
 
 /* Known, disclosed tradeoff (Milestone 5 review Finding #9): this wraps

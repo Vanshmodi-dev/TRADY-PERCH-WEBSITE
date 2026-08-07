@@ -5,16 +5,16 @@ import type { MetadataRoute } from "next";
  *
  * ── Why this exists, given the icons already worked ───────────────────────
  *
- * The `<link rel="icon">` tags Next generates from `app/favicon.ico` and
- * `app/icon.png` were already correct, and browsers render the tab icon from
- * them. This file is not fixing those.
+ * Browsers render the tab icon from the `<link rel="icon">` tags in
+ * layout.tsx's `metadata.icons`. This file is not fixing those.
  *
  * It exists because a manifest is a second, independent place Google looks for
  * a site's icon, and because the sizes here are chosen for that reader rather
- * than for a browser tab. Google's favicon guidance asks for a square whose
- * dimension is a multiple of 48px; `app/icon.png` is 512x512, which is not one
- * (512 / 48 = 10.67). The 192x192 below is (192 / 48 = 4), so there is now an
- * icon in exactly the shape the documentation asks for.
+ * than for a browser tab. The 512x512 in particular lives ONLY here: it is not
+ * a multiple of 48, so it is not a valid candidate under Google's favicon
+ * guidance and is deliberately kept out of the `<link>` set — but the size
+ * rule does not apply to a manifest, where a large icon is exactly what an
+ * install prompt or a splash surface wants.
  *
  * ── What this cannot do ───────────────────────────────────────────────────
  *

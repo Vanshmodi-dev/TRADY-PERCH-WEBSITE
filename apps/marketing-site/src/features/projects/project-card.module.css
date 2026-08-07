@@ -508,6 +508,68 @@
   text-wrap: pretty;
 }
 
+/* --- Business impact ---------------------------------------------------- */
+
+/*
+ * One line, marked by a short gold rule rather than by a badge.
+ *
+ * A badge would put it in the same visual class as the status marker and the
+ * stack chips, which are both *metadata*; this is a claim, and a claim set in
+ * the same chrome as metadata reads as metadata. A rule and a colour shift
+ * give it the weight of a pull quote at a fraction of the size — the treatment
+ * a print editorial would use for exactly this, a single line that matters
+ * more than the paragraph above it.
+ *
+ * Gold is the system's scarcest resource (Ch.11: reserved for accent and
+ * active states), and this is the one place on the card that earns it in text.
+ */
+.impact {
+  display: flex;
+  align-items: baseline;
+  gap: var(--core-space-2);
+  margin: var(--core-space-3) 0 0;
+  font-size: var(--core-type-body-size-mobile);
+  line-height: var(--core-type-body-line-height);
+  color: var(--semantic-color-accent-secondary);
+  text-wrap: pretty;
+}
+
+.impactRule {
+  flex: none;
+  /* Laid out at its full extended length and held back by a scale, rather
+     than sized at rest and grown on hover: Ag-1's closed list excludes
+     `width` precisely because animating it reflows the card's content column
+     on every frame, and inside a grid of cards on a scroll path that is the
+     one cost worth designing around. */
+  width: var(--core-space-6);
+  height: 1.5px;
+  border-radius: var(--core-radius-full);
+  background-color: var(--semantic-color-accent-primary);
+  /* Baseline-aligned flex items align on the text baseline; a rule has none,
+     so it is nudged onto the lowercase midline by hand. */
+  transform: translateY(-0.32em) scaleX(0.66);
+  transform-origin: left center;
+  opacity: 0.75;
+  transition:
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    opacity var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/* The rule extends a little on hover — the card's quietest confirmation that
+   the whole surface is one interactive object, and the only place the impact
+   line participates in the hover state at all. */
+.card:hover .impactRule,
+.card:focus-within .impactRule {
+  transform: translateY(-0.32em) scaleX(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .impactRule {
+    transition: none;
+  }
+}
+
 /* --- Technology stack --------------------------------------------------- */
 
 /*

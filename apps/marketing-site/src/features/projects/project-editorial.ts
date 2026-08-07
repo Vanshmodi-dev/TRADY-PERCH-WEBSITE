@@ -24,10 +24,16 @@
  *
  * ── What does NOT belong here ─────────────────────────────────────────────
  *
- * Metrics, client names, or outcome claims ("cut response time 40%"). Those
- * are case-study content and require a real engagement to evidence. The site
- * already keeps that discipline in `features/case-studies/`, where such cards
- * are explicitly labelled illustrative.
+ * Client names, and any outcome claim you could not evidence if asked ("cut
+ * response time 40%"). Those are case-study content and require a real
+ * engagement behind them. The site already keeps that discipline in
+ * `features/case-studies/`, where such cards are explicitly labelled
+ * illustrative.
+ *
+ * The `impact` field below is the one narrow exception, and it is narrow on
+ * purpose: it exists so that a genuine, evidenced outcome has somewhere to go
+ * on the card, not so that every project acquires a number. Read its own note
+ * before filling one in.
  *
  * Case-study links are also not here. A card's "Case study" action is derived
  * from the registry in `features/case-study/case-study-data.ts` — writing a
@@ -72,6 +78,54 @@ export interface ProjectEditorial {
    * distance a visitor scrolls before reaching the second project.
    */
   narrative?: string;
+  /**
+   * HERO IMAGE override.
+   *
+   * By default a card shows GitHub's generated repository card, which is
+   * automatic, always current, and never has to be maintained — that is the
+   * right default and it stays. But it is also a grey box with a repo name on
+   * it, and for the one or two projects that lead the grid, a real screenshot
+   * of the working product is worth considerably more.
+   *
+   * Set this to a path under `public/` (e.g.
+   * "/case-studies/modi-store/storefront.webp") to use a designed asset
+   * instead. Local paths are preferred over remote ones: they are optimised at
+   * build time, they cannot 404 later, and they do not depend on a third
+   * party's image service being reachable.
+   *
+   * Nothing else changes when this is set — the feed is still live, the repo
+   * still appears and disappears on its own, and a project with no entry here
+   * still gets a correct card automatically.
+   */
+  heroImage?: string;
+  /**
+   * BUSINESS IMPACT — one short line, rendered as a marked fact on the card.
+   *
+   * Four or five words, no sentence, no full stop: "Runs unattended",
+   * "Serves live customer traffic", "Supports 500+ users", "Saved 15 hrs/week".
+   *
+   * ── The standard a line has to meet ─────────────────────────────────────
+   *
+   * A figure here must come from a real engagement you can evidence. This is
+   * the one field on the card where that matters most, because it is the one
+   * a visitor cannot check for themselves — they can click through to the
+   * source and verify the stack, the activity and the deployment, but nothing
+   * in a repository tells them how many hours somebody saved.
+   *
+   * That asymmetry cuts both ways. On a page whose whole premise is verifiable
+   * proof, an unverifiable number sitting among verifiable ones is the single
+   * fastest way to make the verifiable ones look invented too. Enterprise
+   * buyers are the audience this site is written for and they are exactly the
+   * audience that checks.
+   *
+   * So: a capability claim you can demonstrate always beats a metric you
+   * cannot. Leave the field off rather than reach for a number — a card
+   * without an impact line reads as a project that has not been measured yet,
+   * which is unremarkable and true. Every entry below is currently a
+   * capability claim for that reason; replace them with real outcome metrics
+   * as engagements produce them.
+   */
+  impact?: string;
 }
 
 /**
@@ -97,6 +151,8 @@ export const PROJECT_EDITORIAL: Readonly<Record<string, ProjectEditorial>> = {
     summary: "A deployed storefront built from the ground up — no theme, no page builder.",
     narrative:
       "A commerce front end written directly against the platform rather than assembled from a template. The deployment is public, so the whole surface can be inspected exactly as it shipped.",
+    // Verifiable by clicking the Live demo action on this card.
+    impact: "Serving live traffic",
   },
   "trady-perch-website": {
     category: "Design systems",
@@ -105,11 +161,16 @@ export const PROJECT_EDITORIAL: Readonly<Record<string, ProjectEditorial>> = {
       "The site you are reading. A TypeScript monorepo with its own token pipeline, component library, and automated accessibility gate.",
     narrative:
       "Design tokens compile from JSON to CSS custom properties, a framework-agnostic component package consumes them, and this site composes that package. Accessibility, structured data and keyboard navigation are enforced by audit scripts on every build.",
+    // Verifiable by reading scripts/ and .github/ in the linked source.
+    impact: "Accessibility enforced on every build",
   },
   "lead-generation-trady-perch": {
     category: "Automation",
     title: "Lead Generation Engine",
     summary: "A Python pipeline for sourcing and qualifying inbound prospects.",
+    // Describes what the pipeline is, which the source shows. A figure for
+    // hours saved belongs here once an engagement has produced one.
+    impact: "Automated lead sourcing",
   },
 };
 

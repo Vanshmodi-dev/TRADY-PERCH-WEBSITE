@@ -10,7 +10,27 @@
  * not lean forward. Everything here settles; nothing arrives.
  */
 
+/*
+ * THE BEAT CLOCK.
+ *
+ * Six beats on an even 120ms step, declared once so the sequence can be read
+ * top to bottom instead of reconstructed from five scattered delays. An even
+ * step is the point: the previous 90ms one produced an entrance that finished
+ * before it registered as an entrance, and irregular steps read as a loading
+ * order rather than as choreography.
+ *
+ * The first beat sits at 240ms so it clears the page-level template fade and
+ * the two never stack. On a genuine first visit the intro overlay hides all of
+ * this anyway — the offset is only ever seen on a same-session reload.
+ */
 .hero {
+  --hero-beat-1: 240ms; /* eyebrow — the brand line */
+  --hero-beat-2: 360ms; /* headline */
+  --hero-beat-3: 480ms; /* supporting copy */
+  --hero-beat-4: 600ms; /* actions */
+  --hero-beat-5: 720ms; /* the object */
+  --hero-beat-6: 840ms; /* the room it stands in */
+
   position: relative;
   max-width: var(--core-container-width-content);
   margin-inline: auto;
@@ -27,7 +47,12 @@
 
 /* Ambient depth: a single soft pool of light behind the whole composition,
    anchored where the Core sits, so the section has a floor and a horizon
-   rather than being flat black. */
+   rather than being flat black.
+
+   It is also the LAST beat of the entrance. The room lights come up after the
+   object is in it, not before — bringing the glow in first would announce that
+   there is going to be an object, which is the one thing the composition
+   should not do. */
 .hero::before {
   content: "";
   position: absolute;
@@ -40,6 +65,9 @@
     transparent 68%
   );
   z-index: 0;
+  opacity: 0;
+  animation: hero-ambient var(--motion-duration-deliberate) var(--motion-easing-entrance)
+    var(--hero-beat-6) forwards;
 }
 
 .grid {
@@ -69,34 +97,41 @@
 }
 
 /*
- * Choreography. Each element settles a beat behind the last, on the Entrance
- * curve. The 300ms base offset clears the page-level template fade so the two
- * never stack — on a genuine first visit the intro overlay hides all of this
- * anyway, so the offset is only ever seen on a same-session reload.
+ * Choreography. Each element settles one beat behind the last, on the Entrance
+ * curve — an asymmetric ease-out that decelerates hard into its rest, so
+ * everything arrives as though it were coming to a stop rather than starting
+ * to move. Nothing here accelerates.
  */
 .eyebrow,
 .headline,
 .subheadline,
-.actions,
-.object {
+.actions {
   opacity: 0;
   animation: hero-settle var(--motion-duration-deliberate) var(--motion-easing-entrance) forwards;
 }
 
 .eyebrow {
-  animation-delay: 300ms;
+  animation-delay: var(--hero-beat-1);
 }
 .headline {
-  animation-delay: 390ms;
+  animation-delay: var(--hero-beat-2);
 }
 .subheadline {
-  animation-delay: 480ms;
+  animation-delay: var(--hero-beat-3);
 }
 .actions {
-  animation-delay: 570ms;
+  animation-delay: var(--hero-beat-4);
 }
+
+/*
+ * The object arrives differently from the type, and it should: type settles
+ * *down* into place, an object settles *forward* out of the dark. A hair of
+ * scale rather than travel, over a longer duration — a heavy thing coming to
+ * rest, not a card appearing.
+ */
 .object {
-  animation-delay: 660ms;
+  opacity: 0;
+  animation: hero-object-settle 700ms var(--motion-easing-entrance) var(--hero-beat-5) forwards;
 }
 
 .eyebrow {
@@ -182,22 +217,50 @@
   }
 }
 
+@keyframes hero-object-settle {
+  from {
+    opacity: 0;
+    transform: scale(var(--hero-object-settle-scale, 0.972));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes hero-ambient {
+  to {
+    opacity: 1;
+  }
+}
+
 /*
  * Ch.15 Mt-4: reduced motion removes travel, not content. The stagger becomes
- * an opacity-only settle at the reduced duration; nothing slides.
+ * an opacity-only settle at the reduced duration; nothing slides, nothing
+ * scales, and the ambient light is simply on.
  */
 @media (prefers-reduced-motion: reduce) {
+  .hero {
+    --hero-beat-1: 0ms;
+    --hero-beat-2: 0ms;
+    --hero-beat-3: 0ms;
+    --hero-beat-4: 0ms;
+    --hero-beat-5: 0ms;
+    --hero-beat-6: 0ms;
+  }
+
   .eyebrow,
   .headline,
   .subheadline,
   .actions,
   .object {
     --hero-settle-distance: 0px;
+    --hero-object-settle-scale: 1;
     animation-duration: var(--motion-duration-deliberate);
-    animation-delay: 0ms;
   }
 
   .hero::before {
+    animation: none;
     opacity: 0.6;
   }
 }

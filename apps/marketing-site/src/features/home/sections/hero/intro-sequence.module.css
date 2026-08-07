@@ -52,70 +52,110 @@
   pointer-events: none;
 }
 
+/*
+ * The plate fills the stage and centres a single grid cell, rather than
+ * centring a flex column.
+ *
+ * This is a correctness fix, not a preference. The particle rasteriser lays
+ * its poles out around the viewport's exact vertical centre (`height / 2`).
+ * A flex column centres the *stack* — wordmark plus gap plus tagline — which
+ * pushed the wordmark's own centre above the viewport's by half the tagline's
+ * height, so the solid form lit up ~22px above the dust that had just formed
+ * it. Both children now occupy the same centred cell, and the tagline is
+ * displaced by a transform, which moves it without moving anything else.
+ */
 .plate {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--core-space-6);
+  display: grid;
+  place-items: center;
   padding-inline: var(--core-space-4);
   text-align: center;
+  pointer-events: none;
 }
 
-/*
- * The etched wordmark. It is deliberately NOT the thing that forms — the
- * particles form its shape, and this solid version fades up underneath them
- * during the sweep so the two read as one object changing state from dust to
- * metal. Sizing mirrors the rasteriser's own font metrics in
- * wordmark-field.ts (0.082 x viewport width, clamped) so the solid form lands
- * exactly where the particle density is.
- */
-.wordmark {
-  margin: 0;
-  font-size: clamp(26px, 8.2vw, 104px);
-  font-weight: 300;
-  letter-spacing: 0.14em;
-  /* The rasteriser centres the glyph run including its trailing track; this
-     pulls the rendered text back by half of that so both agree optically. */
-  text-indent: 0.14em;
-  line-height: 1;
-  color: transparent;
-  /* Brushed-metal fill: a cool base with a warm centre band, so the sweep has
-     something with grain to travel across rather than flat colour. */
-  background-image: linear-gradient(
-    100deg,
-    #6f6f76 0%,
-    #cfcbc2 38%,
-    var(--semantic-color-accent-secondary) 50%,
-    #cfcbc2 62%,
-    #6f6f76 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  opacity: 0;
-  transition: opacity var(--motion-duration-standard) var(--motion-easing-entrance);
-}
-
-.wordmarkLit {
-  opacity: 1;
+.plate > * {
+  grid-area: 1 / 1;
 }
 
 /*
  * Beat 7 — the tagline. No particle effect, no formation: it simply is. After
  * five seconds of matter organising itself, one line that never needed to
  * assemble is the sequence's quietest good idea.
+ *
+ * Displaced below the wordmark's centre by a share of the type size, so the
+ * two hold the same relationship at every breakpoint rather than drifting
+ * apart as a fixed gap would at the clamp's ends.
  */
 .tagline {
   margin: 0;
   font-size: var(--core-type-label-size-mobile);
   font-weight: var(--core-type-label-weight);
   letter-spacing: 0.42em;
-  text-indent: 0.42em;
+  /* CSS letter-spacing is applied after the last character too, so a centred
+     run sits half a track left of true. Half the track back is the exact
+     correction — the previous full-track indent over-corrected by the same
+     amount in the other direction. */
+  text-indent: 0.21em;
   text-transform: uppercase;
   color: var(--semantic-color-accent-secondary);
+  transform: translateY(calc(clamp(26px, 8.2vw, 104px) * 0.82));
   opacity: 0;
   transition: opacity var(--motion-duration-deliberate) var(--motion-easing-entrance);
+}
+
+/*
+ * THE PROGRESS RULE. A hairline on the wordmark's own measure, filling from
+ * the centre out over the sequence's full length.
+ *
+ * Centre-out rather than left-to-right: the wordmark is centred, so a rule
+ * that grows from its middle stays in sympathy with it, where one that grows
+ * from the left edge reads as a browser chrome element that wandered onto the
+ * stage. transform only, so it never leaves the compositor.
+ */
+.progress {
+  position: absolute;
+  left: 50%;
+  bottom: max(var(--core-space-12), 9svh);
+  width: min(180px, 34vw);
+  height: 1px;
+  margin-left: min(-90px, -17vw);
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--semantic-color-text-primary) 9%, transparent);
+  opacity: 0;
+  animation: intro-progress-fade var(--motion-duration-deliberate) var(--motion-easing-entrance)
+    400ms forwards;
+}
+
+.progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--semantic-color-accent-secondary);
+  transform: scaleX(0);
+  /* 4600ms, not 5000: the rule must be full before the pull-back begins,
+     otherwise it is visibly still filling as the stage retreats. That is the
+     beat clock's total minus the pull-back's own 800ms, plus the 400ms of
+     black it waits through. */
+  animation: intro-progress-fill 4600ms linear 400ms forwards;
+}
+
+@keyframes intro-progress-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes intro-progress-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* The rule is a loading signal, and a static presentation is not loading. */
+.staticPath .progress {
+  display: none;
 }
 
 @media (min-width: 1024px) {
@@ -134,7 +174,6 @@
  * never constructs the particle field on this path at all; the wordmark and
  * tagline are simply present, held, and dismissed.
  */
-.staticPath .wordmark,
 .staticPath .tagline {
   opacity: 1;
   transition: none;
@@ -142,12 +181,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .overlay,
-  .wordmark,
   .tagline {
     transition: none;
   }
 
   .pullback {
     transform: none;
+  }
+
+  .progress,
+  .progress::after {
+    animation: none;
   }
 }

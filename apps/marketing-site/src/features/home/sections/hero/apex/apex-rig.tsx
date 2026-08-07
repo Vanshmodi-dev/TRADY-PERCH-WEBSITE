@@ -24,13 +24,14 @@
  * reason to machine it.
  */
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Lightformer } from "@react-three/drei";
 import { AdditiveBlending, Object3D, type Group, type SpotLight, type Vector3 } from "three";
 import { PALETTE, RATES, RIG } from "./apex-config";
 import { ApexEnvironment } from "./apex-environment";
 import { aimFromPointer, aimToPosition, stepSpring, type SpringState } from "./apex-math";
+import { useApexPointer } from "./apex-pointer";
 import { createFalloffTexture } from "./apex-surfaces";
 
 const AIM_RANGE = {
@@ -57,7 +58,6 @@ export function ApexRig({ keyDirection, still }: ApexRigProps) {
 
   const azimuth = useRef<SpringState>({ value: REST_AIM.azimuth, velocity: 0 });
   const elevation = useRef<SpringState>({ value: REST_AIM.elevation, velocity: 0 });
-  const pointer = useRef<{ x: number; y: number }>({ x: RIG.keyRest.x, y: RIG.keyRest.y });
 
   useLayoutEffect(() => () => pool?.dispose(), [pool]);
 
@@ -67,38 +67,10 @@ export function ApexRig({ keyDirection, still }: ApexRigProps) {
    * mouse anywhere on the page swings it, so the object is already responding
    * before the visitor has worked out that it is responding to them.
    *
-   * Coarse pointers are excluded outright. There is no hover on a touch
-   * screen, so tracking taps would make the light jump — the resting angle is
-   * the designed one and it stays.
+   * Shared with the suspension's parallax (see apex-pointer.ts), so the light
+   * and the object can never answer two different samples of the same input.
    */
-  useEffect(() => {
-    if (still || typeof window === "undefined") return;
-    const finePointer = window.matchMedia("(pointer: fine)");
-    if (!finePointer.matches) return;
-
-    const onPointerMove = (event: PointerEvent) => {
-      pointer.current.x = (event.clientX / window.innerWidth - 0.5) * 2;
-      pointer.current.y = (event.clientY / window.innerHeight - 0.5) * 2;
-      invalidate();
-    };
-
-    const onPointerLeave = (event: PointerEvent) => {
-      // Only when the pointer actually leaves the window, not when it crosses
-      // into a child element.
-      if (event.relatedTarget === null) {
-        pointer.current.x = RIG.keyRest.x;
-        pointer.current.y = RIG.keyRest.y;
-        invalidate();
-      }
-    };
-
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    document.addEventListener("pointerout", onPointerLeave);
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("pointerout", onPointerLeave);
-    };
-  }, [still, invalidate]);
+  const pointer = useApexPointer(!still, invalidate);
 
   useFrame((_, rawDelta) => {
     const key = keyRef.current;
@@ -184,8 +156,11 @@ export function ApexRig({ keyDirection, still }: ApexRigProps) {
           shadowed plates without ever competing. */}
       <directionalLight color={PALETTE.fill} intensity={0.45} position={[5.5, -0.5, 3.5]} />
       {/* RIM — behind and above. This is what separates the silhouette from
-          the black field; remove it and the object dissolves into the page. */}
-      <directionalLight color={PALETTE.fill} intensity={1.15} position={[-1.6, 2.4, -6]} />
+          the black field; remove it and the object dissolves into the page.
+          A step up from 1.15: the rim is the cheapest separation in the scene
+          and the one thing that reliably survives a dim laptop panel, which
+          is what a good share of visitors are looking at this on. */}
+      <directionalLight color={PALETTE.fill} intensity={1.28} position={[-1.6, 2.4, -6]} />
 
       {/* THE GROUND — two layers, no floor.
           A pool of light, and the object's own shadow falling into it. There
@@ -241,17 +216,21 @@ export function ApexRig({ keyDirection, still }: ApexRigProps) {
             thing about the object. */}
         <Lightformer
           form="rect"
-          intensity={2.2}
+          /* Up from 2.2, and taller. The highlight it leaves is the object's
+             single most photographed-looking feature, and it was running out
+             of length before it reached the plinth — so the bottom third of
+             every bevel had nothing to catch. */
+          intensity={2.5}
           color={PALETTE.key}
-          scale={[1.4, 6, 1]}
-          position={[-4.5, 2, 3]}
+          scale={[1.4, 7, 1]}
+          position={[-4.5, 1.6, 3]}
         />
         {/* A narrow cool strip, camera right, purely for edge separation. */}
         <Lightformer
           form="rect"
-          intensity={1.1}
+          intensity={1.25}
           color={PALETTE.titaniumLit}
-          scale={[0.5, 4.5, 1]}
+          scale={[0.5, 5, 1]}
           position={[4.6, 1, 1.5]}
         />
         {/* Overhead, broad and weak — the ceiling of the room. */}
