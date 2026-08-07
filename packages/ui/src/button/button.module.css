@@ -15,6 +15,21 @@
   /* Ch.18 §9: tap target never falls below 44x44px, even at the sm size
      step — a floor the box only grows beyond (lg), never shrinks under. */
   min-height: 44px;
+
+  /*
+   * Two independent motions, one transform.
+   *
+   * A hover lift and a press compression both want the transform property,
+   * and writing them as two competing declarations means whichever rule wins
+   * the cascade erases the other — the usual symptom being a button that
+   * stops lifting the moment it is pressed, then jumps back up on release.
+   * Composing them from separate custom properties lets each state set only
+   * its own term.
+   */
+  --button-lift: 0px;
+  --button-press: 1;
+  transform: translateY(var(--button-lift)) scale(var(--button-press));
+
   transition:
     box-shadow var(--motion-duration-quick) var(--motion-easing-entrance),
     background-color var(--motion-duration-quick) var(--motion-easing-entrance),
@@ -22,15 +37,40 @@
     color var(--motion-duration-quick) var(--motion-easing-entrance),
     /* Master Vision §9.1 Principle 3: "linear... never" — no stated
        Instant-tier exception, so the press compression gets the same
-       Entrance curve as everything else (Milestone 3 review). */
+       Entrance curve as everything else (Milestone 3 review).
+       The hover lift shares this duration: at one pixel, 80ms is not read as
+       a speed but as immediacy, which is the correct feel for a control
+       responding to a pointer that is already on it. */
     transform var(--motion-duration-instant, 80ms) var(--motion-easing-entrance);
+}
+
+/*
+ * Hover — one pixel. It is not meant to be seen as movement; it is meant to
+ * make the surface feel like it has depth under the cursor, which the shadow
+ * change below then confirms. Anything larger and the button is jumping at
+ * the visitor.
+ */
+.button:hover:not(:disabled):not([aria-disabled="true"]) {
+  --button-lift: -1px;
 }
 
 /* Ch.39: Active — 98% scale compression, Instant tier. Not gated behind
    --motion-reduced: Instant's reduced companion is 0ms (the transition
-   becomes an instant jump, not a removed transform) per Ch.15 Mt-4. */
+   becomes an instant jump, not a removed transform) per Ch.15 Mt-4.
+   The lift is released on press, so the control travels *through* its
+   resting position into the compression rather than being squashed while
+   still hovering above the surface. */
 .button:active:not(:disabled):not([aria-disabled="true"]) {
-  transform: scale(0.98);
+  --button-lift: 0px;
+  --button-press: 0.98;
+}
+
+/* Ch.15 Mt-4: reduced motion keeps the state changes and drops the travel.
+   The colour and shadow transitions still carry the feedback. */
+@media (prefers-reduced-motion: reduce) {
+  .button:hover:not(:disabled):not([aria-disabled="true"]) {
+    --button-lift: 0px;
+  }
 }
 
 /* --- Size axis (Ch.18 §4, independent of Emphasis per Ch.17 An-2) ---
@@ -76,8 +116,17 @@
   background-color: var(--semantic-color-accent-primary);
   color: var(--semantic-color-background-primary); /* Ch.18 §4: "background.primary text" */
 }
+/*
+ * The primary's hover carries the elevation shadow AND a wide, very low gold
+ * bloom. The shadow says the control has lifted; the bloom says the control
+ * is warm — and on a near-black page a gold surface that lifts without
+ * casting any of its own colour reads as a sticker peeling off the page.
+ *
+ * The bloom is a fifth of the shadow's alpha and three times its radius, so
+ * it never resolves as a visible edge.
+ */
 .primary:hover:not(:disabled):not([aria-disabled="true"]) {
-  box-shadow: var(--semantic-elevation-card-hover);
+  box-shadow: var(--semantic-elevation-card-hover), 0 8px 30px -10px rgba(201, 162, 75, 0.45);
 }
 .primary:active:not(:disabled):not([aria-disabled="true"]) {
   background-color: var(--semantic-color-accent-pressed); /* Ch.39: gold elements shift to accent.pressed */
@@ -88,17 +137,57 @@
   border-color: var(--semantic-color-border-default);
   color: var(--semantic-color-text-primary);
 }
+/* The border brightens as well as the shadow arriving. On a transparent
+   control the outline IS the control, so leaving it at rest while the shadow
+   changes underneath it looks like the shadow belongs to something else. */
 .secondary:hover:not(:disabled):not([aria-disabled="true"]) {
   box-shadow: var(--semantic-elevation-card-hover);
+  border-color: color-mix(in srgb, var(--semantic-color-text-primary) 26%, transparent);
+  background-color: color-mix(in srgb, var(--semantic-color-text-primary) 3%, transparent);
 }
 
+/*
+ * Ch.18 §4: a ghost button "reveals a subtle underline on hover".
+ *
+ * Drawn rather than switched on. `text-decoration` is not animatable, so the
+ * previous implementation snapped a solid rule into existence under the label
+ * — the one interaction on the site that had no transition at all. A
+ * pseudo-element scaling out from the left is the same treatment the header's
+ * nav links use, so the two now behave identically, which they should: they
+ * are the same affordance at two sizes.
+ */
 .ghost {
+  position: relative;
   background-color: transparent;
   color: var(--semantic-color-text-primary);
 }
-.ghost:hover:not(:disabled):not([aria-disabled="true"]) {
-  text-decoration: underline; /* Ch.18 §4: "reveals a subtle underline on hover" */
-  text-underline-offset: var(--core-space-1);
+
+.ghost::after {
+  content: "";
+  position: absolute;
+  left: var(--semantic-space-padding-component-sm);
+  right: var(--semantic-space-padding-component-sm);
+  bottom: calc(50% - 0.85em);
+  height: 1px;
+  background-color: currentColor;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition:
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    opacity var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.ghost:hover:not(:disabled):not([aria-disabled="true"])::after,
+.ghost:focus-visible:not(:disabled):not([aria-disabled="true"])::after {
+  opacity: 0.85;
+  transform: scaleX(1);
+}
+
+/* The loading state hides the label; an underline under nothing is a stray
+   rule. */
+.ghost.loading::after {
+  display: none;
 }
 
 /* --- Destructive (Ch.18 Bt-4 — recolors, never a new emphasis tier) --- */

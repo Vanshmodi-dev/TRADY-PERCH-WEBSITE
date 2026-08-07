@@ -165,7 +165,15 @@ export function Header({ items, ctaLabel, ctaHref, logoIconSrc, linkComponent, c
       className={[styles.header, receded && styles.receded].filter(Boolean).join(" ")}
       style={transitionDurationVar ? ({ "--nav-transition-duration": transitionDurationVar } as React.CSSProperties) : undefined}
     >
-      <Logo iconSrc={logoIconSrc} href="/" linkComponent={linkComponent} />
+      {/* The class carries the recession's scale transform — see
+          .logoMark in header.module.css for why it is a transform and not a
+          size change. */}
+      <Logo
+        iconSrc={logoIconSrc}
+        href="/"
+        linkComponent={linkComponent}
+        className={styles.logoMark}
+      />
 
       <nav className={styles.nav} aria-label="Primary" ref={navRef}>
         {items.map((item) => {

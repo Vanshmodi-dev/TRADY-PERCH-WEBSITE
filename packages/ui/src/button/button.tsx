@@ -35,6 +35,18 @@ export function Button({
   // Ch.39 St-4: Loading implies Disabled for the triggering element.
   const isDisabled = disabled || isLoading;
 
+  /*
+   * A stable, un-hashed hook for the button's emphasis.
+   *
+   * The class that carries it is a CSS Module name, hashed per build, so
+   * nothing outside this file can select on it. Consumers legitimately need
+   * to know which button on a page is the primary action — the marketing
+   * site's cursor ring is one such consumer, an analytics binding would be
+   * another — and the alternative is every call site repeating a data
+   * attribute it cannot forget without silently breaking the behaviour.
+   */
+  const emphasisAttribute = { "data-emphasis": emphasis } as const;
+
   const composedClassName = classNames(
     styles.button,
     styles[emphasis],
@@ -68,6 +80,7 @@ export function Button({
   if (href) {
     return (
       <Link
+        {...emphasisAttribute}
         href={href}
         linkComponent={linkComponent}
         target={target}
@@ -97,6 +110,7 @@ export function Button({
 
   return (
     <button
+      {...emphasisAttribute}
       type={type}
       className={composedClassName}
       id={id}

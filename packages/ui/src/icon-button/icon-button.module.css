@@ -14,6 +14,12 @@
      beyond it (lg), never shrinks below it (sm), regardless of icon size. */
   min-width: 44px;
   min-height: 44px;
+
+  /* Composed lift + press — see Button's note on why these are two terms. */
+  --icon-button-lift: 0px;
+  --icon-button-press: 1;
+  transform: translateY(var(--icon-button-lift)) scale(var(--icon-button-press));
+
   transition:
     box-shadow var(--motion-duration-quick) var(--motion-easing-entrance),
     background-color var(--motion-duration-quick) var(--motion-easing-entrance),
@@ -25,8 +31,19 @@
     transform var(--motion-duration-instant, 80ms) var(--motion-easing-entrance);
 }
 
+.iconButton:hover:not(:disabled) {
+  --icon-button-lift: -1px;
+}
+
 .iconButton:active:not(:disabled) {
-  transform: scale(0.98);
+  --icon-button-lift: 0px;
+  --icon-button-press: 0.98;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconButton:hover:not(:disabled) {
+    --icon-button-lift: 0px;
+  }
 }
 
 /* Box size = icon (sized by the consumer via icon-size tokens) + this
@@ -46,7 +63,9 @@
   color: var(--semantic-color-background-primary);
 }
 .primary:hover:not(:disabled) {
-  box-shadow: var(--semantic-elevation-card-hover);
+  /* Matches Button's primary hover exactly: elevation plus a wide, very low
+     gold bloom, so the two controls read as the same material. */
+  box-shadow: var(--semantic-elevation-card-hover), 0 8px 30px -10px rgba(201, 162, 75, 0.45);
 }
 .primary:active:not(:disabled) {
   background-color: var(--semantic-color-accent-pressed);
@@ -59,6 +78,8 @@
 }
 .secondary:hover:not(:disabled) {
   box-shadow: var(--semantic-elevation-card-hover);
+  border-color: color-mix(in srgb, var(--semantic-color-text-primary) 26%, transparent);
+  background-color: color-mix(in srgb, var(--semantic-color-text-primary) 3%, transparent);
 }
 
 .ghost {
