@@ -18,7 +18,9 @@ import { PerformanceMonitor } from "@react-three/drei";
 import { ACESFilmicToneMapping, Vector3, type Group } from "three";
 import { RATES, RIG } from "./apex-config";
 import { ApexDust } from "./apex-dust";
+import { stepSpring, type SpringState } from "./apex-math";
 import { ApexMechanism } from "./apex-mechanism";
+import { useApexPointer } from "./apex-pointer";
 import { ApexRig } from "./apex-rig";
 import { ApexShell } from "./apex-shell";
 
@@ -44,14 +46,32 @@ const TAU = Math.PI * 2;
  * The suspension.
  *
  * A forty-kilogram instrument hanging in air does not hold perfectly still and
- * it does not bob on a sine either. Two incommensurate periods on each axis
- * give a drift that never repeats within any plausible visit, at an amplitude
- * of about a centimetre and a half — below the threshold of "it is moving",
- * above the threshold of "it is alive".
+ * it does not bob on a sine either. Three incommensurate periods per axis give
+ * a drift that never repeats within any plausible visit, at an amplitude of
+ * under two centimetres — below the threshold of "it is moving", above the
+ * threshold of "it is alive".
+ *
+ * ── Parallax ──────────────────────────────────────────────────────────────
+ *
+ * The whole assembly also slides a few millimetres against the frame as the
+ * cursor crosses the page, opposed on the horizontal so the object drifts
+ * *away* from the pointer rather than following it. Following is the
+ * conventional choice and it turns a subject into a widget; opposing it is
+ * what a real subject does when the camera moves, and it is the difference
+ * between an object photographed in a room and an image pasted onto a page.
+ *
+ * It rides on a spring slower than the key light's, so on a fast sweep the
+ * light leads and the object follows — the order those two happen in when
+ * someone walks a lamp around a table.
  */
 function Suspension({ still, children }: { still: boolean; children: React.ReactNode }) {
   const ref = useRef<Group>(null);
   const width = useThree((state) => state.size.width);
+  const invalidate = useThree((state) => state.invalidate);
+  const pointer = useApexPointer(!still, invalidate);
+
+  const offsetX = useRef<SpringState>({ value: 0, velocity: 0 });
+  const offsetY = useRef<SpringState>({ value: 0, velocity: 0 });
 
   /*
    * The lens does not change on a phone; the object's size in frame does.
@@ -62,14 +82,36 @@ function Suspension({ still, children }: { still: boolean; children: React.React
    */
   const scale = width < 768 ? 1.24 : 1;
 
-  useFrame((state) => {
+  useFrame((state, rawDelta) => {
     const group = ref.current;
     if (!group || still) return;
     const t = state.clock.elapsedTime;
+    const delta = Math.min(rawDelta, 0.1);
 
-    const { amplitude, slowHz, fastHz } = RATES.shellDrift;
-    group.position.y =
-      RIG.objectOffsetY + (Math.sin(t * TAU * slowHz) + Math.sin(t * TAU * fastHz) * 0.55) * amplitude;
+    const { amplitude, slowHz, fastHz, driftHz } = RATES.shellDrift;
+    const bob =
+      (Math.sin(t * TAU * slowHz) +
+        Math.sin(t * TAU * fastHz) * 0.55 +
+        // The third term is the one that removes the audible beat between the
+        // other two — slow, quiet, and sharing no factor with either.
+        Math.sin(t * TAU * driftHz + 0.9) * 0.34) *
+      amplitude;
+
+    offsetX.current = stepSpring(
+      offsetX.current,
+      pointer.current.x * RIG.parallax.x,
+      RIG.parallaxOmega,
+      delta,
+    );
+    offsetY.current = stepSpring(
+      offsetY.current,
+      pointer.current.y * RIG.parallax.y,
+      RIG.parallaxOmega,
+      delta,
+    );
+
+    group.position.x = offsetX.current.value;
+    group.position.y = RIG.objectOffsetY + bob + offsetY.current.value;
 
     const sway = RATES.shellSway;
     group.rotation.x = Math.sin(t * TAU * sway.slowHz) * sway.amplitude;

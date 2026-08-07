@@ -12,10 +12,18 @@
  *   3. The main thread is idle.
  *   4. The component is mounted on the client.
  *
+ *   5. The intro overlay is no longer covering the screen.
+ *
  * That ordering is deliberate and it is the whole performance argument. A
  * renderer is the heaviest thing this site ships; the claim, the qualifier and
  * both calls to action are server-rendered text that never waits for it, and
  * the object arrives afterwards, into a box that was already the right size.
+ *
+ * Condition 5 is the one that was missing, and its absence was expensive.
+ * "Idle" was true 2.4s into the intro ceremony, so three.js began compiling
+ * behind an opaque full-screen overlay — paying the full cost of a renderer
+ * nobody could see, while starving the ceremony's own clock. See
+ * ../intro-gate.ts for the measurement.
  *
  * Ch.22 Td-6: no render may gate, obscure or delay the primary claim. Ch.22
  * Td-5: the still frame carries the composition unaided — which is why the
@@ -24,6 +32,11 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  introGateServerSnapshot,
+  isIntroGateHeld,
+  subscribeToIntroGate,
+} from "../intro-gate";
 import styles from "./apex.module.css";
 
 const ApexScene = dynamic(() => import("./apex-scene"), { ssr: false });
@@ -90,9 +103,17 @@ export function HeroApex() {
   /* Ch.15 Mt-4: motion is removed, the object is not. */
   const still = usePrefersReducedMotion();
 
+  /* Held while the intro overlay is up. Subscribed rather than read once, so
+     the observer below is re-armed the moment the ceremony ends. */
+  const introHeld = useSyncExternalStore(
+    subscribeToIntroGate,
+    isIntroGateHeld,
+    introGateServerSnapshot,
+  );
+
   useEffect(() => {
     const stage = stageRef.current;
-    if (!stage || !canRenderWebGl()) return;
+    if (!stage || introHeld || !canRenderWebGl()) return;
 
     let idleHandle: number | null = null;
     let cancelled = false;
@@ -129,10 +150,14 @@ export function HeroApex() {
         else window.clearTimeout(idleHandle);
       }
     };
-  }, []);
+  }, [introHeld]);
 
   return (
-    <div ref={stageRef} className={styles.stage} aria-hidden="true">
+    /* `data-cursor="apex"` is what lets the cursor's own pyramid pick up this
+       object's rotation direction while the pointer is over it. The two
+       briefly turn the same way — a harmony that is felt rather than
+       noticed. See shared/components/site-cursor.tsx. */
+    <div ref={stageRef} className={styles.stage} aria-hidden="true" data-cursor="apex">
       {/* The designed still. First byte of HTML, never moves, and the only
           thing on screen if WebGL never arrives. */}
       <div className={styles.poster} data-ready={ready}>

@@ -42,8 +42,14 @@ export interface FleckAtlas {
  */
 export function createFleckAtlas(
   scale: number,
-  length = 7,
-  thickness = 1.5,
+  length = 7.4,
+  /**
+   * Finer than it was. At 1.5 CSS px a fleck is wide enough to read as a dot
+   * with a smear on it rather than as a filing, and a field of them reads as
+   * grain over the frame — the "noisy" quality the sequence was reported for.
+   * At 1.2 the same count reads as suspended metal.
+   */
+  thickness = 1.2,
   createCanvas: () => HTMLCanvasElement | null = defaultCanvasFactory,
 ): FleckAtlas | null {
   const canvas = createCanvas();

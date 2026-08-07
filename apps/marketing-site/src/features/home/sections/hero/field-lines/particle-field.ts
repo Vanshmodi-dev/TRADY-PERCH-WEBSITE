@@ -151,6 +151,10 @@ export class ParticleField {
       width: Math.floor(width * scale),
       height: Math.floor(height * scale),
       scale,
+      // Read off the live canvas rather than hard-coded: the canvas inherits
+      // the document's font stack, so this resolves `next/font`'s generated
+      // family name. See RasterTarget.fontFamily for why that matters.
+      fontFamily: resolveFontFamily(this.canvas),
     });
 
     if (poles.length === 0 || !this.atlas) {
@@ -378,7 +382,11 @@ export class ParticleField {
       // of a fleck's brightness.
       const relative = particleAngle - this.lightAngle;
       const specular = Math.abs(Math.cos(relative));
-      let brightness = 0.16 + Math.pow(specular, 3) * 0.84;
+      // Floor lowered from 0.16: an off-axis fleck should fall away into the
+      // black rather than sit at a permanent readable grey. Only the flecks
+      // actually catching the light are visible at any instant, which is both
+      // how metal behaves and what keeps the frame from reading as grain.
+      let brightness = 0.11 + Math.pow(specular, 3) * 0.89;
 
       if (!Number.isNaN(sweepX)) {
         const distance = Math.abs((this.x[index] ?? 0) - sweepX);
@@ -397,7 +405,11 @@ export class ParticleField {
     for (let band = 0; band < ALPHA_BANDS; band += 1) {
       const bucket = buckets[band];
       if (!bucket || bucket.length === 0) continue;
-      ctx.globalAlpha = Math.min(1, ((band + 0.5) / ALPHA_BANDS) * 0.9);
+      // Ceiling pulled down from 0.9. Under `lighter` compositing, flecks
+      // overlapping inside the dense letterform stacked to pure white and
+      // blew out the counters of the glyphs — which is precisely what made
+      // the formed wordmark read as a bright smear instead of as type.
+      ctx.globalAlpha = Math.min(1, ((band + 0.5) / ALPHA_BANDS) * 0.72);
 
       for (const index of bucket) {
         const sprite = atlasIndexForAngle(this.angle[index] ?? 0, steps);
@@ -420,6 +432,21 @@ export class ParticleField {
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
   }
+}
+
+/**
+ * The document's own resolved font stack, for canvas shaping.
+ *
+ * Falls back to the token stack's literal names only when there is no
+ * computed style to read (jsdom under test) — in a browser the computed value
+ * always wins, because only it contains `next/font`'s generated family name.
+ */
+function resolveFontFamily(element: HTMLElement): string {
+  if (typeof window === "undefined" || typeof window.getComputedStyle !== "function") {
+    return 'system-ui, sans-serif';
+  }
+  const computed = window.getComputedStyle(element).fontFamily;
+  return computed && computed.trim().length > 0 ? computed : "system-ui, sans-serif";
 }
 
 /** Signed shortest angular distance from `from` to `to`, in (-PI, PI]. */

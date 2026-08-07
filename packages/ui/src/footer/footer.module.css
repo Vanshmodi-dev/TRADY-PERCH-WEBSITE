@@ -24,6 +24,16 @@
   margin-inline: auto;
 }
 
+/*
+ * Two columns at tablet with the brand spanning both, four link columns plus
+ * the brand at desktop.
+ *
+ * The intermediate step matters: at 600px the previous rule went straight to
+ * `1.5fr repeat(3, 1fr)`, which now — with a fourth column — would give each
+ * link list under 90px and wrap "Case Studies" and "Workflow Automation" onto
+ * two lines each. A footer whose every second item wraps reads as a footer
+ * nobody looked at.
+ */
 .top {
   display: grid;
   gap: var(--semantic-space-gap-grid);
@@ -33,20 +43,119 @@
 
 @media (min-width: 600px) {
   .top {
-    grid-template-columns: 1.5fr repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--semantic-space-gap-grid);
+    /* Not section-sm. A two-column grid sizes each row to its tallest
+       column, so with a five-item list beside a three-item one the shorter
+       column already contributes ~60px of empty space to the row below it.
+       Adding a section-scale gap on top of that reads as a gap nobody
+       chose. */
+    row-gap: var(--core-space-12);
+  }
+
+  .brandColumn {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .top {
+    grid-template-columns: 1.35fr repeat(4, minmax(0, 1fr));
+    row-gap: var(--semantic-space-gap-grid);
+  }
+
+  .brandColumn {
+    grid-column: auto;
+    /* The link columns are top-aligned to their headings; the brand column
+       has a logo where they have a label, so it needs a little more room to
+       breathe rather than the same rigid stack rhythm. */
+    padding-right: var(--core-space-8);
   }
 }
 
 .brandColumn {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: var(--semantic-space-gap-stack);
 }
 
 .tagline {
+  margin: 0;
   font-size: var(--core-type-caption-size-mobile);
+  /* The one place the brand line appears outside the hero. Tracked out to
+     match the eyebrow treatment it echoes there, so the two read as the same
+     mark rather than as the same words twice. */
+  letter-spacing: 0.18em;
   color: var(--semantic-color-text-secondary);
   max-width: 32ch;
+}
+
+/*
+ * Provenance. Deliberately the quietest type in the footer — this is a fact
+ * offered to anyone who looks for it, not a claim being made.
+ */
+.origin {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: calc(-1 * var(--core-space-3)) 0 0;
+  font-size: var(--core-type-caption-size-mobile);
+  line-height: 1.5;
+  color: var(--semantic-color-text-secondary);
+  max-width: 30ch;
+}
+
+.originLine {
+  display: block;
+}
+
+/* --- Social ------------------------------------------------------------- */
+
+.social {
+  display: flex;
+  align-items: center;
+  gap: var(--core-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * A 40px target around a 20px mark. WCAG 2.2 SC 2.5.8's floor is 24px and
+ * these are a discrete row of controls rather than inline links, so the floor
+ * applies — 40 is comfortably clear of it and gives the hover surface enough
+ * area to read as a surface rather than as a tinted glyph.
+ */
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -10px; /* Optically aligns the first mark to the column edge. */
+  border-radius: var(--core-radius-full);
+  color: var(--semantic-color-text-secondary);
+  text-decoration: none;
+  transition:
+    color var(--motion-duration-quick) var(--motion-easing-entrance),
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.socialLink + .socialLink,
+li + li .socialLink {
+  margin-left: 0;
+}
+
+.socialLink:hover {
+  color: var(--semantic-color-text-primary);
+  background-color: color-mix(in srgb, var(--semantic-color-text-primary) 6%, transparent);
+}
+
+.socialIcon {
+  width: var(--core-icon-size-20);
+  height: var(--core-icon-size-20);
+  display: block;
 }
 
 .column {
@@ -98,12 +207,40 @@
   }
 }
 
+/*
+ * THE SEPARATOR.
+ *
+ * A rule that fades out at both ends rather than a hard hairline edge to
+ * edge. A full-width border under a footer draws a hard horizontal line
+ * across the bottom of every page, which is the single loudest thing in an
+ * otherwise quiet region; a gradient rule does the same separating work and
+ * stops being an element in its own right.
+ *
+ * `border-top` is dropped in favour of a gradient background on a 1px block,
+ * because a border cannot carry a gradient.
+ */
 .bottom {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--core-space-3);
   padding-top: var(--semantic-space-padding-section-sm);
-  border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);
+}
+
+.bottom::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--semantic-color-border-default) 18%,
+    var(--semantic-color-border-default) 82%,
+    transparent 100%
+  );
 }
 
 @media (min-width: 600px) {

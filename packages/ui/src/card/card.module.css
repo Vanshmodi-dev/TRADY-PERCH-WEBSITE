@@ -20,18 +20,51 @@
 /* Ch.19 Cd-1: an Interactive card's affordance must match its behavior exactly. */
 .interactive {
   cursor: pointer;
+
+  /* Composed from two independent terms for the same reason Button is — see
+     the note there. A lift and a press both want `transform`, and declaring
+     them separately means the press erases the lift mid-interaction. */
+  --card-lift: 0px;
+  --card-press: 1;
+  transform: translateY(var(--card-lift)) scale(var(--card-press));
+
   transition:
-    box-shadow var(--motion-duration-quick) var(--motion-easing-entrance),
-    background-color var(--motion-duration-quick) var(--motion-easing-entrance),
+    box-shadow var(--motion-duration-standard) var(--motion-easing-entrance),
+    background-color var(--motion-duration-standard) var(--motion-easing-entrance),
+    border-color var(--motion-duration-standard) var(--motion-easing-entrance),
     /* Master Vision §9.1 Principle 3: never linear (Milestone 3 review). */
     transform var(--motion-duration-instant, 80ms) var(--motion-easing-entrance);
 }
-.interactive:hover {
+
+/*
+ * Two pixels, and the border comes up with it.
+ *
+ * A card is a larger surface than a button, so it can take a little more
+ * travel before the movement registers as movement — but the elevation is
+ * carried mostly by the shadow and the border, not by the distance. A card
+ * that jumps is a card that will be noticed jumping on the twentieth hover
+ * as much as the first, which is the definition of an effect that has
+ * outstayed its welcome.
+ */
+.interactive:hover,
+.interactive:focus-visible {
+  --card-lift: -2px;
   background-color: var(--semantic-color-surface-card-hover);
   box-shadow: var(--semantic-elevation-card-hover);
+  border-color: color-mix(in srgb, var(--semantic-color-text-primary) 18%, transparent);
 }
+
 .interactive:active {
-  transform: scale(0.98);
+  --card-lift: 0px;
+  --card-press: 0.98;
+}
+
+/* Ch.15 Mt-4: the state remains, the travel goes. */
+@media (prefers-reduced-motion: reduce) {
+  .interactive:hover,
+  .interactive:focus-visible {
+    --card-lift: 0px;
+  }
 }
 
 .media {

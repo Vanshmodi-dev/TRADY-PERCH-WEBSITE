@@ -174,7 +174,13 @@ export function ApexShell({ still }: ApexShellProps) {
                  how matte black turns into wet-look plastic. */
               clearcoat={0.24}
               clearcoatRoughness={0.46}
-              envMapIntensity={0.5}
+              /* Lifted a step. The softbox camera-left is the only thing
+                 drawing the long highlight down the plate bevels, and at 0.5
+                 that highlight died before it reached the plinth — the lower
+                 third of the object was reading as flat black rather than as
+                 a shadowed face. This is environment return, not exposure:
+                 the shadows stay exactly as deep. */
+              envMapIntensity={0.58}
             />
           </mesh>
         );
@@ -188,10 +194,10 @@ export function ApexShell({ still }: ApexShellProps) {
         <meshPhysicalMaterial
           color={PALETTE.anodised}
           metalness={0.3}
-          roughness={0.52}
+          roughness={0.48}
           clearcoat={0.3}
-          clearcoatRoughness={0.38}
-          envMapIntensity={0.6}
+          clearcoatRoughness={0.34}
+          envMapIntensity={0.7}
         />
       </mesh>
 
@@ -205,7 +211,7 @@ export function ApexShell({ still }: ApexShellProps) {
           normalScale={normalScale}
           clearcoat={0.26}
           clearcoatRoughness={0.42}
-          envMapIntensity={0.55}
+          envMapIntensity={0.64}
         />
       </mesh>
 
@@ -220,8 +226,8 @@ export function ApexShell({ still }: ApexShellProps) {
         <meshStandardMaterial
           color={PALETTE.titanium}
           metalness={0.95}
-          roughness={0.34}
-          envMapIntensity={0.9}
+          roughness={0.3}
+          envMapIntensity={1.05}
         />
       </instancedMesh>
     </group>

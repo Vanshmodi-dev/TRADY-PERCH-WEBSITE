@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { coreTokens } from "@trady-perch/tokens";
 import { SiteHeader } from "@/shared/components/site-header";
 import { SiteFooter } from "@/shared/components/site-footer";
+import { SiteCursor } from "@/shared/components/site-cursor";
 import { SITE_URL } from "@/shared/site-config";
 import styles from "./layout.module.css";
 import "./globals.css";
@@ -30,6 +31,50 @@ export const metadata: Metadata = {
     template: "%s — Trady Perch",
   },
   description: DEFAULT_DESCRIPTION,
+
+  /**
+   * ── FAVICONS: declared explicitly, not by file convention ────────────────
+   *
+   * These were previously `app/favicon.ico`, `app/icon.png` and
+   * `app/apple-icon.png`, and Next's file convention emitted them correctly
+   * for browsers — the tab icon has always worked. They are declared by hand
+   * now for two reasons, both of which are about Google rather than browsers.
+   *
+   * 1. STABLE URLS. The file convention appends a content hash as a query
+   *    string (`/favicon.ico?favicon.0rr671z3ftkm5.ico`). Google's favicon
+   *    guidance asks for a favicon URL that does not change, because the
+   *    favicon is crawled and cached on its own schedule, independently of
+   *    the page. Files served from `public/` have no hash, so `/favicon.ico`
+   *    and `/icon-192.png` are now permanent addresses.
+   *
+   * 2. A CONFORMANT SIZE IN THE MARKUP. Google requires a square icon whose
+   *    dimension is a multiple of 48px. `app/icon.png` was 512x512, and
+   *    512 / 48 = 10.67 — not a multiple, so the only PNG offered to Google
+   *    was one it is documented not to accept. The 192x192 (192 / 48 = 4)
+   *    existed already but was referenced only from the web app manifest,
+   *    which is a secondary source. It is now a first-class `<link
+   *    rel="icon">` on every page.
+   *
+   * The .ico is kept and listed first because browsers request `/favicon.ico`
+   * unconditionally whether it is declared or not, and because its largest
+   * entry is 48x48 — itself a conformant size, and a second independent
+   * candidate for Google to choose from.
+   *
+   * The 512x512 is deliberately NOT linked here. It is not a multiple of 48,
+   * so it can only ever be a distraction to the crawler; it stays in
+   * manifest.ts, where large icons belong and where the size rule does not
+   * apply.
+   */
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    // 180x180 is Apple's own specified size for a home-screen icon and is
+    // intentionally not a multiple of 48. It is for iOS, not for Search —
+    // the two icons above are what Google reads.
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 
   /**
    * Ch.40 §3 — site-wide social defaults. Next.js applies a parent segment's
@@ -102,6 +147,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <SiteFooter />
+        {/* Last in the body, and self-disabling: it renders nothing at all
+            without a fine pointer, and nothing under reduced motion. See
+            site-cursor.tsx — it augments the system cursor rather than
+            replacing it, so its absence removes nothing. */}
+        <SiteCursor />
       </body>
     </html>
   );

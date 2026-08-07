@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ParticleField, type FieldStage } from "./field-lines";
+import { releaseIntroGate } from "./intro-gate";
+import { IntroWordmark, WORDMARK } from "./intro-wordmark";
 import styles from "./intro-sequence.module.css";
 
 const SESSION_KEY = "tp-intro-shown";
-const WORDMARK = "TRADY PERCH";
 
 /**
  * FIELD LINES — the eight-beat opening sequence.
@@ -132,6 +133,21 @@ export function IntroSequence() {
   const staticPath = reducedMotion || fieldFailed;
   const shouldRunCeremony = environmentResolved && !alreadyShown && !staticPath;
 
+  /*
+   * Let the Apex renderer start.
+   *
+   * Released the moment the overlay is out of the way — either because the
+   * ceremony has finished, or because this visitor was never going to see it.
+   * A returning visitor therefore waits for nothing: the environment check
+   * resolves on the next tick and the gate opens with it.
+   *
+   * See intro-gate.ts for why the renderer must not begin any earlier.
+   */
+  useEffect(() => {
+    if (!environmentResolved) return;
+    if (alreadyShown || beat === "done") releaseIntroGate();
+  }, [environmentResolved, alreadyShown, beat]);
+
   const finish = useCallback(() => {
     markSessionShown();
     setBeat("done");
@@ -154,60 +170,128 @@ export function IntroSequence() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const field = new ParticleField(canvas, { wordmark: WORDMARK });
-    fieldRef.current = field;
-
-    const applySize = () => {
-      const scale = Math.min(2, window.devicePixelRatio || 1);
-      field.resize(window.innerWidth, window.innerHeight, scale);
-    };
-
-    applySize();
-
-    if (!field.isReady()) {
-      // No 2D context, or the wordmark rasterised to nothing. Degrade to the
-      // static path rather than holding an empty black overlay.
-      field.destroy();
-      fieldRef.current = null;
-      setFieldFailed(true);
-      return;
-    }
-
-    field.start();
-
+    let field: ParticleField | null = null;
     let resizeFrame = 0;
+    let cancelled = false;
     const onResize = () => {
       cancelAnimationFrame(resizeFrame);
-      resizeFrame = requestAnimationFrame(applySize);
+      resizeFrame = requestAnimationFrame(() => field && applySize(field));
     };
-    window.addEventListener("resize", onResize);
+
+    const applySize = (instance: ParticleField) => {
+      const scale = Math.min(2, window.devicePixelRatio || 1);
+      instance.resize(window.innerWidth, window.innerHeight, scale);
+    };
+
+    const build = () => {
+      if (cancelled) return;
+      const instance = new ParticleField(canvas, { wordmark: WORDMARK });
+      applySize(instance);
+
+      if (!instance.isReady()) {
+        // No 2D context, or the wordmark rasterised to nothing. Degrade to
+        // the static path rather than holding an empty black overlay.
+        instance.destroy();
+        setFieldFailed(true);
+        return;
+      }
+
+      field = instance;
+      fieldRef.current = instance;
+      instance.start();
+      window.addEventListener("resize", onResize);
+    };
+
+    /*
+     * Wait for the webfont before shaping the poles.
+     *
+     * The rasteriser shapes the letterform with whatever face is resolvable at
+     * the moment it runs. Build it before `next/font`'s face has loaded and
+     * the particles form the *fallback* typeface's outline, then the SVG
+     * wordmark lights up in the real one on top of it — two different shapes,
+     * registered, which is exactly the doubled, blurred look this sequence was
+     * reported for.
+     *
+     * Beat 1 is 400ms of black and the font is preloaded, so in practice this
+     * has already resolved. The race guard exists for the case where it has
+     * not: a font that is still loading must not hold the ceremony, so the
+     * field is built anyway after a short grace period.
+     */
+    const fontsReady = document.fonts?.ready;
+    if (fontsReady) {
+      const grace = new Promise<void>((resolve) => window.setTimeout(resolve, 300));
+      void Promise.race([fontsReady.then(() => undefined), grace]).then(build);
+    } else {
+      build();
+    }
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(resizeFrame);
       window.removeEventListener("resize", onResize);
-      field.destroy();
+      field?.destroy();
+      field = null;
       fieldRef.current = null;
     };
   }, [shouldRunCeremony]);
 
-  // Beat clock.
+  /*
+   * BEAT CLOCK — driven by elapsed wall-clock time, not by a chain of timers.
+   *
+   * This is a correctness fix, not a style preference. A `setTimeout` chain
+   * measures each beat from *whenever the previous timer actually fired*, so
+   * every millisecond the main thread is blocked is added to the sequence
+   * rather than absorbed by it. Measured on a production build, with the Apex
+   * renderer compiling underneath: a 5.0s ceremony took 17.4s to reach the
+   * hero, twelve of those on a frozen frame.
+   *
+   * Reading `performance.now()` each frame means a blocked thread costs
+   * dropped frames instead of added duration — the sequence resumes at the
+   * beat it *should* be on, and if the block outlasts the whole ceremony it is
+   * simply over, which is the right answer. The overlay's designed length is
+   * five seconds; it is now five seconds on every machine.
+   *
+   * (The gate in intro-gate.ts removes the contention itself. This makes the
+   * sequence robust to contention from anything else — an extension, a slow
+   * font, a background tab returning.)
+   */
   useEffect(() => {
-    if (!shouldRunCeremony || beat === "done") return;
+    if (!shouldRunCeremony) return;
 
-    const activeBeat = beat as ActiveBeat;
-    const index = BEAT_ORDER.indexOf(activeBeat);
-    if (index === -1) return;
+    const start = performance.now();
+    let frameId = 0;
+    let lastBeat: Beat | null = null;
 
-    fieldRef.current?.setStage(BEAT_STAGE[activeBeat]);
+    const tick = (now: number) => {
+      const elapsed = now - start;
 
-    const timeoutId = window.setTimeout(() => {
-      const next = BEAT_ORDER[index + 1];
-      if (next) setBeat(next);
-      else finish();
-    }, BEAT_MS[activeBeat]);
+      let cursor = 0;
+      let current: ActiveBeat | null = null;
+      for (const candidate of BEAT_ORDER) {
+        cursor += BEAT_MS[candidate];
+        if (elapsed < cursor) {
+          current = candidate;
+          break;
+        }
+      }
 
-    return () => window.clearTimeout(timeoutId);
-  }, [beat, shouldRunCeremony, finish]);
+      if (current === null) {
+        finish();
+        return;
+      }
+
+      if (current !== lastBeat) {
+        lastBeat = current;
+        fieldRef.current?.setStage(BEAT_STAGE[current]);
+        setBeat(current);
+      }
+
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [shouldRunCeremony, finish]);
 
   // The sweep (beat 6) is driven per frame rather than by CSS, because the
   // particles themselves must brighten as it crosses them — that is what sells
@@ -293,12 +377,18 @@ export function IntroSequence() {
     <div className={overlayClassName} role="presentation" aria-hidden="true">
       {shouldRunCeremony ? <canvas ref={canvasRef} className={styles.canvas} /> : null}
 
+      {/*
+        The plate is absolutely positioned rather than flex-centred, and the
+        tagline is displaced by a transform rather than by a gap.
+        A flex column centres the *stack*, which put the wordmark's optical
+        centre above the viewport's — while the rasteriser lays its poles out
+        around `height / 2`. The two forms were vertically offset by half the
+        tagline's height for as long as this sequence has existed. Here the
+        wordmark occupies the exact centre the field is built around, and the
+        tagline hangs off it without moving it.
+      */}
       <div className={styles.plate}>
-        <p
-          className={[styles.wordmark, wordmarkLit && styles.wordmarkLit].filter(Boolean).join(" ")}
-        >
-          {WORDMARK}
-        </p>
+        <IntroWordmark lit={wordmarkLit} immediate={staticPath} />
         <p
           className={[styles.tagline, taglineVisible && styles.taglineVisible]
             .filter(Boolean)
@@ -307,6 +397,21 @@ export function IntroSequence() {
           Build. Automate. Grow.
         </p>
       </div>
+
+      {/*
+        THE PROGRESS RULE — the loading signal.
+
+        A hairline that fills across the wordmark's own measure over the length
+        of the sequence, then leaves with it. It is the only element in the
+        overlay that tells a visitor how long this lasts, and it is a rule
+        rather than a spinner or a percentage because those two both say
+        "something is wrong and we are working on it", where a rule filling at
+        a steady rate says "this is a designed length and it is nearly over".
+
+        Driven by a CSS animation with a total duration equal to the beat
+        clock's, so it cannot drift out of sync with it.
+      */}
+      {shouldRunCeremony ? <span className={styles.progress} aria-hidden="true" /> : null}
     </div>
   );
 }

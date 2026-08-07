@@ -1,0 +1,115 @@
+/*
+ * THE WORDMARK — one vector run, with depth and glow applied as filters.
+ *
+ * The type metrics here are the CSS half of the contract stated in
+ * field-lines/wordmark-field.ts (WORDMARK_TYPE). The particle rasteriser
+ * shapes its poles from those numbers; this stylesheet renders the solid form
+ * from the same ones. If one side changes, the other must change with it, or
+ * the dust settles into an outline that is not the one that lights up.
+ *
+ *   size      clamp(26px, 8.2vw, 104px)  <- sizeMin / sizeVwFactor / sizeMax
+ *   tracking  0.115em                    <- trackingEm
+ *   weight    400                        <- weight
+ */
+
+.wordmark {
+  --tp-wordmark-size: clamp(26px, 8.2vw, 104px);
+
+  display: block;
+  width: 100%;
+  /* Tall enough for cap height plus the glow's bleed. The box is only ever a
+     paint area — the plate positions it, so its height costs no layout. */
+  height: calc(var(--tp-wordmark-size) * 1.9);
+  overflow: visible;
+}
+
+.run {
+  font-family: inherit;
+  font-size: var(--tp-wordmark-size);
+  /* Up one step from the 300 this shipped with. 300 at display size renders
+     hairline stems that a subpixel grid cannot resolve cleanly, which reads as
+     shimmer; 400 keeps the same light, stated character with stems that land
+     on the pixel grid. Still well short of anything that insists. */
+  font-weight: 400;
+  /* Tightened from 0.14em. At 0.14 the letters stop reading as a word and
+     start reading as a row of characters — the difference between a wordmark
+     and a caption. 0.115 holds the run together while keeping the airiness
+     the mark is built on. */
+  letter-spacing: 0.115em;
+  /* The default in SVG text is implementation-dependent, so it is worth
+     asking for kerning explicitly rather than hoping for it. */
+  font-kerning: normal;
+  fill: url(#tp-wordmark-face);
+
+  /*
+   * DEPTH, then GLOW — in that order, because a filter list composes left to
+   * right and the glow should surround the type *and its shadow*, not sit
+   * between them.
+   *
+   * The first is one offset of near-black at under two percent of the type
+   * size: the entire depth budget, enough that the face sits *on* the black
+   * field rather than *in* it, small enough that nobody can point at it.
+   *
+   * The second is the glow, and its job is to give the mark a temperature
+   * rather than to light anything. At any value where it reads as a glow in
+   * its own right it has become a 2008 web effect; at this one a visitor
+   * registers only that the type feels warm.
+   *
+   * Both radii scale with the type size, so the mark carries the same weight
+   * of shadow and the same warmth on a phone as on a display.
+   */
+  filter: drop-shadow(0 calc(var(--tp-wordmark-size) * 0.018) 0 rgba(11, 11, 13, 0.85))
+    drop-shadow(0 0 calc(var(--tp-wordmark-size) * 0.26) rgba(201, 162, 75, 0.22));
+}
+
+.faceStopEdge {
+  stop-color: #6f6f76;
+}
+.faceStopMid {
+  stop-color: #cfcbc2;
+}
+.faceStopCore {
+  stop-color: var(--semantic-color-accent-secondary);
+}
+
+/*
+ * THE REVEAL — per letter, left to right, in step with the sweep.
+ *
+ * Opacity only, no travel. Letters that slide in draw attention to their own
+ * arrival; letters that simply resolve draw attention to the word. The 42ms
+ * step across eleven characters runs 462ms, which sits just inside the sweep
+ * beat's 600ms — so the last letter finishes fractionally before the light
+ * leaves the frame rather than after it.
+ */
+.letter {
+  opacity: 0;
+  transition: opacity var(--motion-duration-deliberate) var(--motion-easing-entrance);
+  transition-delay: calc(var(--letter-index, 0) * 42ms);
+}
+
+.lit .letter {
+  opacity: 1;
+}
+
+/*
+ * The static presentation (reduced motion, or no canvas). Ch.15 Mt-4: a full
+ * static composition, not a faster animation. Every letter is simply present.
+ */
+.immediate .letter {
+  opacity: 1;
+  transition: none;
+  transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter {
+    transition: none;
+    transition-delay: 0ms;
+  }
+
+  /* The glow is the most expensive paint in the overlay and buys nothing once
+     the sequence is static; the depth offset is free and stays. */
+  .run {
+    filter: drop-shadow(0 calc(var(--tp-wordmark-size) * 0.018) 0 rgba(11, 11, 13, 0.85));
+  }
+}

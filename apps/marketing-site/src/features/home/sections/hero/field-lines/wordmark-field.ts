@@ -54,11 +54,75 @@ const GRID_ROWS = 40;
  */
 const SOFTENING = 24;
 
+/**
+ * How many poles the letterform is reduced to.
+ *
+ * The grid build is O(cells x poles) — 3,200 cells here — so this number is
+ * the whole cost of the one expensive step in the effect. At 700 that is
+ * ~2.2M multiply-adds, a few milliseconds, paid once on mount and once per
+ * resize.
+ *
+ * It is also the density the finished wordmark is drawn at: every
+ * participating particle is assigned one pole, so with ~1,900 participating
+ * particles across 700 poles each stroke carries two or three particles per
+ * sample point. Fewer poles and the letterform reads as dotted; many more and
+ * the grid build becomes the slowest thing on the page.
+ */
+const TARGET_POLES = 700;
+
 export interface RasterTarget {
   width: number;
   height: number;
   /** Device pixel ratio the caller is rendering at. */
   scale: number;
+  /**
+   * The *resolved* font stack to shape with, as read from the DOM.
+   *
+   * This must not be a hand-written family list. The primary face is loaded by
+   * `next/font`, which mangles the family to a build-generated name
+   * (`__Inter_36bd41`) — a literal `"Inter"` in a canvas font string therefore
+   * matches nothing and silently falls through to `system-ui`. The particles
+   * then formed a *different typeface* from the solid wordmark fading up
+   * underneath them, and the two read as one blurred, doubled form. That is
+   * the single largest source of the "noisy logo" this sequence was reported
+   * for. Callers pass `getComputedStyle(element).fontFamily`.
+   */
+  fontFamily: string;
+}
+
+/**
+ * Type metrics, shared by the rasteriser and the SVG wordmark.
+ *
+ * Both artefacts must agree to the pixel: the particles settle into the shape
+ * described here, and the solid SVG lights up in exactly the same place. Any
+ * disagreement in size, weight, tracking or centring shows up as a double
+ * exposure. They are stated once, here, and the CSS mirrors them through
+ * custom properties rather than restating the numbers.
+ */
+export const WORDMARK_TYPE = {
+  /** Size is viewport-width driven so the wordmark holds a constant share of
+   *  the frame at every breakpoint. Mirrored by `--tp-wordmark-size`. */
+  sizeVwFactor: 0.082,
+  sizeMin: 26,
+  sizeMax: 104,
+  /**
+   * Tracking, in em. Tightened from 0.14: at 0.14 the letters stop reading as
+   * a word and start reading as a row of characters, which is the difference
+   * between a wordmark and a caption.
+   */
+  trackingEm: 0.115,
+  /**
+   * Weight. Up one step from 300 — 300 at display size renders with hairline
+   * stems that a subpixel grid cannot resolve cleanly, which reads as
+   * shimmer. 400 keeps the same light, stated character with stems thick
+   * enough to land on the pixel grid.
+   */
+  weight: 400,
+} as const;
+
+/** The rendered type size for a given CSS viewport width. */
+export function wordmarkFontSize(cssWidth: number): number {
+  return clamp(cssWidth * WORDMARK_TYPE.sizeVwFactor, WORDMARK_TYPE.sizeMin, WORDMARK_TYPE.sizeMax);
 }
 
 /**
@@ -90,24 +154,31 @@ export function sampleWordmarkPoles(
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) return [];
 
-  // Type size is driven by viewport width so the wordmark occupies a
-  // consistent share of the frame at every breakpoint, rather than being a
-  // fixed px size that dominates a phone and floats on a wide desktop.
-  const fontSize = clamp(width * 0.082, 26, 104);
-  const tracking = fontSize * 0.14;
+  // Metrics come from the shared spec so the particle form and the SVG form
+  // are the same shape at the same size. `width` here is in device pixels, so
+  // the CSS-space size is scaled back up to match.
+  const fontSize = wordmarkFontSize(width / target.scale) * target.scale;
+  const tracking = fontSize * WORDMARK_TYPE.trackingEm;
 
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "#fff";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.font = `300 ${fontSize}px "General Sans", "Inter", system-ui, sans-serif`;
+  ctx.font = `${WORDMARK_TYPE.weight} ${fontSize}px ${target.fontFamily}`;
 
   // Manual letter spacing: `ctx.letterSpacing` is not available everywhere,
   // and the tracking here is wide enough to matter to the pole distribution.
   const characters = [...text];
   const advances = characters.map((character) => ctx.measureText(character).width);
+  // Trailing track INCLUDED. CSS `letter-spacing` adds its value after every
+  // character including the last, so a centred CSS/SVG run centres a box one
+  // full track wider than the glyphs occupy. Measuring the same box here is
+  // what makes the two centre identically — the previous `n - 1` measurement
+  // left the particle form half a track (up to 6px) left of the solid one,
+  // and the site compensated with a `text-indent` hack that over-corrected by
+  // a further half track in the other direction.
   const totalWidth =
-    advances.reduce((sum, advance) => sum + advance, 0) + tracking * (characters.length - 1);
+    advances.reduce((sum, advance) => sum + advance, 0) + tracking * characters.length;
 
   let penX = (width - totalWidth) / 2;
   const baselineY = height / 2;
@@ -125,19 +196,46 @@ export function sampleWordmarkPoles(
     return [];
   }
 
-  // Stride is derived from the raster size so pole density stays roughly
-  // constant across viewports — a fixed stride would yield ~5x more poles on
-  // a wide desktop than on a phone, and the grid build cost scales with it.
-  const stride = Math.max(3, Math.round(fontSize / 9));
-  const poles: FieldPole[] = [];
+  /*
+   * ── Sampling, in two passes ───────────────────────────────────────────
+   *
+   * The stride must be FINER than the letterform's stems, or the scan
+   * simply misses them. That was the defect here: at `fontSize / 9` the
+   * stride ran wider than a stem at every size (23px against a 17px stem on a
+   * 2x display), so a scan line crossed a stroke without landing on it more
+   * often than not. The surviving poles were a sparse scatter that happened
+   * to sit inside the word's bounding box — which is exactly what the
+   * finished effect looked like: a diffuse cloud in the shape of a rectangle,
+   * not of a wordmark.
+   *
+   * So: sample fine enough to resolve the strokes, then decimate the result
+   * to the pole count the grid build can afford. Density is set by the
+   * target, not by the raster size, so it is now genuinely constant across
+   * viewports rather than approximately so.
+   */
+  const stride = Math.max(2, Math.round(fontSize / 46));
+  const candidates: FieldPole[] = [];
   for (let y = 0; y < height; y += stride) {
     for (let x = 0; x < width; x += stride) {
       // Alpha channel of the RGBA quad for this pixel.
       const alpha = pixels[(y * width + x) * 4 + 3] ?? 0;
       if (alpha > 128) {
-        poles.push({ x: x / target.scale, y: y / target.scale });
+        candidates.push({ x: x / target.scale, y: y / target.scale });
       }
     }
+  }
+
+  if (candidates.length <= TARGET_POLES) return candidates;
+
+  // Even decimation rather than random selection: a random subset clumps, and
+  // clumping in the finished wordmark is the one artefact the pole assignment
+  // exists to prevent. Striding the scan-ordered list keeps the coverage even
+  // across every stroke.
+  const step = candidates.length / TARGET_POLES;
+  const poles: FieldPole[] = [];
+  for (let index = 0; index < TARGET_POLES; index += 1) {
+    const candidate = candidates[Math.floor(index * step)];
+    if (candidate) poles.push(candidate);
   }
 
   return poles;

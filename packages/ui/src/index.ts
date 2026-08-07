@@ -18,7 +18,13 @@ export { Header } from "./header";
 export type { HeaderProps, NavItem, NavDropdownItem } from "./header";
 
 export { Footer } from "./footer";
-export type { FooterProps, FooterColumn, FooterLink } from "./footer";
+export type {
+  FooterProps,
+  FooterColumn,
+  FooterLink,
+  SocialLink,
+  SocialPlatform,
+} from "./footer";
 
 export { Card, CardTitle, CardBody, CardMedia, CardFooter } from "./card";
 export type {

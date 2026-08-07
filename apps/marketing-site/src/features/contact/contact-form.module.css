@@ -34,28 +34,136 @@
   }
 }
 
+/* --- The confirmation --------------------------------------------------- */
+
+/*
+ * Centred, unlike the form it replaces.
+ *
+ * The form is a left-aligned working surface; the confirmation is not a
+ * surface at all, it is a statement, and a statement centred in the space the
+ * work used to occupy reads as a full stop. It also lands on the same
+ * `max-width` and in the same place, so nothing on the page jumps when the two
+ * swap — a confirmation that reflows the layout underneath it is the fastest
+ * way to make a successful submit feel like an error.
+ */
 .success {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: var(--semantic-space-gap-related-items);
-  padding: var(--semantic-space-padding-component-lg);
+  padding: var(--semantic-space-padding-section-sm) var(--semantic-space-padding-component-lg);
   background-color: var(--semantic-color-surface-card);
   border-radius: var(--semantic-radius-card);
   border: var(--core-border-hairline) solid var(--semantic-color-border-default);
   max-width: 40rem;
+  overflow: hidden;
+
+  animation: success-arrive var(--motion-duration-deliberate) var(--motion-easing-entrance) both;
+}
+
+/*
+ * THE GLOW. One soft pool of the success hue behind the mark, and nothing
+ * else — Ch.17.5's calm-not-celebratory rule holds: this is the warmth of a
+ * confirmation, not a fanfare. It arrives after the mark has finished drawing,
+ * so it reads as the mark settling rather than as a separate event.
+ */
+.successGlow {
+  position: absolute;
+  top: -18%;
+  left: 50%;
+  z-index: -1;
+  width: min(420px, 90%);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: var(--core-radius-full);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--semantic-color-text-success) 14%, transparent) 0%,
+    transparent 62%
+  );
+  opacity: 0;
+  animation: success-glow var(--motion-duration-deliberate) var(--motion-easing-entrance) 520ms
+    both;
+}
+
+/*
+ * THE MARK. Ring first, then the tick written into it.
+ *
+ * `stroke-dashoffset` is the one animated property in this codebase outside
+ * Ch.40 Ag-1's closed list. It is a deliberate, single-site exception: there
+ * is no way to draw a line with transform or opacity, drawing is the entire
+ * idea here, and on two paths inside a 40px box the cost is nil. Every other
+ * property in this file stays inside the list.
+ */
+.successMark {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  color: var(--semantic-color-text-success);
+}
+
+.successMarkRing {
+  /* 2πr at r=20, rounded up so no sliver of the circle is left undrawn. */
+  stroke-dasharray: 126;
+  stroke-dashoffset: 126;
+  /* Starts at 12 o'clock and sweeps clockwise, which is the direction a mark
+     like this is drawn by hand. */
+  transform: rotate(-90deg);
+  transform-origin: center;
+  opacity: 0.55;
+  animation: success-draw 620ms var(--motion-easing-entrance) 60ms forwards;
+}
+
+.successMarkTick {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  /* Begins while the ring is still closing, so the two read as one gesture
+     rather than as two animations queued behind each other. */
+  animation: success-draw 340ms var(--motion-easing-entrance) 440ms forwards;
+}
+
+@keyframes success-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes success-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--success-arrive-distance, 8px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes success-glow {
+  to {
+    opacity: 1;
+  }
+}
+
+.successCopy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--core-space-2);
 }
 
 .successHeading {
-  display: flex;
-  align-items: center;
-  gap: var(--semantic-space-gap-related-items);
   font-size: var(--core-type-h3-size-mobile);
   font-weight: var(--core-type-h3-weight);
-  /* Ch.17.5: success is calm, not celebratory — a single small icon and
-     text.success color, no confetti/bounce. */
-  color: var(--semantic-color-text-success);
+  line-height: 1.25;
+  /* Ch.17.5: success is calm, not celebratory. The heading is in the ordinary
+     primary text colour and the *mark* carries the success hue — green type at
+     h3 size is a system alert, not a thank-you. */
+  color: var(--semantic-color-text-primary);
   margin: 0;
+  text-wrap: balance;
 }
 
 @media (min-width: 1024px) {
@@ -64,21 +172,38 @@
   }
 }
 
-.successIcon {
-  width: var(--core-icon-size-24);
-  height: var(--core-icon-size-24);
-  flex-shrink: 0;
-}
-
 .successBody {
   font-size: var(--core-type-body-size-mobile);
   line-height: var(--core-type-body-line-height);
   color: var(--semantic-color-text-secondary);
   margin: 0;
+  text-wrap: pretty;
 }
 
 @media (min-width: 1024px) {
   .successBody {
     font-size: var(--core-type-body-size-desktop);
+  }
+}
+
+/*
+ * Ch.15 Mt-4. The mark is simply drawn, the panel simply present. Nothing is
+ * withheld — under reduced motion the confirmation is complete on arrival,
+ * which is what that preference asks for.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .success {
+    --success-arrive-distance: 0px;
+  }
+
+  .successMarkRing,
+  .successMarkTick {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .successGlow {
+    opacity: 1;
+    animation: none;
   }
 }

@@ -16,9 +16,29 @@
      which is exactly what caused the Ch.20 Nv-3 mobile-CTA regression. */
   padding-inline: var(--semantic-space-padding-component-md);
   background-color: var(--semantic-surface-glass-nav-fill);
-  backdrop-filter: blur(var(--core-blur-subtle));
-  -webkit-backdrop-filter: blur(var(--core-blur-subtle));
+  /* `saturate(100%)` is a no-op visually and load-bearing structurally: a
+     backdrop-filter only interpolates between two lists whose functions match
+     in type and order, so without the identity term here the receded state's
+     `blur() saturate()` could not tween from this one and would hard-swap
+     mid-scroll.
+
+     NO `-webkit-` COMPANION, deliberately, and this is not an oversight about
+     Safari. This rule previously carried both, and the build's CSS minifier
+     saw two adjacent declarations with identical values and collapsed them
+     into one — keeping the PREFIXED name. Chromium and Firefox implement only
+     the unprefixed property, so the shipped bundle contained a header whose
+     glass blurred in Safari and nowhere else. Verified against the built
+     output: `getComputedStyle(header).backdropFilter` read "none" in Chrome
+     at both scroll states.
+
+     Every other backdrop-filter in this codebase already declares the
+     standard property alone and survives minification intact; the toolchain
+     adds prefixes from browserslist. This now matches them. */
+  backdrop-filter: blur(var(--core-blur-subtle)) saturate(100%);
   border-bottom: var(--core-border-hairline) solid var(--semantic-color-border-default);
+  /* Stated as two transparent shadows rather than one, so the list matches
+     the receded state's shape and interpolates per-shadow. */
+  box-shadow: 0 1px 0 rgba(11, 11, 13, 0), 0 12px 32px -20px rgba(11, 11, 13, 0);
   /* Ch.40 Ag-1 — only opacity, transform, color, background-color,
      border-color and box-shadow may animate, system-wide, with exactly one
      named exception elsewhere (the intro sequence's reflection sweep). This
@@ -32,15 +52,78 @@
      (glass-nav 72% -> ~55%), which is background-color and therefore
      permitted; §4's "slightly reduced padding" remains part of the receded
      *state*, it simply steps rather than tweens. At an 8px delta, mid-scroll,
-     under the background fade, the step is not perceptible as a jump. */
-  transition: background-color var(--nav-transition-duration, var(--motion-duration-standard))
-    var(--motion-easing-entrance);
+     under the background fade, the step is not perceptible as a jump.
+
+     ── The receded state's glass ────────────────────────────────────────────
+
+     `backdrop-filter` IS in this transition list, and is a second documented
+     deviation from Ag-1 alongside `visibility` in .dropdown below. The
+     reasoning is the same shape: Ag-1's closed list exists to keep animation
+     off the layout and paint paths, and a backdrop filter is neither — it is
+     resolved by the compositor against an already-rasterised backdrop, in the
+     same pass the permitted `opacity` uses. Stepping it instead (the
+     alternative, and what `padding-block` does above) is visibly worse here
+     rather than imperceptible: the blur radius doubles across the recession,
+     and a doubling of blur under a *simultaneously tweening* background colour
+     reads as a rendering glitch rather than as a step. */
+  transition:
+    background-color var(--nav-transition-duration, var(--motion-duration-standard))
+      var(--motion-easing-entrance),
+    border-color var(--nav-transition-duration, var(--motion-duration-standard))
+      var(--motion-easing-entrance),
+    box-shadow var(--nav-transition-duration, var(--motion-duration-standard))
+      var(--motion-easing-entrance),
+    backdrop-filter var(--nav-transition-duration, var(--motion-duration-standard))
+      var(--motion-easing-entrance);
 }
 
-/* Ch.20 Nv-4 — recede on downward scroll, never disappear entirely. */
+/*
+ * Ch.20 Nv-4 — recede on downward scroll, never disappear entirely.
+ *
+ * The recession is a *material* change, not just a transparency one. Scrolled
+ * to the top the bar is barely there; in motion over content it becomes
+ * glass — more transmissive, more blurred, with an edge and a shadow that
+ * separate it from whatever is passing underneath. Every property that moves
+ * here is compositor-resolved.
+ */
 .header.receded {
   background-color: var(--semantic-surface-glass-nav-fill-receded);
   padding-block: var(--core-space-3);
+  /* Doubled. The receded fill is 17 points more transparent, so without more
+     blur the content scrolling beneath it reads *through* the bar and the
+     navigation loses its own figure/ground — the failure mode of every
+     glass bar that only fades. */
+  backdrop-filter: blur(var(--core-blur-moderate)) saturate(140%);
+  /* An edge, not a rule. At full strength a border under a translucent bar
+     draws itself; at a third of the token's alpha it only defines where the
+     glass stops. */
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--semantic-color-text-primary) 6%,
+    transparent
+  );
+  /* The only shadow the bar ever casts, and it casts it only while it is
+     genuinely floating over content. */
+  box-shadow: 0 1px 0 rgba(11, 11, 13, 0.5), 0 12px 32px -20px rgba(11, 11, 13, 0.9);
+}
+
+/*
+ * The logo shrinks with the bar. `transform: scale` rather than a font or icon
+ * size change: scale is compositor-only and continuous, where sizing would
+ * relayout the whole bar on every frame of a scroll — the exact cost Ag-1's
+ * note above exists to prevent.
+ *
+ * transform-origin at the left edge so the mark shrinks toward the page margin
+ * it is aligned to rather than drifting inward off it.
+ */
+.logoMark {
+  transform-origin: left center;
+  transition: transform var(--nav-transition-duration, var(--motion-duration-standard))
+    var(--motion-easing-entrance);
+}
+
+.header.receded .logoMark {
+  transform: scale(0.92);
 }
 
 @media (min-width: 1024px) {
@@ -61,6 +144,15 @@
   }
 }
 
+/* Ch.20 §4's "slightly reduced" receded state, applied to the horizontal axis
+   as well as the vertical. Like `padding-block` above this steps rather than
+   tweens — `gap` is layout-triggering and outside Ag-1's closed list — and at
+   an 8px delta under a simultaneous background fade the step is not
+   perceptible as a jump. */
+.header.receded .nav {
+  gap: var(--semantic-space-gap-stack);
+}
+
 .navItem {
   position: relative;
 }
@@ -79,21 +171,48 @@
   text-decoration: none;
   cursor: pointer;
   position: relative;
+  transition: color var(--motion-duration-quick) var(--motion-easing-entrance);
 }
 
 .navLink:hover {
   color: var(--semantic-color-text-primary);
 }
 
-.navLink:hover::after,
-.navLink.active::after {
+/*
+ * THE UNDERLINE — always present, drawn by a transform.
+ *
+ * It used to be conjured into existence by `content` on `:hover`, which meant
+ * it could not animate at all: a 2px gold rule simply blinked on under the
+ * cursor and blinked off again. Rendered permanently at `scaleX(0)` it has
+ * something to animate *from*, and the same rule now serves the hover state
+ * and Ch.20 §6's persistent active marker.
+ *
+ * It grows from the left because that is the direction the label is read in,
+ * and it is a hairline rather than 2px because gold at 2px under 15px type is
+ * a highlighter, not an indicator.
+ */
+.navLink::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 2px;
+  height: 1.5px;
+  border-radius: var(--core-radius-full);
   background-color: var(--semantic-color-accent-primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  transition:
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    opacity var(--motion-duration-quick) var(--motion-easing-entrance);
+}
+
+.navLink:hover::after,
+.navLink:focus-visible::after,
+.navLink.active::after {
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 /* Ch.20 §6: the current page's item shows a PERSISTENT underline, not
@@ -126,12 +245,23 @@
   box-shadow: var(--semantic-elevation-overlay);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(calc(-1 * var(--core-space-1) * (1 - var(--motion-reduced, 0))));
   /*
-   * Ch.20 §7 specifies distinct Entrance/Exit curves for open vs. close.
-   * Like Drawer (see drawer.module.css), a single transition config is used
-   * for both directions as an interim simplification, deferred to
-   * Milestone 5 (Interactive elements & animations).
+   * Origin at the top edge, and a hair of scale alongside the travel. A panel
+   * that only translates arrives as a rectangle sliding into place; one that
+   * also expands very slightly from the trigger it belongs to arrives as
+   * something *unfolding from* that trigger — which is the relationship the
+   * panel actually has to it.
+   */
+  transform-origin: top left;
+  transform: translateY(calc(-1 * var(--core-space-2) * (1 - var(--motion-reduced, 0))))
+    scale(calc(1 - 0.02 * (1 - var(--motion-reduced, 0))));
+  /*
+   * Ch.20 §7's distinct Entrance/Exit curves, now actually applied: this rule
+   * is the CLOSING state, so it carries the Exit curve at the Quick tier — a
+   * dismissal should be brisk and get out of the way. The opening state
+   * below carries the Entrance curve at the Standard tier, so the panel
+   * arrives with weight and leaves without ceremony. (Previously both
+   * directions shared one Entrance/Quick config, deferred from Milestone 5.)
    */
   /*
    * `visibility` is deliberately in this list despite not being one of
@@ -145,15 +275,19 @@
    * Ch.42 than the deviation.
    */
   transition:
-    opacity var(--motion-duration-quick) var(--motion-easing-entrance),
-    transform var(--motion-duration-quick) var(--motion-easing-entrance),
+    opacity var(--motion-duration-quick) var(--motion-easing-exit),
+    transform var(--motion-duration-quick) var(--motion-easing-exit),
     visibility var(--motion-duration-quick);
 }
 
 .navItem.open .dropdown {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  transition:
+    opacity var(--motion-duration-standard) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance),
+    visibility var(--motion-duration-standard);
 }
 
 .dropdownLink {
@@ -163,6 +297,9 @@
   font-size: var(--core-type-body-size-desktop);
   color: var(--semantic-color-text-secondary);
   text-decoration: none;
+  transition:
+    color var(--motion-duration-quick) var(--motion-easing-entrance),
+    background-color var(--motion-duration-quick) var(--motion-easing-entrance);
 }
 .dropdownLink:hover {
   color: var(--semantic-color-text-primary);
@@ -181,6 +318,31 @@
   display: flex;
   align-items: center;
   gap: var(--semantic-space-gap-related-items);
+}
+
+/*
+ * THE CTA'S RECEDED GLOW.
+ *
+ * Scrolled to the top, the primary CTA sits in a bar that has a hero behind
+ * it and does not need help. In motion over body content it is the only warm
+ * element on screen, and a bare gold fill on a glass bar over dark text starts
+ * to read as a flat sticker. A single wide, very low-alpha gold shadow gives
+ * it a hair of separation from the glass — the same trick the object below
+ * uses to sit in a room rather than on a page.
+ *
+ * It is deliberately not a hover effect and not always-on: it appears with the
+ * recession and leaves with it, so it reads as the bar's material changing
+ * rather than as the button doing something.
+ */
+.header .actions :global(a),
+.header .actions :global(button) {
+  transition: box-shadow var(--nav-transition-duration, var(--motion-duration-standard))
+    var(--motion-easing-entrance);
+}
+
+.header.receded .ctaDesktop :global(a),
+.header.receded .ctaMobile :global(a) {
+  box-shadow: 0 0 0 1px rgba(201, 162, 75, 0.14), 0 6px 22px -8px rgba(201, 162, 75, 0.4);
 }
 
 .mobileMenuTrigger {

@@ -1,0 +1,246 @@
+/*
+ * THE PYRAMID CURSOR.
+ *
+ * Position, scale, glow and every particle are written by JS as `transform`
+ * and `opacity` on elements that each carry their own compositor layer. This
+ * stylesheet owns only the material: what the object is made of, and how the
+ * two colours in it behave.
+ *
+ * ── On the blue ───────────────────────────────────────────────────────────
+ *
+ * The system palette is black, graphite, titanium and gold, and gold is
+ * reserved for accent and active states (Ch.11). This introduces a fifth
+ * colour, and it is a deliberate exception with a boundary: electric blue
+ * appears ONLY on the cursor layer and never on page content.
+ *
+ * That boundary is what makes it work rather than dilute. The cursor is not
+ * part of the page — it is the interface reading the page, a HUD over the top
+ * of it. Giving that layer its own cool temperature separates it from
+ * everything it passes over, so it can never be mistaken for a gold accent
+ * belonging to the content underneath. It is also the same cool register the
+ * hero object's fill and rim lights already occupy, so the two read as the
+ * same scene lit by the same rig.
+ *
+ * If this colour ever appears in a section, a card or a button, that boundary
+ * has been crossed and the exception has stopped being one.
+ */
+
+.root {
+  --cursor-blue: 138, 190, 255;
+  --cursor-blue-hot: 176, 214, 255;
+
+  position: fixed;
+  inset: 0;
+  z-index: 90; /* Over the page, under the intro overlay's 100 — the ceremony
+                  owns the screen outright while it is up. */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+.visible {
+  opacity: 1;
+}
+
+/*
+ * The travelling body. Everything inside is positioned relative to this, so
+ * the loop writes ONE transform for position and the object's parts never
+ * need to know where on screen they are.
+ *
+ * Centred by a negative half-offset on the children rather than by
+ * `translate(-50%)` on the body itself, because the body's transform is
+ * rewritten every frame and appending a second function to it would mean
+ * parsing two transforms per frame instead of one.
+ */
+.body {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+
+/*
+ * THE HALO — the soft glow, and the only part of the object that is not a
+ * line. A radial gradient rather than a `filter: blur()` or a
+ * `drop-shadow`: a filter would re-run every frame over the wireframe that
+ * is already being re-rasterised, where a gradient is painted once and then
+ * only ever scaled and faded by the compositor.
+ */
+.halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 82px;
+  height: 82px;
+  margin: -41px 0 0 -41px;
+  border-radius: var(--core-radius-full);
+  background: radial-gradient(
+    circle,
+    rgba(var(--cursor-blue-hot), 0.5) 0%,
+    rgba(var(--cursor-blue), 0.22) 32%,
+    rgba(var(--cursor-blue), 0) 68%
+  );
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/*
+ * THE CLICK. One ring, out and gone inside 160ms.
+ *
+ * Not a "ripple" in the material sense — no travelling wave, no colour wash.
+ * A single thin ring expanding once is the smallest possible acknowledgement
+ * that a click landed, and at this duration it is felt more than seen, which
+ * is the point. Anything longer starts to trail behind a fast clicker and
+ * becomes a queue of rings.
+ */
+.ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: var(--core-radius-full);
+  border: 1px solid rgba(var(--cursor-blue-hot), 0.8);
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.rippleActive {
+  animation: cursor-ripple 160ms var(--motion-easing-exit) forwards;
+}
+
+@keyframes cursor-ripple {
+  from {
+    opacity: 0.65;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+/* The wireframe itself. Scale and opacity are written per frame. */
+.glyph {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  /* The SVG box is sized in the component from the pyramid's own radius;
+     these pull it back onto its centre without a second transform function. */
+  translate: -50% -50%;
+  overflow: visible;
+  will-change: transform, opacity;
+}
+
+/*
+ * THE BLOOM. The full wireframe again, thicker and blue, painted underneath.
+ * This is what makes the edges read as emitting rather than as drawn, and it
+ * costs one extra path rather than a filter pass.
+ */
+.bloom {
+  stroke: rgba(var(--cursor-blue), 0.55);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+/*
+ * The base quad carries a whisper of fill — just enough that the near face
+ * reads as enclosing something rather than as four loose lines, which is the
+ * difference between a wireframe object and a wireframe diagram.
+ */
+.base {
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  fill: rgba(var(--cursor-blue), 0.07);
+}
+
+.hips {
+  stroke: rgba(255, 255, 255, 0.82);
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+}
+
+/*
+ * THE NAVIGATION RULE.
+ *
+ * The brief asks for a "tiny blue underline" on navigation hover. It is drawn
+ * here, on the cursor, rather than on the nav link — because the link already
+ * has an underline, in gold, which is Ch.20 §6's persistent marker for the
+ * current section and Ch.11's reserved accent. A second blue rule appearing
+ * under the same word would put two different underline systems on one
+ * element and make the active-page signal ambiguous.
+ *
+ * On the cursor it reads as the pointer acknowledging a text target, and the
+ * nav's own gold system is left alone.
+ */
+.rule {
+  stroke: rgba(var(--cursor-blue-hot), 0.9);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  transform-origin: center;
+  opacity: 0;
+  transition:
+    opacity var(--motion-duration-quick) var(--motion-easing-entrance),
+    transform var(--motion-duration-standard) var(--motion-easing-entrance);
+}
+
+/*
+ * THE TRAIL. Two temperatures, alternating, so the trail has the same
+ * white-line-over-blue-bloom material as the object shedding it.
+ */
+.particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: var(--core-radius-full);
+  background-color: rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.particle[data-tone="1"] {
+  background-color: rgba(var(--cursor-blue-hot), 0.95);
+}
+
+/*
+ * Reduced motion. The brief's own list: no float, no particles, no idle
+ * scan — the component stops running all three. What remains is an object
+ * that follows the pointer and answers hover, which is a pointer affordance
+ * rather than an animation.
+ *
+ * The click ring is dropped here too. It is the one element that plays
+ * unprompted rather than tracking an input, and a visitor who has asked for
+ * less motion has asked for exactly that.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .ripple {
+    display: none;
+  }
+
+  .root {
+    transition: none;
+  }
+}
+
+/*
+ * A second line of defence behind the component's own media-query gate. If
+ * the preference changes between the read and the paint, or if this
+ * stylesheet is ever used somewhere the gate is not, nothing renders — the
+ * feature is optional by construction.
+ */
+@media (hover: none), (pointer: coarse) {
+  .root {
+    display: none;
+  }
+}

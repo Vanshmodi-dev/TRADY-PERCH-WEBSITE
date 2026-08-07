@@ -123,17 +123,30 @@ export const MECHANISM = {
  * fast.
  */
 export const RATES = {
-  /** Shell yaw, rad/s. ~11 minutes per revolution. */
-  shellYaw: 0.0094,
-  /** The suspension: two incommensurate periods, so it never repeats visibly. */
-  shellDrift: { amplitude: 0.016, slowHz: 0.041, fastHz: 0.067 },
-  shellSway: { amplitude: 0.0075, slowHz: 0.031, fastHz: 0.053 },
+  /**
+   * Shell yaw, rad/s. ~9.5 minutes per revolution.
+   *
+   * Every rotation rate in this block carries an 18% lift over the values the
+   * object shipped with. The originals were tuned to sit *below* the threshold
+   * of perception, which they did — so completely that on a first visit the
+   * object read as a still image, and the life in it was only discoverable by
+   * staring. 18% is the smallest step that puts the movement on the near side
+   * of that threshold: noticed peripherally, never watched.
+   */
+  shellYaw: 0.0111,
+  /**
+   * The suspension. Three incommensurate periods per axis rather than two —
+   * two sines beat against each other on a period a visitor can learn, and
+   * the drift acquires a rhythm. A third, slower and quieter, breaks it.
+   */
+  shellDrift: { amplitude: 0.019, slowHz: 0.041, fastHz: 0.067, driftHz: 0.017 },
+  shellSway: { amplitude: 0.0086, slowHz: 0.031, fastHz: 0.053 },
   /** The mechanism turns inside the shell, independently. */
-  mechanismYaw: 0.021,
+  mechanismYaw: 0.0248,
   /** Gimbal rates, rad/s. Different speeds, different directions, no factor. */
-  gimbal: [0.051, -0.033, 0.0187] as const,
+  gimbal: [0.0602, -0.0389, 0.0221] as const,
   /** Turned discs, counter-rotating against the gimbals. */
-  disc: [-0.026, 0.041] as const,
+  disc: [-0.0307, 0.0484] as const,
   /** Seconds between iris detents. Prime-ish, so it never syncs to anything. */
   irisIntervalSeconds: 6.7,
   /** Natural frequency of the iris detent. High: a mechanism settles hard. */
@@ -189,6 +202,27 @@ export const RIG = {
   keyElevation: { high: 0.88, low: 0.22 },
   /** Where the key rests when there is no pointer: upper left, as designed. */
   keyRest: { x: -0.42, y: -0.2 },
+  /**
+   * PARALLAX — how far the object itself slides against the frame at full
+   * pointer deflection, in scene units.
+   *
+   * Deliberately tiny, and deliberately *opposed* on the horizontal: the
+   * object drifts away from the cursor, which is what a subject does when the
+   * camera moves toward it. Following the cursor is the conventional choice
+   * and it turns the object into a widget.
+   *
+   * At 0.055 the total travel is roughly 4% of the pyramid's own base width.
+   * It cannot be seen directly. What it does is make the object stop feeling
+   * pasted onto the page — the same reason a matte painting gets a two-pixel
+   * camera move.
+   */
+  parallax: { x: -0.055, y: 0.03 },
+  /**
+   * Natural frequency of the parallax spring. Lower than the light's, so on a
+   * fast cursor sweep the light leads and the object follows — which is the
+   * order those two happen in when someone walks a lamp around a table.
+   */
+  parallaxOmega: 2.15,
 } as const;
 
 /**
