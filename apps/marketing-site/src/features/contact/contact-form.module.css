@@ -207,3 +207,44 @@
     animation: none;
   }
 }
+
+/*
+ * The delivery-failure block is a small stack now, not one line: a sentence
+ * naming the address, and a link that opens the visitor's mail app with what
+ * they typed already in it. `align-items: flex-start` rather than `center`
+ * because the content wraps to two or three lines on a phone, and centred
+ * ragged text in an error reads as unfinished.
+ */
+.formError {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--core-space-2);
+}
+
+.formErrorText {
+  margin: 0;
+}
+
+/*
+ * Underlined at rest, not only on hover. This link appears at the one moment
+ * the site has already failed the visitor once — it should not also require
+ * them to discover that it is clickable.
+ */
+.formErrorAction {
+  color: var(--semantic-color-text-primary);
+  font-size: var(--core-type-body-size-mobile);
+  text-decoration: underline;
+  text-underline-offset: var(--core-space-1);
+  border-radius: var(--core-radius-sm);
+}
+
+.formErrorAction:hover {
+  color: var(--semantic-color-accent-secondary);
+}
+
+@media (min-width: 1024px) {
+  .formErrorAction {
+    font-size: var(--core-type-body-size-desktop);
+  }
+}

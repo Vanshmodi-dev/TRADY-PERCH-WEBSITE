@@ -29,6 +29,36 @@ function clientKey(request: Request): string {
 }
 
 /**
+ * The response a visitor gets when delivery failed.
+ *
+ * The old copy — "Something went wrong sending this — email us directly
+ * instead." — named no address. It told someone to do a thing while
+ * withholding the one piece of information needed to do it, at the exact
+ * moment they were most likely to give up. The address is returned so the
+ * form can render a real, prefilled mailto rather than a dead end.
+ *
+ * `hello@tradyperch.com` is already published on /contact, /privacy and
+ * /terms, so this exposes nothing new. It is hardcoded rather than read from
+ * MARKETING_SITE_CONTACT_INBOX_EMAIL because that variable is a delivery
+ * detail that may point at a routing alias, while this is the public address
+ * the site already promises — and because a failure path must not depend on
+ * the configuration that just failed.
+ */
+const PUBLIC_CONTACT_EMAIL = "hello@tradyperch.com";
+
+function deliveryFailure() {
+  return {
+    ok: false as const,
+    errors: {
+      message:
+        `We could not send this automatically. Please email ${PUBLIC_CONTACT_EMAIL} ` +
+        `— your message is below, ready to copy.`,
+    },
+    fallbackEmail: PUBLIC_CONTACT_EMAIL,
+  };
+}
+
+/**
  * Real server-side validation and real delivery via Resend.
  *
  * Delivery is configured through three Ch.10 environment variables (see
@@ -97,6 +127,32 @@ export async function POST(request: Request): Promise<Response> {
   // text, so it is collapsed to a single line at the point of use.
   const safeName = data.name.replace(/\s+/g, " ").trim();
 
+  /**
+   * A submission that could not be delivered is still a lead, and the visitor
+   * has already spent the effort of writing it. Losing it to a transient
+   * provider fault — or, as happened in production, an invalid API key — is
+   * the worst outcome this endpoint has.
+   *
+   * So on any delivery failure the whole submission goes to the server log at
+   * `error` level. It is recoverable from the hosting platform's log viewer,
+   * and it means the cost of a delivery outage is "someone has to copy a
+   * message out of a log" rather than "we never knew they wrote".
+   *
+   * Logged only on the failure paths, never on success: the happy path
+   * delivers the message to a real inbox, and writing visitor-supplied
+   * personal data into logs when it was not needed is exactly the retention
+   * problem the privacy policy exists to avoid.
+   */
+  const recordLostSubmission = (reason: string) => {
+    console.error(
+      `[api/contact] UNDELIVERED SUBMISSION (${reason}) — recover this manually:\n` +
+        `  name:    ${data.name}\n` +
+        `  email:   ${data.email}\n` +
+        `  company: ${data.company || "—"}\n` +
+        `  message: ${data.message}`,
+    );
+  };
+
   let response: Response;
   try {
     response = await fetch("https://api.resend.com/emails", {
@@ -119,10 +175,8 @@ export async function POST(request: Request): Promise<Response> {
     // escapes as an opaque 500 and the visitor's message is lost with no
     // server-side record of what they wrote.
     console.error("[api/contact] Could not reach Resend", cause);
-    return NextResponse.json(
-      { ok: false, errors: { message: "Something went wrong sending this — email us directly instead." } },
-      { status: 502 },
-    );
+    recordLostSubmission("network");
+    return NextResponse.json(deliveryFailure(), { status: 502 });
   }
 
   if (!response.ok) {
@@ -133,10 +187,8 @@ export async function POST(request: Request): Promise<Response> {
       `[api/contact] Resend delivery failed (${response.status})`,
       await response.text(),
     );
-    return NextResponse.json(
-      { ok: false, errors: { message: "Something went wrong sending this — email us directly instead." } },
-      { status: 502 },
-    );
+    recordLostSubmission(`resend-${response.status}`);
+    return NextResponse.json(deliveryFailure(), { status: 502 });
   }
 
   return NextResponse.json({ ok: true });

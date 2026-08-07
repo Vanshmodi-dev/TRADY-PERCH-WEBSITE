@@ -1,5 +1,28 @@
 /* Ch.24 Drawers & Sheets. Anatomy: optional Backdrop -> Panel (Header, Body, optional Footer). */
 
+/*
+ * ── The site's stacking order, and why this sits where it does ────────────
+ *
+ *    20  in-page progress rail
+ *    50  site header (fixed, glass)
+ *    60  drawer backdrop      <- here
+ *    61  drawer panel         <- here
+ *    90  cursor affordance
+ *   100  intro ceremony overlay
+ *   200  skip link
+ *
+ * These were 40 and 41, i.e. BELOW the site header. That is wrong for a modal
+ * surface on two counts, and both shipped: the header's own logo, CTA and
+ * menu button painted on top of the open drawer, and — worse — the drawer's
+ * own close button sits in the top 79px and was therefore covered by the very
+ * bar it belongs to. Escape and a backdrop tap still closed it, so this was
+ * invisible to keyboard testing and to any automated check; it only failed
+ * for someone reaching for the X with their thumb.
+ *
+ * A drawer with a dimmed backdrop makes the page beneath it inert (Ch.24 §9),
+ * and "the page beneath it" includes the chrome. Above the header, below the
+ * cursor and the ceremony.
+ */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -7,7 +30,7 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--motion-duration-standard) var(--motion-easing-entrance);
-  z-index: 40;
+  z-index: 60;
 }
 .backdrop.open {
   opacity: 1;
@@ -23,7 +46,7 @@
   box-shadow: var(--semantic-elevation-overlay);
   opacity: 0;
   pointer-events: none;
-  z-index: 41;
+  z-index: 61;
   /*
    * Entrance/exit timing asymmetry (Ch.24 §7: Standard/Entrance in, Quick/Exit
    * out) is intentionally deferred to Milestone 5 (Interactive elements &
@@ -42,9 +65,23 @@
 
 /* Ch.24 Dw-1 (anchor edge) x Dw-3 (content-determined size, not a fixed
    default) — width/height cap here is a reasonable ceiling, not the size. */
+/*
+ * Full viewport height, stated twice on purpose.
+ *
+ * `100%` is the fallback and resolves against the initial containing block.
+ * `100dvh` is the real value: on a phone the browser's URL bar collapses as
+ * the page scrolls, and `vh`/`%` units resolve against a viewport that either
+ * ignores that chrome or does not, depending on the engine — so a side drawer
+ * sized in either one is cut off at the bottom or runs underneath the address
+ * bar. `dvh` tracks the viewport as it actually is at that moment.
+ *
+ * Height only resolves correctly at all because the panel is portalled to
+ * <body>; see the note in drawer.tsx for what happened when it was not.
+ */
 .right,
 .left {
   height: 100%;
+  height: 100dvh;
   width: min(80vw, 360px);
 }
 .right {
