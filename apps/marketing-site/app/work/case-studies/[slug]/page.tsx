@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { notFound } from "next/navigation";
 import { CaseStudyDetailPage } from "@/features/case-studies/case-study-detail-page";
 import { CASE_STUDIES, getCaseStudyBySlug } from "@/features/case-studies/case-studies-data";
@@ -18,17 +19,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const caseStudy = getCaseStudyBySlug(slug);
   if (!caseStudy) return {};
 
-  return {
+  return pageMetadata({
     title: caseStudy.title,
     description: caseStudy.portfolioSummary,
-    alternates: { canonical: `${SITE_URL}/work/case-studies/${slug}` },
-    openGraph: {
-      type: "article",
-      url: `${SITE_URL}/work/case-studies/${slug}`,
-      title: caseStudy.title,
-      description: caseStudy.portfolioSummary,
-    },
-  };
+    path: `/work/case-studies/${slug}`,
+    type: "article",
+  });
 }
 
 export default async function CaseStudyPage({ params }: PageProps) {

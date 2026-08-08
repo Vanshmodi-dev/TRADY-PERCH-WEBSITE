@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { LegalDocumentPage, type LegalSection } from "@/features/legal/legal-document-page";
-import { SITE_URL } from "@/shared/site-config";
 
 const TITLE = "Terms of Service";
 const DESCRIPTION = "The terms governing use of Trady Perch's website and services.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: `${SITE_URL}/terms` },
-};
+  path: "/terms",
+});
 
 const SECTIONS: LegalSection[] = [
   {

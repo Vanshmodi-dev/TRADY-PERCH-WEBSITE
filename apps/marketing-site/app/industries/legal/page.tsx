@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { IndustryDetailPage } from "@/features/industries/industry-detail-page";
 import { getIndustryDetailBySlug } from "@/features/industries/industries-data";
 import { SITE_URL } from "@/shared/site-config";
@@ -13,12 +14,11 @@ const CANONICAL = `${SITE_URL}/industries/legal`;
 const TITLE = "Legal Industry";
 const DESCRIPTION = "AI automation for legal practices: intake, document review, and case management workflows.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: CANONICAL },
-  openGraph: { type: "website", url: CANONICAL, title: TITLE, description: DESCRIPTION },
-};
+  path: "/industries/legal",
+});
 
 // Ch.40 §3, the same Service-template principle used for the four Solution
 // detail pages, applied here: an industries detail page is architecturally

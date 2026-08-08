@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { DeferredPageNotice } from "@/shared/components/deferred-page-notice";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Search",
-  robots: { index: false, follow: true },
-};
+  description:
+    "Site search is not built yet — the primary navigation covers every real destination on this site.",
+  path: "/search",
+  noIndex: true,
+});
 
 /**
  * Design System Bible Ch.29 (Search Interfaces) has not been read/

@@ -32,13 +32,13 @@
 
 @media (min-width: 640px) {
   .cardGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1024px) {
   .cardGrid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--core-space-8);
   }
 }
@@ -103,7 +103,7 @@
 
 @media (min-width: 1024px) {
   .decisions {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--core-space-12);
   }
 }
@@ -155,7 +155,7 @@
 }
 
 .decisionTradeoff .decisionLabel {
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-muted);
 }
 
 .decisionTradeoff {
@@ -191,7 +191,7 @@
    rather than as a bulleted dump. */
 @media (min-width: 1024px) {
   .layer {
-    grid-template-columns: 14rem 1fr;
+    grid-template-columns: 14rem minmax(0, 1fr);
     gap: var(--core-space-12);
     padding-block: var(--core-space-12);
   }
@@ -264,13 +264,13 @@
 
 @media (min-width: 640px) {
   .stackGroups {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1024px) {
   .stackGroups {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--core-space-12);
   }
 }

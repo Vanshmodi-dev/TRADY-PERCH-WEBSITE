@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { SolutionDetailPage } from "@/features/solutions/solution-detail-page";
 import { getSolutionBySlug } from "@/features/solutions/solutions-data";
 import { SITE_URL } from "@/shared/site-config";
@@ -8,12 +9,11 @@ const solution = getSolutionBySlug("intelligent-systems")!;
 
 const CANONICAL = `${SITE_URL}/solutions/intelligent-systems`;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: solution.title,
   description: solution.summary,
-  alternates: { canonical: CANONICAL },
-  openGraph: { type: "website", url: CANONICAL, title: solution.title, description: solution.summary },
-};
+  path: "/solutions/intelligent-systems",
+});
 
 // Ch.40 §3, the same principle as the pricing page's Service block, applied
 // to each of the four solution templates: each describes a real service

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { HomePage } from "@/features/home/home-page";
 import { FAQ_ITEMS } from "@/features/home/sections/faq/faq-data";
 import { SITE_URL } from "@/shared/site-config";
@@ -8,34 +9,15 @@ const TITLE = "Trady Perch — Build. Automate. Grow.";
 const DESCRIPTION =
   "The AI automation partner that operates like a private bank, not like a marketplace freelancer. AI agents, workflow automation, and custom integrations for established businesses.";
 
-export const metadata: Metadata = {
+// The share asset itself (862x581 logo-mark.jpeg, its real measured size) now
+// lives in shared/seo.ts as the site-wide default, so no route restates it. It
+// is still a placeholder rather than a designed 1200x630 card — producing one
+// is a brand design task, tracked as a known follow-up.
+export const metadata: Metadata = pageMetadata({
   title: TITLE,
   description: DESCRIPTION,
-  alternates: {
-    canonical: SITE_URL,
-  },
-  openGraph: {
-    type: "website",
-    url: SITE_URL,
-    siteName: "Trady Perch",
-    title: TITLE,
-    description: DESCRIPTION,
-    // 862x581 is logo-mark.jpeg's real, measured size (Milestone 3 review
-    // caught the previous 1024x683 figure as simply wrong — platforms that
-    // validate declared dimensions against the fetched asset can reject or
-    // mis-render the preview). This is still a placeholder, not a designed
-    // share card: a proper 1200x630 OG asset is a design task (not
-    // buildable without real brand asset production), tracked as a known
-    // follow-up — see the Milestone 3 completion report.
-    images: [{ url: `${SITE_URL}/logo-mark.jpeg`, width: 862, height: 581, alt: "Trady Perch" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: TITLE,
-    description: DESCRIPTION,
-    images: [`${SITE_URL}/logo-mark.jpeg`],
-  },
-};
+  path: "/",
+});
 
 // FAQ JSON-LD is projected from the same FAQ_ITEMS array `faq.tsx` renders
 // (src/features/home/sections/faq/faq-data.ts) — previously hand-

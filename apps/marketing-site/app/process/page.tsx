@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { DeferredPageNotice } from "@/shared/components/deferred-page-notice";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Process",
   description: "Discover, Design, Build, Deploy, Support — how we work.",
-  robots: { index: false, follow: true },
-};
+  path: "/process",
+  noIndex: true,
+});
 
 export default function ProcessPage() {
   return (

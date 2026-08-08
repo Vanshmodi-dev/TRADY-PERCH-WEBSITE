@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { Card, CardBody, CardTitle } from "@trady-perch/ui";
 import { NextLinkAdapter } from "@/shared/components/next-link-adapter";
 import { SectionHeading } from "@/shared/components/section-heading";
-import { SITE_URL } from "@/shared/site-config";
 import styles from "./legal.module.css";
 
 const TITLE = "Legal";
 const DESCRIPTION = "Legal information for Trady Perch, including privacy policy and terms of service.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: `${SITE_URL}/legal` },
-};
+  path: "/legal",
+});
 
 const DOCUMENTS = [
   {

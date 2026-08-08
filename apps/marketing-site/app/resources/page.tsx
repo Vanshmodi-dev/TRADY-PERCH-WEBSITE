@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { DeferredPageNotice } from "@/shared/components/deferred-page-notice";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Resources",
   description: "Guides and resources on AI automation for established businesses.",
-  robots: { index: false, follow: true },
-};
+  path: "/resources",
+  noIndex: true,
+});
 
 export default function ResourcesPage() {
   return (

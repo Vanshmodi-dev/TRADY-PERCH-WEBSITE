@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { IndustriesHubPage } from "@/features/industries/industries-hub-page";
-import { SITE_URL } from "@/shared/site-config";
 
 const TITLE = "Industries — Real Estate, Medical, Legal & More";
 const DESCRIPTION = "Real estate, medical, legal, manufacturing, education, finance, and e-commerce.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: `${SITE_URL}/industries` },
-  openGraph: { type: "website", url: `${SITE_URL}/industries`, title: TITLE, description: DESCRIPTION },
-};
+  path: "/industries",
+});
 
 export default function IndustriesPage() {
   return <IndustriesHubPage />;

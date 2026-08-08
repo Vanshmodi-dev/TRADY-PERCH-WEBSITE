@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { notFound } from "next/navigation";
 import { GITHUB_REVALIDATE_SECONDS } from "@/features/projects/github-api";
 import { caseStudySlugs } from "@/features/case-study/case-study-data";
@@ -6,7 +7,6 @@ import { CaseStudyLayout } from "@/features/case-study/case-study-layout";
 import {
   buildBreadcrumbSchema,
   buildCaseStudyArticleSchema,
-  caseStudyUrl,
 } from "@/features/case-study/case-study-schema";
 import { resolveCaseStudy } from "@/features/case-study/case-study-service";
 import { JsonLd } from "@/shared/json-ld";
@@ -59,33 +59,19 @@ export async function generateMetadata({
   const { study } = resolved;
   const title = study.seo?.title ?? study.hero.title;
   const description = study.seo?.description ?? study.hero.standfirst;
-  const url = caseStudyUrl(study.slug);
   const image = study.hero.image;
 
-  return {
+  // A study's own hero image when it has one; pageMetadata falls back to the
+  // site mark otherwise, so a card is never imageless.
+  return pageMetadata({
     title,
     description,
-    alternates: { canonical: url },
-    openGraph: {
-      type: "article",
-      url,
-      title,
-      description,
-      siteName: "Trady Perch",
-      // Only when the study has a real hero image. Falling through to the
-      // layout's site-wide default is better than declaring an image that
-      // does not exist, which platforms that validate the URL will reject.
-      ...(image
-        ? { images: [{ url: image.src, width: image.width, height: image.height, alt: image.alt }] }
-        : {}),
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      ...(image ? { images: [image.src] } : {}),
-    },
-  };
+    path: `/work/${study.slug}`,
+    type: "article",
+    ...(image
+      ? { image: { src: image.src, width: image.width, height: image.height, alt: image.alt } }
+      : {}),
+  });
 }
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {

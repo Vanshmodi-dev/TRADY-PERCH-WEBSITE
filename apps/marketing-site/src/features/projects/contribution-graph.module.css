@@ -113,7 +113,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-muted);
   font-size: var(--core-type-label-size-mobile);
   letter-spacing: 0.06em;
   text-transform: uppercase;

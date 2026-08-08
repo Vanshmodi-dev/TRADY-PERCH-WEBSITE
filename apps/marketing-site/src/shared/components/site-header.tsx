@@ -27,6 +27,12 @@ export function SiteHeader() {
       // 1.4KB — retina-safe headroom for a 24px box) was generated once,
       // manually, via sharp, not regenerated automatically on every build.
       logoIconSrc="/logo-mark-icon.webp"
+      // 190x128 is logo-mark-icon.webp's real intrinsic size. It is landscape,
+      // not square — sizing both axes to the 24px icon step squashed the mark
+      // to 67% of its width sitewide until this was fixed. See
+      // packages/ui/src/logo/logo.module.css.
+      logoIconWidth={190}
+      logoIconHeight={128}
       linkComponent={NextLinkAdapter}
       currentPath={pathname}
     />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { GITHUB_REVALIDATE_SECONDS } from "@/features/projects/github-api";
 import { ProjectsPageHero } from "@/features/projects/projects-hero";
-import { SITE_URL } from "@/shared/site-config";
 
 /**
  * The Work section — `/work`.
@@ -35,17 +35,11 @@ const TITLE = "Work";
 const DESCRIPTION =
   "Live from our GitHub: the open-source websites, AI agents and automation systems Trady Perch builds, generated directly from our public repositories.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: `${SITE_URL}/work` },
-  openGraph: {
-    type: "website",
-    url: `${SITE_URL}/work`,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-};
+  path: "/work",
+});
 
 export const revalidate = 3600;
 

@@ -45,7 +45,7 @@
   margin: 0;
   font-size: var(--core-type-caption-size-mobile);
   line-height: var(--core-type-body-line-height);
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-muted);
 }
 
 /* --- Contents ----------------------------------------------------------- */
@@ -206,7 +206,7 @@
   margin-left: auto;
   flex-shrink: 0;
   font-size: var(--core-type-caption-size-mobile);
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
