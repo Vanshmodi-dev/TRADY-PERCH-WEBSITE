@@ -74,12 +74,25 @@
   object-fit: cover;
 }
 
+/*
+ * `overflow-wrap: break-word` is a safety net, not a layout choice.
+ *
+ * It changes nothing whenever the content fits: it only ever breaks a word
+ * that could not fit on a line of its own even at the start of one. Without
+ * it a single long word silently escapes the card and paints over whatever is
+ * beside it — which is exactly what a title like "Manufacturing" (140px at
+ * this size) did inside a 86px content box on a 320px viewport.
+ *
+ * A card takes arbitrary authored content, so the component, not each call
+ * site, is the right place to guarantee it stays inside its own box.
+ */
 .title {
   font-size: var(--core-type-h3-size-mobile);
   font-weight: var(--core-type-h3-weight);
   line-height: var(--core-type-h3-line-height);
   color: var(--semantic-color-text-primary);
   margin: 0;
+  overflow-wrap: break-word;
 }
 
 @media (min-width: 1024px) {
@@ -93,6 +106,9 @@
   line-height: var(--core-type-body-line-height);
   color: var(--semantic-color-text-secondary);
   margin: 0;
+  /* Same safety net as .title — a URL or a long product name in body copy is
+     the other way a card spills. */
+  overflow-wrap: break-word;
 }
 
 @media (min-width: 1024px) {

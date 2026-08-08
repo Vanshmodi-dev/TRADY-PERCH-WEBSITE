@@ -21,7 +21,7 @@
 
 .step {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--semantic-space-gap-grid);
   padding-block: var(--semantic-space-padding-component-lg);
   border-top: var(--core-border-hairline) solid var(--semantic-color-border-default);

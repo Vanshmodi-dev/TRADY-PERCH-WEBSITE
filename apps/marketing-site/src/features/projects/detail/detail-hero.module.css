@@ -61,7 +61,7 @@
 }
 
 .breadcrumbSeparator {
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-muted);
 }
 
 .breadcrumbCurrent {
@@ -148,7 +148,7 @@
   gap: var(--core-space-2);
   margin: 0;
   font-size: var(--core-type-caption-size-mobile);
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-muted);
   min-width: 0;
 }
 

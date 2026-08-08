@@ -481,10 +481,29 @@ function CursorField({ reduced }: { reduced: boolean }) {
     /* The pointer can end up over a different element without moving — a
        scroll, or a menu opening under it. Re-resolving keeps the cursor
        honest about what it is actually over, and re-measures the magnet
-       whose box has just moved. */
+       whose box has just moved.
+
+       Coalesced into one animation frame, which is not a micro-optimisation:
+       `elementFromPoint` performs a hit test and `getBoundingClientRect`
+       reads geometry, and both force the browser to flush pending style and
+       layout before they can answer. Run straight off the scroll event they
+       do that on every scroll tick — up to 120 times a second on a
+       high-refresh display — which is a synchronous reflow on the one code
+       path where the main thread is already busiest. The scroll listener is
+       `passive`, so this never blocked scrolling itself, but it did spend
+       main-thread time against INP for a decorative affordance.
+
+       This is the same rAF-coalescing shape `features/projects/
+       project-pointer-field.tsx` already applies for exactly this reason;
+       the cursor was the one place it was missing. */
+    let scrollFrame = 0;
     const onScroll = () => {
-      applyTarget(document.elementFromPoint(pointer.x, pointer.y));
-      measureMagnet();
+      if (scrollFrame) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0;
+        applyTarget(document.elementFromPoint(pointer.x, pointer.y));
+        measureMagnet();
+      });
     };
 
     const onVisibility = () => {
@@ -503,6 +522,7 @@ function CursorField({ reduced }: { reduced: boolean }) {
 
     return () => {
       stop();
+      if (scrollFrame) cancelAnimationFrame(scrollFrame);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("pointerout", onPointerOut);

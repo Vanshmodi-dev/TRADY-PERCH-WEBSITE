@@ -15,9 +15,27 @@
   color: var(--semantic-color-text-primary);
 }
 
+/*
+ * The mark is sized on ONE axis, and that is the whole point.
+ *
+ * This previously set `width` and `height` both to the 24px icon step. The
+ * delivered asset (logo-mark-icon.webp) is 190x128 — landscape, ratio 1.484 —
+ * and an <img> given two conflicting dimensions does not letterbox, it
+ * stretches: `object-fit` defaults to `fill`. Measured in the built page,
+ * `naturalRatio 1.484` was rendering at `renderedRatio 1.000`, so the
+ * monogram was squashed to 67% of its correct width in the header and the
+ * footer of every single page on the site.
+ *
+ * Height is the token step, because that is the dimension that has to line up
+ * with the wordmark beside it and with Ch.11's icon rhythm. Width follows the
+ * asset. `object-fit: contain` is the guard rail rather than the fix: if a
+ * future mark ships at a different intrinsic ratio, it letterboxes inside its
+ * box instead of silently distorting again.
+ */
 .icon {
-  width: var(--core-icon-size-24);
   height: var(--core-icon-size-24);
+  width: auto;
+  object-fit: contain;
   display: block;
 }
 

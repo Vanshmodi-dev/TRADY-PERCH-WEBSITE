@@ -15,6 +15,8 @@ import type { FooterProps } from "./footer.types";
  */
 export function Footer({
   logoIconSrc,
+  logoIconWidth,
+  logoIconHeight,
   columns,
   legalLinks,
   copyrightText,
@@ -31,7 +33,12 @@ export function Footer({
       <div className={styles.inner}>
         <div className={styles.top}>
           <div className={styles.brandColumn}>
-            <Logo iconSrc={logoIconSrc} linkComponent={linkComponent} />
+            <Logo
+              iconSrc={logoIconSrc}
+              iconWidth={logoIconWidth}
+              iconHeight={logoIconHeight}
+              linkComponent={linkComponent}
+            />
             <p className={styles.tagline}>BUILD. AUTOMATE. GROW.</p>
 
             {originLines && originLines.length > 0 ? (

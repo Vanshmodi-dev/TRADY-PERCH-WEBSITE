@@ -1,0 +1,28 @@
+# Line endings, settled once so they cannot drift per machine.
+#
+# `.editorconfig` already declares `end_of_line = lf`, but an editorconfig is
+# a hint to editors — it has no say in what git writes to the working tree.
+# With no `.gitattributes`, that was decided entirely by each developer's local
+# `core.autocrlf`, and on a Windows checkout (`autocrlf=true`, the installer
+# default) the result was a working tree with 250 CRLF files against 351 LF
+# ones. The repository blobs were fine throughout; the inconsistency was local,
+# and it is the kind that produces whole-file diffs the moment two machines
+# with different settings touch the same file.
+#
+# `text=auto eol=lf` normalises every text file to LF in the repository AND on
+# checkout, on every platform, regardless of anyone's local git config. That
+# matches `.editorconfig`, and it matches what the blobs already contain, so
+# adding this changes no committed content.
+* text=auto eol=lf
+
+# Binary assets must never be touched. Listing them explicitly is cheaper than
+# trusting content detection on a file that happens to start with ASCII.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.pdf binary

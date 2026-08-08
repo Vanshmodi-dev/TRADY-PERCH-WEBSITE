@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { PricingPage } from "@/features/pricing/pricing-page";
 import { PRICING_FAQ_ITEMS } from "@/features/pricing/pricing-config";
 import { SITE_URL } from "@/shared/site-config";
@@ -8,12 +9,11 @@ const TITLE = "Pricing";
 const DESCRIPTION =
   "Three engagement packages — Launch, Growth, and Scale — scoped to your business, plus an ROI calculator and a full feature comparison.";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: `${SITE_URL}/pricing` },
-  openGraph: { type: "website", url: `${SITE_URL}/pricing`, title: TITLE, description: DESCRIPTION },
-};
+  path: "/pricing",
+});
 
 // Ch.40 §3: "a pricing page's template knows it produces a
 // Product-or-Service-equivalent block." `Service`, not `Product` — Trady Perch

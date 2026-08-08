@@ -22,6 +22,13 @@ export interface HeaderProps {
   ctaLabel: string;
   ctaHref: string;
   logoIconSrc: string;
+  /**
+   * The logo mark's intrinsic pixel size, forwarded to Logo. See LogoProps —
+   * these reserve the mark's width before it decodes; they are not its
+   * display size.
+   */
+  logoIconWidth?: number;
+  logoIconHeight?: number;
   linkComponent?: LinkComponent;
   /** The current route, for Ch.20 §6's persistent active-item underline. */
   currentPath?: string;

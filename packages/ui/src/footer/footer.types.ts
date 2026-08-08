@@ -25,6 +25,13 @@ export interface SocialLink {
 
 export interface FooterProps {
   logoIconSrc: string;
+  /**
+   * The logo mark's intrinsic pixel size, forwarded to Logo. See LogoProps —
+   * these reserve the mark's width before it decodes; they are not its
+   * display size.
+   */
+  logoIconWidth?: number;
+  logoIconHeight?: number;
   columns: FooterColumn[];
   legalLinks: FooterLink[];
   copyrightText: string;

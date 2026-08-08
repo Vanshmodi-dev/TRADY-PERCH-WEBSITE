@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/shared/seo";
 import { DeferredPageNotice } from "@/shared/components/deferred-page-notice";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "About",
   description: "Trady Perch is the AI automation partner that operates like a private bank.",
-  robots: { index: false, follow: true },
-};
+  path: "/about",
+  noIndex: true,
+});
 
 export default function AboutPage() {
   return (

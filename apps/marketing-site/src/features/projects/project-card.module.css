@@ -463,7 +463,7 @@
   gap: var(--core-space-2);
   margin: calc(-1 * var(--core-space-1)) 0 0;
   font-size: var(--core-type-caption-size-mobile);
-  color: var(--semantic-color-text-tertiary);
+  color: var(--semantic-color-text-muted);
   min-width: 0;
 }
 

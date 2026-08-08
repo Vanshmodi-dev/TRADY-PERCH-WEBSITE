@@ -43,6 +43,27 @@ semanticTokens.color.accent.primary; // "#C9A24B" — resolved literal, for logi
 
 Components should consume **semantic or component tokens only** — never a core token directly (Ch.13 §3). CSS: `color: var(--semantic-color-text-primary);`, never `var(--core-color-white-050)` from component code.
 
-## `semantic.color.text.tertiary` — contrast warning (found in Milestone 3 review)
+## Choosing a text colour (and the one that used to be a trap)
 
-`text.tertiary` (`core.color.gray.600` / `#6E6E74`) computes to **~3.6–3.9:1** against both background tiers — it fails WCAG AA's 4.5:1 floor for normal text. Ch.3 itself names this token `"Tertiary text / disabled-state text"`; for genuinely **disabled** content WCAG doesn't require AA contrast, so the value is correct for that use. It is **not** safe for any text meant to be actively read (captions, labels, attributions) — use `semantic.color.text.secondary` (`gray.400`, ~7.7–8.3:1) instead. `text.tertiary` is safe at **large text sizes** (≥24px / ≥18.66px bold), which only need 3:1 — e.g. a big numeral is fine; a small caption is not.
+Measured contrast, foreground against surface:
+
+| token | value | `background.primary` | `surface.card` | `surface.cardHover` | safe for normal-size text? |
+| --- | --- | --- | --- | --- | --- |
+| `text.primary` | `#F5F4F1` | 17.4:1 | 15.1:1 | 13.9:1 | yes |
+| `text.secondary` | `#A8A8AD` | 8.31:1 | 7.18:1 | 6.61:1 | yes |
+| `text.muted` | `#8A8A90` | 5.73:1 | 4.95:1 | 4.56:1 | yes |
+| `text.tertiary` | `#6E6E74` | 3.88:1 | 3.36:1 | 3.09:1 | **no** |
+
+**Reach for `text.muted`** for small text that is meant to be read but should recede — captions, meta lines, legends, placeholders, breadcrumb separators, attributions.
+
+**`text.tertiary` is not a text colour.** It clears the 3:1 non-text and large-text floors and nothing more, so it is correct for icons, decorative rules and dots, disabled content, and type at 24px+ (a big numeral is fine; a 13px caption is not). Ch.3 names it `"Tertiary text / disabled-state text"`, and the disabled half of that is the half that holds — WCAG exempts genuinely disabled content.
+
+### Why `text.muted` exists (Milestone 11 audit)
+
+The warning above this line has been in this README since Milestone 3, and the codebase did not follow it. A Milestone 11 sweep found `text.tertiary` painting a project card's repository line, a README rail's notes, contributor meta, commit and release meta, a contribution-graph legend, a case-study trade-off label, an empty-state panel and the portfolio's search placeholder — all at 12–16px, all failing AA, none of them disabled.
+
+Three files *had* noticed, and each fixed only itself by substituting `text.secondary` (`detail-stats.module.css`, `deferred-page-notice.module.css`, and this README). That is the shape of the bug: the rule was written down, obeyed three times, and violated eight — because the palette offered no third step that was actually safe, so the only compliant move flattened the hierarchy to two.
+
+`text.muted` is that missing step, chosen as the lightest value that still clears 4.5:1 on `surface.cardHover`, the darkest surface any of this text lands on. Reaching for it is now both the accessible answer and the one that preserves the design's three-tier read.
+
+Every one of those routes lives under `/work`, which is also why CI never caught it: the accessibility job runs without a GitHub token, so those pages render their empty states and axe never sees the markup (see `scripts/lib/routes.mjs`).

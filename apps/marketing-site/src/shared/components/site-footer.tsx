@@ -17,6 +17,12 @@ export function SiteFooter() {
       // See site-header.tsx's identical prop for why this isn't the raw
       // source JPEG (Ch.37 §2 / Pf-1, Milestone 8 review).
       logoIconSrc="/logo-mark-icon.webp"
+      // 190x128 is logo-mark-icon.webp's real intrinsic size. It is landscape,
+      // not square — sizing both axes to the 24px icon step squashed the mark
+      // to 67% of its width sitewide until this was fixed. See
+      // packages/ui/src/logo/logo.module.css.
+      logoIconWidth={190}
+      logoIconHeight={128}
       columns={FOOTER_COLUMNS}
       legalLinks={FOOTER_LEGAL_LINKS}
       originLines={ORIGIN_LINES}

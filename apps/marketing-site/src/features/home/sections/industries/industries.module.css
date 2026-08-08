@@ -11,15 +11,53 @@
   composes: stackLg from "../../../../shared/components/section.module.css";
 }
 
+/*
+ * `minmax(0, 1fr)`, not `1fr` — and the difference is a horizontal scrollbar.
+ *
+ * `1fr` is shorthand for `minmax(auto, 1fr)`, and an `auto` minimum means a
+ * grid item may not shrink below its own min-content width. A card here
+ * contains a title like "Professional Services", whose longest word sets a
+ * min-content floor of roughly 190px. At a 320px viewport the container is
+ * 288px, so two columns resolved to 151.5px + 190px + a 16px gap = 357.5px,
+ * and the homepage scrolled sideways. Measured before this fix:
+ * `document.scrollWidth` 374 against a 320 viewport, with the computed
+ * columns reading `151.547px 190.031px` — a grid track wider than the track
+ * it was asked to fit into.
+ *
+ * A zero minimum lets the track shrink and the title wrap, which is what a
+ * two-up card grid on the narrowest supported width should do.
+ */
+/*
+ * One column on a phone, four from the tablet breakpoint.
+ *
+ * This was two columns below 600px, and two columns is not a width these cards
+ * can be read at. Measured across every phone width the site supports, the
+ * card's content box lands between 86px (320px viewport) and 132px (412px),
+ * while the longest industry name — "Manufacturing" — needs 140px at the h3
+ * mobile step. There is no phone on which it fitted.
+ *
+ * The failure was invisible because `1fr` let the track grow to min-content
+ * instead: the cards came out visibly unequal (measured: `151.5px 190px` at
+ * 320px) and the surplus was pushed onto the document, which scrolled sideways
+ * — `scrollWidth` 374 against a 320 viewport. Equalising the tracks with
+ * `minmax(0, 1fr)` fixed the page scroll and moved the same 8–54px of surplus
+ * into the card, where it overlapped its neighbour. Neither is shippable;
+ * both are the same root cause, which is the column count.
+ *
+ * Full width also reads better. These are seven compact cards carrying an
+ * icon, a name and a sentence — at 136px the sentence sets three words to a
+ * line. 600px is the tablet breakpoint (core.breakpoint.tablet), so this
+ * changes column count exactly where the rest of the system already does.
+ */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--semantic-space-gap-related-items);
 }
 
 @media (min-width: 600px) {
   .grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

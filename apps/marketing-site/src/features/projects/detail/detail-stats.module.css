@@ -63,8 +63,11 @@
   gap: var(--core-space-2);
   margin: 0;
   font-size: var(--core-type-caption-size-mobile);
-  /* text-secondary rather than tertiary: tertiary measures 3.88:1 on this
-     surface, below the 4.5:1 AA floor at caption size. */
+  /* Kept at text-secondary. This was one of only three places that noticed
+     tertiary's 3.88:1 and worked around it individually; the token gap it was
+     working around is now closed by semantic.color.text.muted, but a tile's
+     supporting line is the one piece of meta here that should read at full
+     strength, so it stays where a reviewer deliberately put it. */
   color: var(--semantic-color-text-secondary);
 }
 

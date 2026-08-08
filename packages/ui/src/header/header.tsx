@@ -67,7 +67,16 @@ const DROPDOWN_CLOSE_DELAY_MS = 200;
  * exception to packages/ui's default of not baking in "use client", per
  * docs/adr/0005-shared-ui-portability.md.
  */
-export function Header({ items, ctaLabel, ctaHref, logoIconSrc, linkComponent, currentPath }: HeaderProps) {
+export function Header({
+  items,
+  ctaLabel,
+  ctaHref,
+  logoIconSrc,
+  logoIconWidth,
+  logoIconHeight,
+  linkComponent,
+  currentPath,
+}: HeaderProps) {
   if (process.env.NODE_ENV !== "production") {
     if (items.length > 5) {
       // Ch.20 Nv-1: five-item hard ceiling. console.warn is allowed by the shared lint config.
@@ -170,6 +179,8 @@ export function Header({ items, ctaLabel, ctaHref, logoIconSrc, linkComponent, c
           size change. */}
       <Logo
         iconSrc={logoIconSrc}
+        iconWidth={logoIconWidth}
+        iconHeight={logoIconHeight}
         href="/"
         linkComponent={linkComponent}
         className={styles.logoMark}

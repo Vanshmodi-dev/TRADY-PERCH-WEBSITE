@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { CASE_STUDIES } from "@/features/case-studies/case-studies-data";
+import { CASE_STUDIES as LONG_FORM_CASE_STUDIES } from "@/features/case-study/case-study-data";
+import { caseStudyUrl } from "@/features/case-study/case-study-schema";
 import { getProjects } from "@/features/projects/github-service";
 import { SITE_URL } from "@/shared/site-config";
 
@@ -66,6 +68,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  /**
+   * The long-form studies at `/work/<slug>`.
+   *
+   * These were missing entirely, and the omission was invisible because three
+   * separate docstrings asserted the opposite: `case-study-data.ts` lists "the
+   * sitemap entry" among the things derived from its registry, `caseStudySlugs`
+   * says it "drives generateStaticParams and the sitemap", and `caseStudyUrl`
+   * calls itself "one definition, used by the page metadata, both schema blocks
+   * and the sitemap". None of that was true — this file imported neither, and
+   * `/work/trady-perch-platform`, `/work/lead-finder` and `/work/modi-store`
+   * were absent from the generated XML while being fully prerendered,
+   * indexable, canonicalised and carrying Article + BreadcrumbList JSON-LD.
+   *
+   * They are the deepest editorial content on the site, so they carry a higher
+   * priority than the illustrative studies above. `caseStudyUrl` is used rather
+   * than a fourth hand-built template literal, which is what makes the
+   * docstrings' claim true from here on.
+   */
+  const longFormCaseStudyEntries = LONG_FORM_CASE_STUDIES.map((study) => ({
+    url: caseStudyUrl(study.slug),
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
   const result = await getProjects();
   const projectEntries =
     result.status === "ok"
@@ -80,5 +107,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }))
       : [];
 
-  return [...staticEntries, ...caseStudyEntries, ...projectEntries];
+  return [...staticEntries, ...caseStudyEntries, ...longFormCaseStudyEntries, ...projectEntries];
 }
