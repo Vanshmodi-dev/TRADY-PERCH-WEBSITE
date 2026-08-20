@@ -153,11 +153,7 @@ export function HeroApex() {
   }, [introHeld]);
 
   return (
-    /* `data-cursor="apex"` is what lets the cursor's own pyramid pick up this
-       object's rotation direction while the pointer is over it. The two
-       briefly turn the same way — a harmony that is felt rather than
-       noticed. See shared/components/site-cursor.tsx. */
-    <div ref={stageRef} className={styles.stage} aria-hidden="true" data-cursor="apex">
+    <div ref={stageRef} className={styles.stage} aria-hidden="true">
       {/* The designed still. First byte of HTML, never moves, and the only
           thing on screen if WebGL never arrives. */}
       <div className={styles.poster} data-ready={ready}>

@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import { coreTokens } from "@trady-perch/tokens";
 import { SiteHeader } from "@/shared/components/site-header";
 import { SiteFooter } from "@/shared/components/site-footer";
-import { SiteCursor } from "@/shared/components/site-cursor";
+import { CursorTrail } from "@/shared/components/cursor-trail";
 import { SITE_URL } from "@/shared/site-config";
 import styles from "./layout.module.css";
 import "./globals.css";
@@ -149,9 +149,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteFooter />
         {/* Last in the body, and self-disabling: it renders nothing at all
             without a fine pointer, and nothing under reduced motion. See
-            site-cursor.tsx — it augments the system cursor rather than
+            cursor-trail.tsx — it augments the system cursor rather than
             replacing it, so its absence removes nothing. */}
-        <SiteCursor />
+        <CursorTrail />
       </body>
     </html>
   );
