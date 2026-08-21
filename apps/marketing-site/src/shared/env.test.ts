@@ -20,6 +20,12 @@ const KEYS = [
   "MARKETING_SITE_RESEND_FROM_EMAIL",
   "MARKETING_SITE_GITHUB_TOKEN",
   "MARKETING_SITE_GITHUB_USERNAME",
+  "MARKETING_SITE_WHATSAPP_TOKEN",
+  "MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID",
+  "MARKETING_SITE_WHATSAPP_TO",
+  "MARKETING_SITE_WHATSAPP_TEMPLATE",
+  "MARKETING_SITE_WHATSAPP_TEMPLATE_LANGUAGE",
+  "MARKETING_SITE_WHATSAPP_API_VERSION",
 ] as const;
 
 /** `env` is a module-level constant, so each case needs a fresh import. */
@@ -68,5 +74,34 @@ describe("env", () => {
   it("falls back to Resend's shared test sender when none is configured", async () => {
     const env = await loadEnv({});
     expect(env.MARKETING_SITE_RESEND_FROM_EMAIL).toBe("Trady Perch site <onboarding@resend.dev>");
+  });
+
+  it("strips whitespace from the WhatsApp credentials too", async () => {
+    /* A Meta System User token is ~200 characters and is always delivered by
+       copy-paste, which is the exact circumstance that produced the Resend
+       outage above. `Bearer <token>\n` is rejected by Meta as an invalid
+       token, sending whoever debugs it to regenerate a perfectly good one. */
+    const env = await loadEnv({
+      MARKETING_SITE_WHATSAPP_TOKEN: "EAAG0zaBcDeF...\n",
+      MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID: "  123456789012345 \r\n",
+      MARKETING_SITE_WHATSAPP_TO: " 919509017150 ",
+    });
+    expect(env.MARKETING_SITE_WHATSAPP_TOKEN).toBe("EAAG0zaBcDeF...");
+    expect(env.MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID).toBe("123456789012345");
+    expect(env.MARKETING_SITE_WHATSAPP_TO).toBe("919509017150");
+  });
+
+  it("leaves the WhatsApp channel unconfigured rather than half-configured", async () => {
+    const env = await loadEnv({});
+    expect(env.MARKETING_SITE_WHATSAPP_TOKEN).toBeUndefined();
+    expect(env.MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID).toBeUndefined();
+    expect(env.MARKETING_SITE_WHATSAPP_TO).toBeUndefined();
+  });
+
+  it("defaults the WhatsApp template, language and API version", async () => {
+    const env = await loadEnv({});
+    expect(env.MARKETING_SITE_WHATSAPP_TEMPLATE).toBe("new_enquiry");
+    expect(env.MARKETING_SITE_WHATSAPP_TEMPLATE_LANGUAGE).toBe("en");
+    expect(env.MARKETING_SITE_WHATSAPP_API_VERSION).toMatch(/^v\d+\.\d+$/);
   });
 });

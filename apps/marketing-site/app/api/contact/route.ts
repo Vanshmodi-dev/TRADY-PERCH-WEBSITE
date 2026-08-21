@@ -4,6 +4,13 @@ import {
   validateContactForm,
   type ContactFormData,
 } from "@/features/contact/contact-validation";
+import {
+  delivered,
+  failed,
+  skipped,
+  type DeliveryOutcome,
+} from "@/features/contact/delivery-outcome";
+import { sendWhatsAppNotification } from "@/features/contact/whatsapp-delivery";
 import { env } from "@/shared/env";
 import { isRateLimited } from "@/shared/rate-limit";
 
@@ -59,15 +66,96 @@ function deliveryFailure() {
 }
 
 /**
- * Real server-side validation and real delivery via Resend.
+ * Deliver one submission to Resend, exactly as this endpoint always has.
  *
- * Delivery is configured through three Ch.10 environment variables (see
- * `src/shared/env.ts`). When the API key or inbox address is absent — an
- * unconfigured environment such as CI or a fresh clone — the endpoint still
- * validates the submission, still returns a truthful success to the visitor,
- * and logs loudly server-side rather than silently swallowing the message.
- * That degradation path is deliberate and predates delivery being wired up;
- * it is what keeps the build and tests runnable without a live secret.
+ * Extracted from the handler unchanged — same request, same logging, same
+ * failure classification — so that the handler can hold two channels side by
+ * side without either one's error handling being nested inside the other's.
+ *
+ * `recordLostSubmission` is passed in rather than closed over here because
+ * whether a failed email actually loses the submission now depends on the
+ * *other* channel: if the phone got it, nothing was lost, and writing a
+ * visitor's personal data into the server log would be retention for no
+ * reason. Only the handler knows both outcomes, so only the handler decides.
+ */
+async function sendEmail(data: ContactFormData): Promise<DeliveryOutcome> {
+  const apiKey = env.MARKETING_SITE_RESEND_API_KEY;
+  const toAddress = env.MARKETING_SITE_CONTACT_INBOX_EMAIL;
+
+  if (!apiKey || !toAddress) return skipped();
+
+  // A newline in `name` would otherwise split the subject header. Resend's
+  // JSON API escapes this itself, so this is defence in depth rather than a
+  // live injection hole — but the subject is built from visitor-supplied
+  // text, so it is collapsed to a single line at the point of use.
+  const safeName = data.name.replace(/\s+/g, " ").trim();
+
+  let response: Response;
+  try {
+    response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: env.MARKETING_SITE_RESEND_FROM_EMAIL,
+        to: toAddress,
+        reply_to: data.email,
+        subject: `New inquiry from ${safeName}`,
+        text: `Name: ${data.name}\nEmail: ${data.email}\nCompany: ${data.company || "—"}\n\n${data.message}`,
+      }),
+    });
+  } catch (cause) {
+    // Ch.27 — a DNS failure, TLS error, or timeout reaching Resend is a
+    // network fault, not a malformed submission. Without this the throw
+    // escapes as an opaque 500 and the visitor's message is lost with no
+    // server-side record of what they wrote.
+    console.error("[api/contact] Could not reach Resend", cause);
+    return failed("network");
+  }
+
+  if (!response.ok) {
+    // Body is logged in full: Resend returns the actionable reason here
+    // (unverified sender domain, invalid key, recipient restriction), and
+    // discarding it would leave a failed delivery undiagnosable.
+    console.error(
+      `[api/contact] Resend delivery failed (${response.status})`,
+      await response.text(),
+    );
+    return failed(`resend-${response.status}`);
+  }
+
+  return delivered();
+}
+
+/**
+ * Real server-side validation, and real delivery down two independent
+ * channels: an email via Resend, and a WhatsApp notification via Meta's Cloud
+ * API (`features/contact/whatsapp-delivery.ts`).
+ *
+ * ── Why two, and why they are not a chain ─────────────────────────────────
+ *
+ * The email is the record — complete, searchable, replyable. The WhatsApp
+ * message is the alert, so an enquiry is noticed in minutes rather than
+ * whenever the inbox is next opened.
+ *
+ * They are dispatched together and judged together, rather than the second
+ * being sent only if the first succeeds. That ordering matters in the case
+ * that actually hurt this endpoint before: Resend rejecting every submission
+ * because of a malformed sender address. A chained notification would have
+ * failed in exactly the outage where an alert was most valuable. Here, either
+ * channel arriving means the enquiry reached a human, and the visitor is told
+ * the truth accordingly.
+ *
+ * Each channel is configured independently through Ch.10 environment
+ * variables (see `src/shared/env.ts`), and each degrades to `skipped` when
+ * its credentials are absent — an unconfigured environment such as CI or a
+ * fresh clone still validates the submission, still returns a truthful
+ * success to the visitor, and logs loudly server-side rather than silently
+ * swallowing the message. That degradation path is deliberate and predates
+ * delivery being wired up; it is what keeps the build and tests runnable
+ * without a live secret.
  */
 export async function POST(request: Request): Promise<Response> {
   if (isRateLimited(clientKey(request))) {
@@ -111,22 +199,6 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ ok: false, errors }, { status: 422 });
   }
 
-  const apiKey = env.MARKETING_SITE_RESEND_API_KEY;
-  const toAddress = env.MARKETING_SITE_CONTACT_INBOX_EMAIL;
-
-  if (!apiKey || !toAddress) {
-    console.warn(
-      "[api/contact] MARKETING_SITE_RESEND_API_KEY or MARKETING_SITE_CONTACT_INBOX_EMAIL not set — submission validated but not delivered.",
-    );
-    return NextResponse.json({ ok: true });
-  }
-
-  // A newline in `name` would otherwise split the subject header. Resend's
-  // JSON API escapes this itself, so this is defence in depth rather than a
-  // live injection hole — but the subject is built from visitor-supplied
-  // text, so it is collapsed to a single line at the point of use.
-  const safeName = data.name.replace(/\s+/g, " ").trim();
-
   /**
    * A submission that could not be delivered is still a lead, and the visitor
    * has already spent the effort of writing it. Losing it to a transient
@@ -153,43 +225,44 @@ export async function POST(request: Request): Promise<Response> {
     );
   };
 
-  let response: Response;
-  try {
-    response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: env.MARKETING_SITE_RESEND_FROM_EMAIL,
-        to: toAddress,
-        reply_to: data.email,
-        subject: `New inquiry from ${safeName}`,
-        text: `Name: ${data.name}\nEmail: ${data.email}\nCompany: ${data.company || "—"}\n\n${data.message}`,
-      }),
-    });
-  } catch (cause) {
-    // Ch.27 — a DNS failure, TLS error, or timeout reaching Resend is a
-    // network fault, not a malformed submission. Without this the throw
-    // escapes as an opaque 500 and the visitor's message is lost with no
-    // server-side record of what they wrote.
-    console.error("[api/contact] Could not reach Resend", cause);
-    recordLostSubmission("network");
-    return NextResponse.json(deliveryFailure(), { status: 502 });
+  /* Dispatched together, not one after the other: the two are independent
+     services and the visitor waits on the slower of them rather than on their
+     sum. Neither settle can reject — each channel resolves with its own
+     outcome and reports its own faults — so `Promise.all` is safe here and
+     keeps the destructuring readable. */
+  const [email, whatsapp] = await Promise.all([sendEmail(data), sendWhatsAppNotification(data)]);
+
+  const channels = { email, whatsapp };
+  const anyDelivered = email.status === "sent" || whatsapp.status === "sent";
+  const anyConfigured = email.status !== "skipped" || whatsapp.status !== "skipped";
+
+  if (anyDelivered) {
+    /* One channel down while the other worked is not a visitor-facing
+       failure — the enquiry reached a human — but it is an operational fault
+       that would otherwise be invisible until someone noticed the alerts had
+       stopped. */
+    for (const [name, outcome] of Object.entries(channels)) {
+      if (outcome.status === "failed") {
+        console.warn(
+          `[api/contact] ${name} delivery failed (${outcome.reason}) but the submission was ` +
+            `delivered by another channel — no data lost.`,
+        );
+      }
+    }
+    return NextResponse.json({ ok: true });
   }
 
-  if (!response.ok) {
-    // Body is logged in full: Resend returns the actionable reason here
-    // (unverified sender domain, invalid key, recipient restriction), and
-    // discarding it would leave a failed delivery undiagnosable.
-    console.error(
-      `[api/contact] Resend delivery failed (${response.status})`,
-      await response.text(),
+  if (!anyConfigured) {
+    console.warn(
+      "[api/contact] No delivery channel is configured (Resend and WhatsApp are both unset) — submission validated but not delivered.",
     );
-    recordLostSubmission(`resend-${response.status}`);
-    return NextResponse.json(deliveryFailure(), { status: 502 });
+    return NextResponse.json({ ok: true });
   }
 
-  return NextResponse.json({ ok: true });
+  /* Every configured channel failed. This is the case the visitor must be
+     told about, and the case where their message only survives if it is
+     written down. */
+  const reason = [email.reason, whatsapp.reason].filter(Boolean).join(", ");
+  recordLostSubmission(reason || "all-channels-failed");
+  return NextResponse.json(deliveryFailure(), { status: 502 });
 }
