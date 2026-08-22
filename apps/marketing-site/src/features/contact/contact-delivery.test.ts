@@ -3,11 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 /**
  * `/api/contact`'s two-channel decision matrix.
  *
- * An enquiry now goes to an inbox and to a phone, and the only genuinely new
- * logic in the endpoint is what it tells the visitor given two independent
- * outcomes. Each row below is a real production state:
+ * An enquiry goes to an inbox and to a phone, and the only genuinely new logic
+ * in the endpoint is what it tells the visitor given two independent outcomes.
+ * Each row below is a real production state:
  *
- *   email    whatsapp   visitor sees   submission logged?
+ *   email    telegram   visitor sees   submission logged?
  *   ------   --------   ------------   ------------------
  *   sent     sent       success        no
  *   sent     failed     success        no   ← the alert is down, not the lead
@@ -21,12 +21,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  * skipped in precisely that outage.
  */
 
+/**
+ * Every case here calls `vi.resetModules()` and re-imports the route handler,
+ * which pulls in `next/server` and transforms it again from cold. On a warm
+ * machine that is milliseconds; in a full-suite run on a cold worker — and on
+ * a two-core CI runner especially — the first import alone can exceed Vitest's
+ * 5s default and fail a test that has not actually run yet.
+ *
+ * The re-import is not incidental: `env` is a module-level constant, so a
+ * fresh module graph per case is the only way to vary the credentials each
+ * channel sees. Raising the ceiling is the honest fix; it only ever applies
+ * when something is genuinely stuck.
+ */
+vi.setConfig({ testTimeout: 30_000 });
+
 const ENV = {
   MARKETING_SITE_RESEND_API_KEY: "re_test_key",
   MARKETING_SITE_CONTACT_INBOX_EMAIL: "hello@tradyperch.com",
-  MARKETING_SITE_WHATSAPP_TOKEN: "EAAG-test-token",
-  MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID: "123456789012345",
-  MARKETING_SITE_WHATSAPP_TO: "919509017150",
+  MARKETING_SITE_TELEGRAM_BOT_TOKEN: "123456:TEST-token",
+  MARKETING_SITE_TELEGRAM_CHAT_ID: "1234567890",
 } as const;
 
 const KEYS = Object.keys(ENV) as Array<keyof typeof ENV>;
@@ -53,13 +66,13 @@ async function loadRoute(values: Partial<Record<keyof typeof ENV, string>>) {
   return (await import("../../../app/api/contact/route")).POST;
 }
 
-/** Route one stubbed response to Resend and another to Meta. */
-function stubChannels(outcomes: { email: "ok" | "fail"; whatsapp: "ok" | "fail" }) {
+/** Route one stubbed response to Resend and another to Telegram. */
+function stubChannels(outcomes: { email: "ok" | "fail"; telegram: "ok" | "fail" }) {
   const calls: string[] = [];
   const fetchMock = vi.fn(async (input: string | URL | Request) => {
     const url = String(input);
     calls.push(url);
-    const which = url.includes("resend.com") ? outcomes.email : outcomes.whatsapp;
+    const which = url.includes("resend.com") ? outcomes.email : outcomes.telegram;
     return which === "ok"
       ? new Response("{}", { status: 200 })
       : new Response(JSON.stringify({ error: "nope" }), { status: 400 });
@@ -88,17 +101,17 @@ describe("/api/contact delivery matrix", () => {
   });
 
   it("sends to both channels, in parallel, from one submission", async () => {
-    const { calls } = stubChannels({ email: "ok", whatsapp: "ok" });
+    const { calls } = stubChannels({ email: "ok", telegram: "ok" });
     const { status, body } = await post(await loadRoute(ENV));
 
     expect(status).toBe(200);
     expect(body).toEqual({ ok: true });
     expect(calls.some((url) => url.includes("api.resend.com"))).toBe(true);
-    expect(calls.some((url) => url.includes("graph.facebook.com"))).toBe(true);
+    expect(calls.some((url) => url.includes("api.telegram.org"))).toBe(true);
   });
 
-  it("still reports success when only the WhatsApp alert fails", async () => {
-    stubChannels({ email: "ok", whatsapp: "fail" });
+  it("still reports success when only the Telegram alert fails", async () => {
+    stubChannels({ email: "ok", telegram: "fail" });
     const { status, body } = await post(await loadRoute(ENV));
 
     expect(status).toBe(200);
@@ -108,11 +121,11 @@ describe("/api/contact delivery matrix", () => {
       expect.stringContaining("UNDELIVERED SUBMISSION"),
     );
     // But the operator needs to know the alerting channel is down.
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("whatsapp delivery failed"));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("telegram delivery failed"));
   });
 
   it("still reports success when email is down but the phone got it", async () => {
-    stubChannels({ email: "fail", whatsapp: "ok" });
+    stubChannels({ email: "fail", telegram: "ok" });
     const { status, body } = await post(await loadRoute(ENV));
 
     expect(status).toBe(200);
@@ -123,7 +136,7 @@ describe("/api/contact delivery matrix", () => {
   });
 
   it("fails loudly, and records the submission, only when every channel fails", async () => {
-    stubChannels({ email: "fail", whatsapp: "fail" });
+    stubChannels({ email: "fail", telegram: "fail" });
     const { status, body } = await post(await loadRoute(ENV));
 
     expect(status).toBe(502);
@@ -133,7 +146,7 @@ describe("/api/contact delivery matrix", () => {
   });
 
   it("accepts the submission without delivering when nothing is configured", async () => {
-    const { fetchMock } = stubChannels({ email: "ok", whatsapp: "ok" });
+    const { fetchMock } = stubChannels({ email: "ok", telegram: "ok" });
     const { status, body } = await post(await loadRoute({}));
 
     expect(status).toBe(200);
@@ -141,23 +154,36 @@ describe("/api/contact delivery matrix", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("delivers by WhatsApp alone when only that channel is configured", async () => {
-    const { calls } = stubChannels({ email: "ok", whatsapp: "ok" });
+  it("delivers by Telegram alone when only that channel is configured", async () => {
+    const { calls } = stubChannels({ email: "ok", telegram: "ok" });
     const { status } = await post(
       await loadRoute({
-        MARKETING_SITE_WHATSAPP_TOKEN: ENV.MARKETING_SITE_WHATSAPP_TOKEN,
-        MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID: ENV.MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID,
-        MARKETING_SITE_WHATSAPP_TO: ENV.MARKETING_SITE_WHATSAPP_TO,
+        MARKETING_SITE_TELEGRAM_BOT_TOKEN: ENV.MARKETING_SITE_TELEGRAM_BOT_TOKEN,
+        MARKETING_SITE_TELEGRAM_CHAT_ID: ENV.MARKETING_SITE_TELEGRAM_CHAT_ID,
       }),
     );
 
     expect(status).toBe(200);
     expect(calls.every((url) => !url.includes("resend.com"))).toBe(true);
-    expect(calls.some((url) => url.includes("graph.facebook.com"))).toBe(true);
+    expect(calls.some((url) => url.includes("api.telegram.org"))).toBe(true);
+  });
+
+  it("delivers by email alone when only that channel is configured", async () => {
+    const { calls } = stubChannels({ email: "ok", telegram: "ok" });
+    const { status } = await post(
+      await loadRoute({
+        MARKETING_SITE_RESEND_API_KEY: ENV.MARKETING_SITE_RESEND_API_KEY,
+        MARKETING_SITE_CONTACT_INBOX_EMAIL: ENV.MARKETING_SITE_CONTACT_INBOX_EMAIL,
+      }),
+    );
+
+    expect(status).toBe(200);
+    expect(calls.some((url) => url.includes("api.resend.com"))).toBe(true);
+    expect(calls.every((url) => !url.includes("api.telegram.org"))).toBe(true);
   });
 
   it("never contacts a delivery channel for a honeypot submission", async () => {
-    const { fetchMock } = stubChannels({ email: "ok", whatsapp: "ok" });
+    const { fetchMock } = stubChannels({ email: "ok", telegram: "ok" });
     const handler = await loadRoute(ENV);
     const form = submission();
     form.set("website", "https://spam.example");
@@ -172,7 +198,7 @@ describe("/api/contact delivery matrix", () => {
   });
 
   it("never contacts a delivery channel for an invalid submission", async () => {
-    const { fetchMock } = stubChannels({ email: "ok", whatsapp: "ok" });
+    const { fetchMock } = stubChannels({ email: "ok", telegram: "ok" });
     const handler = await loadRoute(ENV);
     const form = submission();
     form.set("email", "not-an-address");

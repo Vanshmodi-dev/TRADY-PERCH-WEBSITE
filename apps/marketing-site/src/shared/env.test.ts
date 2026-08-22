@@ -20,12 +20,8 @@ const KEYS = [
   "MARKETING_SITE_RESEND_FROM_EMAIL",
   "MARKETING_SITE_GITHUB_TOKEN",
   "MARKETING_SITE_GITHUB_USERNAME",
-  "MARKETING_SITE_WHATSAPP_TOKEN",
-  "MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID",
-  "MARKETING_SITE_WHATSAPP_TO",
-  "MARKETING_SITE_WHATSAPP_TEMPLATE",
-  "MARKETING_SITE_WHATSAPP_TEMPLATE_LANGUAGE",
-  "MARKETING_SITE_WHATSAPP_API_VERSION",
+  "MARKETING_SITE_TELEGRAM_BOT_TOKEN",
+  "MARKETING_SITE_TELEGRAM_CHAT_ID",
 ] as const;
 
 /** `env` is a module-level constant, so each case needs a fresh import. */
@@ -55,7 +51,9 @@ describe("env", () => {
   });
 
   it("strips surrounding spaces and carriage returns too", async () => {
-    const env = await loadEnv({ MARKETING_SITE_CONTACT_INBOX_EMAIL: "  hello@tradyperch.com \r\n" });
+    const env = await loadEnv({
+      MARKETING_SITE_CONTACT_INBOX_EMAIL: "  hello@tradyperch.com \r\n",
+    });
     expect(env.MARKETING_SITE_CONTACT_INBOX_EMAIL).toBe("hello@tradyperch.com");
   });
 
@@ -76,32 +74,23 @@ describe("env", () => {
     expect(env.MARKETING_SITE_RESEND_FROM_EMAIL).toBe("Trady Perch site <onboarding@resend.dev>");
   });
 
-  it("strips whitespace from the WhatsApp credentials too", async () => {
-    /* A Meta System User token is ~200 characters and is always delivered by
-       copy-paste, which is the exact circumstance that produced the Resend
-       outage above. `Bearer <token>\n` is rejected by Meta as an invalid
-       token, sending whoever debugs it to regenerate a perfectly good one. */
+  it("strips whitespace from the Telegram credentials too", async () => {
+    /* A BotFather token is delivered by copy-paste out of a chat message,
+       which is the exact circumstance that produced the Resend outage above.
+       Here a trailing newline lands inside the URL path itself — Telegram
+       answers `bot<token>\n/sendMessage` with a 404, which sends whoever
+       debugs it to regenerate a perfectly good token. */
     const env = await loadEnv({
-      MARKETING_SITE_WHATSAPP_TOKEN: "EAAG0zaBcDeF...\n",
-      MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID: "  123456789012345 \r\n",
-      MARKETING_SITE_WHATSAPP_TO: " 919509017150 ",
+      MARKETING_SITE_TELEGRAM_BOT_TOKEN: "123456:AAExample-token\n",
+      MARKETING_SITE_TELEGRAM_CHAT_ID: "  1234567890 \r\n",
     });
-    expect(env.MARKETING_SITE_WHATSAPP_TOKEN).toBe("EAAG0zaBcDeF...");
-    expect(env.MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID).toBe("123456789012345");
-    expect(env.MARKETING_SITE_WHATSAPP_TO).toBe("919509017150");
+    expect(env.MARKETING_SITE_TELEGRAM_BOT_TOKEN).toBe("123456:AAExample-token");
+    expect(env.MARKETING_SITE_TELEGRAM_CHAT_ID).toBe("1234567890");
   });
 
-  it("leaves the WhatsApp channel unconfigured rather than half-configured", async () => {
+  it("leaves the Telegram channel unconfigured rather than half-configured", async () => {
     const env = await loadEnv({});
-    expect(env.MARKETING_SITE_WHATSAPP_TOKEN).toBeUndefined();
-    expect(env.MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID).toBeUndefined();
-    expect(env.MARKETING_SITE_WHATSAPP_TO).toBeUndefined();
-  });
-
-  it("defaults the WhatsApp template, language and API version", async () => {
-    const env = await loadEnv({});
-    expect(env.MARKETING_SITE_WHATSAPP_TEMPLATE).toBe("new_enquiry");
-    expect(env.MARKETING_SITE_WHATSAPP_TEMPLATE_LANGUAGE).toBe("en");
-    expect(env.MARKETING_SITE_WHATSAPP_API_VERSION).toMatch(/^v\d+\.\d+$/);
+    expect(env.MARKETING_SITE_TELEGRAM_BOT_TOKEN).toBeUndefined();
+    expect(env.MARKETING_SITE_TELEGRAM_CHAT_ID).toBeUndefined();
   });
 });

@@ -71,56 +71,33 @@ export interface Env {
    */
   MARKETING_SITE_RESEND_FROM_EMAIL: string;
   /**
-   * WhatsApp Cloud API credentials — the contact form's second delivery
-   * channel (`features/contact/whatsapp-delivery.ts`).
+   * Telegram bot credentials — the contact form's second delivery channel
+   * (`features/contact/telegram-delivery.ts`).
    *
-   * All three are optional together, and the channel is inert unless all
-   * three are present, for the same Ch.10 §4 reason as the Resend key: the
-   * site is fully functional without it, and CI, a fresh clone and any
-   * preview deployment without secrets must all still build and pass.
+   * Both are optional together, and the channel is inert unless both are
+   * present, for the same Ch.10 §4 reason as the Resend key: the site is
+   * fully functional without it, and CI, a fresh clone and any preview
+   * deployment without secrets must all still build and pass.
    *
-   * The token is a Meta System User access token. Server-only and
-   * structurally so — reachable only through this module, imported only by
+   * The token is a BotFather token, and it is a full credential — anyone
+   * holding it can read and send everything the bot can. Server-only and
+   * structurally so: reachable only through this module, imported only by
    * server code, and carrying no `NEXT_PUBLIC_` prefix, which is the sole
    * mechanism by which Next.js inlines a variable into the client bundle.
    */
-  MARKETING_SITE_WHATSAPP_TOKEN: string | undefined;
-  /** The *sender's* phone number ID from the WhatsApp Manager — an opaque
-   *  numeric ID, not a phone number. */
-  MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID: string | undefined;
+  MARKETING_SITE_TELEGRAM_BOT_TOKEN: string | undefined;
   /**
-   * The recipient, in full international digits (e.g. `91XXXXXXXXXX`).
+   * The chat the alert is posted to — a personal chat ID, a group, or a
+   * channel.
    *
    * An environment variable rather than a constant in the source because
-   * this repository is public and this is somebody's personal mobile number.
-   * It is configuration, not code, and it must not be in git.
+   * this repository is public. It is configuration, not code, and neither it
+   * nor the token belongs in git.
    */
-  MARKETING_SITE_WHATSAPP_TO: string | undefined;
-  /**
-   * The approved template's name and language. Both have defaults, so a
-   * working setup only needs the three values above; these exist for the
-   * case where the template is renamed or approved in another locale.
-   */
-  MARKETING_SITE_WHATSAPP_TEMPLATE: string;
-  MARKETING_SITE_WHATSAPP_TEMPLATE_LANGUAGE: string;
-  /**
-   * Graph API version, pinned rather than floating: Meta ships breaking
-   * changes between versions and an unversioned path silently follows the
-   * newest one. Overridable so a future bump is a dashboard edit rather than
-   * a deploy.
-   */
-  MARKETING_SITE_WHATSAPP_API_VERSION: string;
+  MARKETING_SITE_TELEGRAM_CHAT_ID: string | undefined;
 }
 
 const DEFAULT_FROM_EMAIL = "Trady Perch site <onboarding@resend.dev>";
-const DEFAULT_WHATSAPP_TEMPLATE = "new_enquiry";
-const DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE = "en";
-/**
- * Verified live against `graph.facebook.com` when this was written: v19.0
- * through v26.0 all resolve, v27.0 does not exist yet. The newest live
- * version is chosen for the longest support window before Meta retires it.
- */
-const DEFAULT_WHATSAPP_API_VERSION = "v26.0";
 
 /**
  * Read one variable, trimmed, with the empty string treated as absent.
@@ -165,13 +142,6 @@ export const env: Env = {
     readEnv("MARKETING_SITE_RESEND_FROM_EMAIL") ?? DEFAULT_FROM_EMAIL,
   MARKETING_SITE_GITHUB_TOKEN: readEnv("MARKETING_SITE_GITHUB_TOKEN"),
   MARKETING_SITE_GITHUB_USERNAME: readEnv("MARKETING_SITE_GITHUB_USERNAME"),
-  MARKETING_SITE_WHATSAPP_TOKEN: readEnv("MARKETING_SITE_WHATSAPP_TOKEN"),
-  MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID: readEnv("MARKETING_SITE_WHATSAPP_PHONE_NUMBER_ID"),
-  MARKETING_SITE_WHATSAPP_TO: readEnv("MARKETING_SITE_WHATSAPP_TO"),
-  MARKETING_SITE_WHATSAPP_TEMPLATE:
-    readEnv("MARKETING_SITE_WHATSAPP_TEMPLATE") ?? DEFAULT_WHATSAPP_TEMPLATE,
-  MARKETING_SITE_WHATSAPP_TEMPLATE_LANGUAGE:
-    readEnv("MARKETING_SITE_WHATSAPP_TEMPLATE_LANGUAGE") ?? DEFAULT_WHATSAPP_TEMPLATE_LANGUAGE,
-  MARKETING_SITE_WHATSAPP_API_VERSION:
-    readEnv("MARKETING_SITE_WHATSAPP_API_VERSION") ?? DEFAULT_WHATSAPP_API_VERSION,
+  MARKETING_SITE_TELEGRAM_BOT_TOKEN: readEnv("MARKETING_SITE_TELEGRAM_BOT_TOKEN"),
+  MARKETING_SITE_TELEGRAM_CHAT_ID: readEnv("MARKETING_SITE_TELEGRAM_CHAT_ID"),
 };

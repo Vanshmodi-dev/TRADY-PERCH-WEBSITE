@@ -10,7 +10,7 @@ import {
   skipped,
   type DeliveryOutcome,
 } from "@/features/contact/delivery-outcome";
-import { sendWhatsAppNotification } from "@/features/contact/whatsapp-delivery";
+import { sendTelegramNotification } from "@/features/contact/telegram-delivery";
 import { env } from "@/shared/env";
 import { isRateLimited } from "@/shared/rate-limit";
 
@@ -131,12 +131,12 @@ async function sendEmail(data: ContactFormData): Promise<DeliveryOutcome> {
 
 /**
  * Real server-side validation, and real delivery down two independent
- * channels: an email via Resend, and a WhatsApp notification via Meta's Cloud
- * API (`features/contact/whatsapp-delivery.ts`).
+ * channels: an email via Resend, and a Telegram notification via the Bot API
+ * (`features/contact/telegram-delivery.ts`).
  *
  * ── Why two, and why they are not a chain ─────────────────────────────────
  *
- * The email is the record — complete, searchable, replyable. The WhatsApp
+ * The email is the record — complete, searchable, replyable. The Telegram
  * message is the alert, so an enquiry is noticed in minutes rather than
  * whenever the inbox is next opened.
  *
@@ -230,11 +230,11 @@ export async function POST(request: Request): Promise<Response> {
      sum. Neither settle can reject — each channel resolves with its own
      outcome and reports its own faults — so `Promise.all` is safe here and
      keeps the destructuring readable. */
-  const [email, whatsapp] = await Promise.all([sendEmail(data), sendWhatsAppNotification(data)]);
+  const [email, telegram] = await Promise.all([sendEmail(data), sendTelegramNotification(data)]);
 
-  const channels = { email, whatsapp };
-  const anyDelivered = email.status === "sent" || whatsapp.status === "sent";
-  const anyConfigured = email.status !== "skipped" || whatsapp.status !== "skipped";
+  const channels = { email, telegram };
+  const anyDelivered = email.status === "sent" || telegram.status === "sent";
+  const anyConfigured = email.status !== "skipped" || telegram.status !== "skipped";
 
   if (anyDelivered) {
     /* One channel down while the other worked is not a visitor-facing
@@ -254,7 +254,7 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!anyConfigured) {
     console.warn(
-      "[api/contact] No delivery channel is configured (Resend and WhatsApp are both unset) — submission validated but not delivered.",
+      "[api/contact] No delivery channel is configured (Resend and Telegram are both unset) — submission validated but not delivered.",
     );
     return NextResponse.json({ ok: true });
   }
@@ -262,7 +262,7 @@ export async function POST(request: Request): Promise<Response> {
   /* Every configured channel failed. This is the case the visitor must be
      told about, and the case where their message only survives if it is
      written down. */
-  const reason = [email.reason, whatsapp.reason].filter(Boolean).join(", ");
+  const reason = [email.reason, telegram.reason].filter(Boolean).join(", ");
   recordLostSubmission(reason || "all-channels-failed");
   return NextResponse.json(deliveryFailure(), { status: 502 });
 }
