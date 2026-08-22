@@ -1,20 +1,21 @@
 /**
  * Product Implementation Constitution Ch.10 §3: "every app declares its
  * required environment variables in a single, typed schema file... never
- * scattered across multiple files." This app has exactly two environment
- * variables (both read by `app/api/contact/route.ts`) — before this file,
- * they were each a raw `process.env.X` lookup inline in the route handler,
- * which is Ch.10 §8's named anti-pattern ("never introduced by a call to a
- * raw environment-variable lookup scattered directly in application code").
+ * scattered across multiple files." Every variable this app reads is declared
+ * here and nowhere else — before this file, the first two were each a raw
+ * `process.env.X` lookup inline in the route handler, which is Ch.10 §8's
+ * named anti-pattern ("never introduced by a call to a raw
+ * environment-variable lookup scattered directly in application code").
  *
- * Both are declared optional, not required: Ch.10 §4's mandatory
- * startup-fail-loudly rule applies to a value the app cannot correctly run
- * without. This app can — email delivery is a genuinely optional
- * capability until an ESP account exists (see the route handler's own
- * comment), and degrading to "validate but don't deliver, log loudly" is a
- * deliberate design decision already made and disclosed there, not a gap
- * this schema file should paper over by inventing a false "required"
- * status just to satisfy Section 4's letter.
+ * Every credential here is declared optional, not required: Ch.10 §4's
+ * mandatory startup-fail-loudly rule applies to a value the app cannot
+ * correctly run without. This app can — email delivery, WhatsApp delivery and
+ * the GitHub portfolio feed are each a genuinely optional capability until an
+ * account exists for it (see each handler's own comment), and degrading to
+ * "validate but don't deliver, log loudly" is a deliberate design decision
+ * already made and disclosed there, not a gap this schema file should paper
+ * over by inventing a false "required" status just to satisfy Section 4's
+ * letter.
  */
 /**
  * Ch.9 §6: `<APP_PREFIX>_<SCREAMING_SNAKE_NAME>`, where the prefix is the
@@ -69,6 +70,31 @@ export interface Env {
    * MARKETING_SITE_CONTACT_INBOX_EMAIL is that same address.
    */
   MARKETING_SITE_RESEND_FROM_EMAIL: string;
+  /**
+   * Telegram bot credentials — the contact form's second delivery channel
+   * (`features/contact/telegram-delivery.ts`).
+   *
+   * Both are optional together, and the channel is inert unless both are
+   * present, for the same Ch.10 §4 reason as the Resend key: the site is
+   * fully functional without it, and CI, a fresh clone and any preview
+   * deployment without secrets must all still build and pass.
+   *
+   * The token is a BotFather token, and it is a full credential — anyone
+   * holding it can read and send everything the bot can. Server-only and
+   * structurally so: reachable only through this module, imported only by
+   * server code, and carrying no `NEXT_PUBLIC_` prefix, which is the sole
+   * mechanism by which Next.js inlines a variable into the client bundle.
+   */
+  MARKETING_SITE_TELEGRAM_BOT_TOKEN: string | undefined;
+  /**
+   * The chat the alert is posted to — a personal chat ID, a group, or a
+   * channel.
+   *
+   * An environment variable rather than a constant in the source because
+   * this repository is public. It is configuration, not code, and neither it
+   * nor the token belongs in git.
+   */
+  MARKETING_SITE_TELEGRAM_CHAT_ID: string | undefined;
 }
 
 const DEFAULT_FROM_EMAIL = "Trady Perch site <onboarding@resend.dev>";
@@ -116,4 +142,6 @@ export const env: Env = {
     readEnv("MARKETING_SITE_RESEND_FROM_EMAIL") ?? DEFAULT_FROM_EMAIL,
   MARKETING_SITE_GITHUB_TOKEN: readEnv("MARKETING_SITE_GITHUB_TOKEN"),
   MARKETING_SITE_GITHUB_USERNAME: readEnv("MARKETING_SITE_GITHUB_USERNAME"),
+  MARKETING_SITE_TELEGRAM_BOT_TOKEN: readEnv("MARKETING_SITE_TELEGRAM_BOT_TOKEN"),
+  MARKETING_SITE_TELEGRAM_CHAT_ID: readEnv("MARKETING_SITE_TELEGRAM_CHAT_ID"),
 };

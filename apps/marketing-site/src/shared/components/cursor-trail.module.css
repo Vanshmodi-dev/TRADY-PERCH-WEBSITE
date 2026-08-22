@@ -1,0 +1,123 @@
+/*
+ * THE GOLDEN TRAIL.
+ *
+ * Position, size and fade are written by JS as `transform` and `opacity` on
+ * elements that each carry their own compositor layer. This stylesheet owns
+ * only the material: what a particle is made of.
+ *
+ * ── On the gold ───────────────────────────────────────────────────────────
+ *
+ * The particle is the system's own accent (Ch.11 / --semantic-color-accent-
+ * primary, #C9A24B) rather than a new colour invented for the cursor layer.
+ * That is the point of the whole replacement: the effect a visitor carries
+ * across every page should be made of the brand's one reserved accent, not of
+ * a fifth colour that exists nowhere else in the system.
+ *
+ * The core is that accent lifted halfway toward gold-300, which is the warm
+ * highlight the same palette already uses — so a particle reads as a warm gold
+ * point rather than a white spark. Nothing here is pure white, and nothing is
+ * brighter than the accent's own light tint.
+ *
+ * ── On the glow ───────────────────────────────────────────────────────────
+ *
+ * A radial gradient, not a `filter: blur()` and not a `box-shadow`. A filter
+ * re-runs on every scale change; a gradient is rasterised once per sprite and
+ * from then on is only ever moved and faded by the compositor. It is also the
+ * only way to keep the halo genuinely soft at this size — a 2px dot with a
+ * blur radius large enough to read as glow costs more to composite than the
+ * whole rest of the effect.
+ *
+ * The halo is deliberately narrow: it reaches zero at ~74% of a 12px sprite,
+ * i.e. under 9px across at full scale. Anything wider stops being a particle
+ * with a glow and starts being a small light source, which is the failure
+ * mode this design is most exposed to.
+ */
+
+.root {
+  /* The two golds, resolved once here rather than per sprite. */
+  --trail-core: color-mix(
+    in oklab,
+    var(--core-color-gold-300) 50%,
+    var(--semantic-color-accent-primary)
+  );
+  --trail-core-hot: color-mix(
+    in oklab,
+    var(--core-color-gold-300) 78%,
+    var(--semantic-color-accent-primary)
+  );
+  --trail-halo: var(--semantic-color-accent-primary);
+
+  position: fixed;
+  inset: 0;
+  z-index: 90; /* Over the page, under the intro overlay's 100 — the ceremony
+                  owns the screen outright while it is up. */
+  pointer-events: none;
+  /* Nothing inside can affect layout outside, and painting is clipped to the
+     viewport box the layer already occupies. The layer never contributes to
+     document size, so it cannot introduce a scrollbar or shift anything. */
+  contain: layout style paint;
+}
+
+/*
+ * One particle. The box is a fixed 12px; the visible core is the gradient's
+ * inner ~22%, so roughly 2.2px at scale 1 and between 1.2px and 2.5px across
+ * the size range the emitter draws from.
+ *
+ * Centred on its own coordinates by a negative half-margin rather than by a
+ * `translate(-50%)` in the transform, because the transform is rewritten every
+ * frame and a second function in it would be a second thing to parse per
+ * particle per frame.
+ */
+.particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  opacity: 0;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--trail-core) 88%, transparent) 0%,
+    color-mix(in oklab, var(--trail-halo) 58%, transparent) 22%,
+    color-mix(in oklab, var(--trail-halo) 15%, transparent) 44%,
+    transparent 74%
+  );
+  will-change: transform, opacity;
+}
+
+/*
+ * The hover sprite. Emitted while the pointer is over something interactive,
+ * and the difference is meant to be almost unquantifiable: the same gradient,
+ * the same radius, a warmer core and a few percent more halo. A visitor should
+ * feel that the trail acknowledges a button, not see it change costume.
+ */
+.particle[data-hot="1"] {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--trail-core-hot) 92%, transparent) 0%,
+    color-mix(in oklab, var(--trail-halo) 66%, transparent) 22%,
+    color-mix(in oklab, var(--trail-halo) 19%, transparent) 44%,
+    transparent 74%
+  );
+}
+
+/*
+ * Two lines of defence behind the component's own media-query gate, for the
+ * window between a preference changing and React re-rendering — and for any
+ * future use of this stylesheet somewhere the gate is not.
+ *
+ * Reduced motion removes the layer entirely rather than slowing it down. Every
+ * part of this effect is motion; there is no static residue worth keeping.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    display: none;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .root {
+    display: none;
+  }
+}

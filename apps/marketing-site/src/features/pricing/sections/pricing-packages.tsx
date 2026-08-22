@@ -65,9 +65,6 @@ export function PricingPackages() {
               <li
                 key={tier.id}
                 className={`${styles.card} ${tier.featured ? styles.featured : ""}`}
-                /* Reads as a whole-surface panel to the cursor, the same as a
-                   work card does — decorative only. */
-                data-cursor="card"
               >
                 {/* Rendered on every card, empty on two of them. Showing it
                     only on the featured tier pushed that card's contents down

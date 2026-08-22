@@ -20,6 +20,8 @@ const KEYS = [
   "MARKETING_SITE_RESEND_FROM_EMAIL",
   "MARKETING_SITE_GITHUB_TOKEN",
   "MARKETING_SITE_GITHUB_USERNAME",
+  "MARKETING_SITE_TELEGRAM_BOT_TOKEN",
+  "MARKETING_SITE_TELEGRAM_CHAT_ID",
 ] as const;
 
 /** `env` is a module-level constant, so each case needs a fresh import. */
@@ -49,7 +51,9 @@ describe("env", () => {
   });
 
   it("strips surrounding spaces and carriage returns too", async () => {
-    const env = await loadEnv({ MARKETING_SITE_CONTACT_INBOX_EMAIL: "  hello@tradyperch.com \r\n" });
+    const env = await loadEnv({
+      MARKETING_SITE_CONTACT_INBOX_EMAIL: "  hello@tradyperch.com \r\n",
+    });
     expect(env.MARKETING_SITE_CONTACT_INBOX_EMAIL).toBe("hello@tradyperch.com");
   });
 
@@ -68,5 +72,25 @@ describe("env", () => {
   it("falls back to Resend's shared test sender when none is configured", async () => {
     const env = await loadEnv({});
     expect(env.MARKETING_SITE_RESEND_FROM_EMAIL).toBe("Trady Perch site <onboarding@resend.dev>");
+  });
+
+  it("strips whitespace from the Telegram credentials too", async () => {
+    /* A BotFather token is delivered by copy-paste out of a chat message,
+       which is the exact circumstance that produced the Resend outage above.
+       Here a trailing newline lands inside the URL path itself — Telegram
+       answers `bot<token>\n/sendMessage` with a 404, which sends whoever
+       debugs it to regenerate a perfectly good token. */
+    const env = await loadEnv({
+      MARKETING_SITE_TELEGRAM_BOT_TOKEN: "123456:AAExample-token\n",
+      MARKETING_SITE_TELEGRAM_CHAT_ID: "  1234567890 \r\n",
+    });
+    expect(env.MARKETING_SITE_TELEGRAM_BOT_TOKEN).toBe("123456:AAExample-token");
+    expect(env.MARKETING_SITE_TELEGRAM_CHAT_ID).toBe("1234567890");
+  });
+
+  it("leaves the Telegram channel unconfigured rather than half-configured", async () => {
+    const env = await loadEnv({});
+    expect(env.MARKETING_SITE_TELEGRAM_BOT_TOKEN).toBeUndefined();
+    expect(env.MARKETING_SITE_TELEGRAM_CHAT_ID).toBeUndefined();
   });
 });

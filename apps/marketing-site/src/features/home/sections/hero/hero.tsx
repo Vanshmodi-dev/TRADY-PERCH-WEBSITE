@@ -43,12 +43,7 @@ import styles from "./hero.module.css";
  */
 export function Hero() {
   return (
-    /* `data-cursor-zone` lifts the cursor's glow across the whole section,
-       including the empty space between the type and the object — the hero
-       is the one place on the site where the pointer should feel like it is
-       inside the scene rather than over a page. Purely decorative; see
-       shared/components/site-cursor.tsx. */
-    <section className={styles.hero} aria-labelledby="hero-heading" data-cursor-zone="hero">
+    <section className={styles.hero} aria-labelledby="hero-heading">
       <div className={styles.grid}>
         <div className={styles.copy}>
           <p className={styles.eyebrow}>Build. Automate. Grow.</p>
