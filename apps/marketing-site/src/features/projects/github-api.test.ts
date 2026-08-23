@@ -172,6 +172,81 @@ describe("fetchRepositories", () => {
       expect(await unauthorized.fetchRepositories()).toEqual({ status: "error", reason: "unauthorized" });
     });
 
+    /**
+     * REGRESSION GUARD — production outage, Work section.
+     *
+     * The stored personal access token expired. Every endpoint this module
+     * reads is public and answers fine with no credential at all, but the 401
+     * was surfaced as a hard failure and the whole Work section rendered "our
+     * connection to GitHub needs attention" instead of the five repositories
+     * it could still have listed.
+     *
+     * A token that expires is not an edge case — it is the documented
+     * behaviour of the credential. Failing closed on it trades a small
+     * degradation (60 requests/hour, no contribution graph) for a total
+     * outage, which is backwards.
+     */
+    it("drops a rejected token and completes the request unauthenticated", async () => {
+      const fetchSpy = vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ message: "Bad credentials" }, { status: 401 }))
+        .mockResolvedValue(jsonResponse([repoPayload()]));
+      vi.stubGlobal("fetch", fetchSpy);
+
+      const { fetchRepositories } = await loadApi({
+        MARKETING_SITE_GITHUB_USERNAME: "acme",
+        MARKETING_SITE_GITHUB_TOKEN: "ghp_expired",
+      });
+
+      const result = await fetchRepositories();
+      expect(result.status).toBe("ok");
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+
+      // The first attempt carried the credential; the retry must not.
+      const first = (fetchSpy.mock.calls[0] as [string, { headers: Record<string, string> }])[1];
+      const second = (fetchSpy.mock.calls[1] as [string, { headers: Record<string, string> }])[1];
+      expect(first.headers.Authorization).toBe("Bearer ghp_expired");
+      expect(second.headers.Authorization).toBeUndefined();
+    });
+
+    it("stops sending a rejected token on every later request too", async () => {
+      const fetchSpy = vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ message: "Bad credentials" }, { status: 401 }))
+        .mockResolvedValue(jsonResponse([repoPayload()]));
+      vi.stubGlobal("fetch", fetchSpy);
+
+      const { fetchRepositories } = await loadApi({
+        MARKETING_SITE_GITHUB_USERNAME: "acme",
+        MARKETING_SITE_GITHUB_TOKEN: "ghp_expired",
+      });
+
+      await fetchRepositories();
+      await fetchRepositories();
+
+      /* Re-sending a credential already known to be bad would cost a wasted
+         round trip on every subsequent call to learn the same thing. */
+      for (const call of fetchSpy.mock.calls.slice(1)) {
+        const init = (call as [string, { headers: Record<string, string> }])[1];
+        expect(init.headers.Authorization).toBeUndefined();
+      }
+    });
+
+    it("still reports 'unauthorized' when the unauthenticated retry also fails", async () => {
+      // No infinite demotion loop: the fallback is attempted exactly once.
+      const fetchSpy = vi
+        .fn()
+        .mockResolvedValue(jsonResponse({ message: "Bad credentials" }, { status: 401 }));
+      vi.stubGlobal("fetch", fetchSpy);
+
+      const { fetchRepositories } = await loadApi({
+        MARKETING_SITE_GITHUB_USERNAME: "acme",
+        MARKETING_SITE_GITHUB_TOKEN: "ghp_expired",
+      });
+
+      expect(await fetchRepositories()).toEqual({ status: "error", reason: "unauthorized" });
+    });
+
     it("returns 'unavailable' instead of throwing when the network fails", async () => {
       vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));
       const { fetchRepositories } = await loadApi({ MARKETING_SITE_GITHUB_USERNAME: "acme" });
