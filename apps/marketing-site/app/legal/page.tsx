@@ -34,7 +34,7 @@ export default function LegalPage() {
         <SectionHeading
           eyebrow="Legal"
           heading="Legal"
-          description="Compliance and licensing information, plus links to our Privacy Policy and Terms of Service."
+          description="Our Privacy Policy and Terms of Service."
           level="h1"
           size="h1"
         />

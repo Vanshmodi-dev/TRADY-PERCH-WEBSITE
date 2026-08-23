@@ -11,7 +11,6 @@ import { Portfolio } from "./sections/portfolio/portfolio";
 import { PricingPhilosophy } from "./sections/pricing-philosophy/pricing-philosophy";
 import { ProblemsWeSolve } from "./sections/problems-we-solve/problems-we-solve";
 import { Solutions } from "./sections/solutions/solutions";
-import { Testimonials } from "./sections/testimonials/testimonials";
 import { TechnologyStack } from "./sections/technology-stack/technology-stack";
 
 /**
@@ -64,9 +63,6 @@ export function HomePage() {
       </Reveal>
       <Reveal>
         <InteractiveAiDemo />
-      </Reveal>
-      <Reveal>
-        <Testimonials />
       </Reveal>
       <Reveal>
         <PricingPhilosophy />

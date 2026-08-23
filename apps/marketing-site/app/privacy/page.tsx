@@ -34,7 +34,8 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "How information is delivered and stored",
     paragraphs: [
-      "Contact form submissions are transmitted to our team via a transactional email provider. We retain submitted inquiries only as long as reasonably necessary to respond to them and maintain a record of the conversation, unless you ask us to delete them sooner.",
+      "Contact form submissions reach us two ways: as an email sent through a transactional email provider, and as a notification to a private team messaging account so an inquiry is seen promptly. Both are delivery channels for the same message — the content is what you submitted, and nothing further is added to it.",
+      "We retain submitted inquiries only as long as reasonably necessary to respond to them and maintain a record of the conversation, unless you ask us to delete them sooner.",
     ],
   },
   {

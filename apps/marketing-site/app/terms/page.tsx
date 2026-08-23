@@ -15,7 +15,7 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Acceptance of terms",
     paragraphs: [
-      "By using this website, you agree to these terms. If you don't agree with them, please don't use the site. These terms apply to tradyperch.com; a specific client engagement is governed by that engagement's own signed agreement, which takes precedence over this page for anything it covers.",
+      "These terms govern your use of tradyperch.com, and using the site indicates your acceptance of them. A specific client engagement is governed by that engagement's own signed agreement, which takes precedence over this page for anything it covers.",
     ],
   },
   {
