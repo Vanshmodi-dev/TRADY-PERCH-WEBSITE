@@ -12,12 +12,18 @@ interface LegalDocumentPageProps {
 }
 
 /**
- * Standard, reasonable template content for an early-stage service
- * business — not a substitute for review by qualified legal counsel
- * before this site takes real visitors. Flagged honestly (the notice
- * below, and the Milestone 4 Completion Report's pre-launch checklist)
- * rather than presented as finished legal advice, consistent with the
- * disclosure pattern already used for the AI demo and Portfolio content.
+ * Shared layout for /privacy and /terms.
+ *
+ * These documents have not been reviewed by a lawyer. That remains true and
+ * is worth knowing internally, but it belonged in this comment rather than in
+ * a notice rendered to every visitor: a banner announcing that a live
+ * company's own terms are unfinished undermines the document it sits above,
+ * and tells a prospective client something about the business that has
+ * nothing to do with their privacy or their rights.
+ *
+ * The remedy is a legal review, not a disclaimer. Until one happens, the
+ * pages state only what is actually true of this site — see the note in the
+ * audit report about the sections a real review would be expected to add.
  */
 export function LegalDocumentPage({ title, lastUpdated, sections }: LegalDocumentPageProps) {
   return (
@@ -26,11 +32,6 @@ export function LegalDocumentPage({ title, lastUpdated, sections }: LegalDocumen
         <p className={styles.eyebrow}>Legal</p>
         <h1 className={styles.heading}>{title}</h1>
         <p className={styles.updated}>Last updated: {lastUpdated}</p>
-        <div className={styles.notice} role="note">
-          This is template content prepared as part of the site build, not a substitute for review
-          by qualified legal counsel — it should be reviewed and adapted before this site is used
-          with real visitors.
-        </div>
         <div className={styles.body}>
           {sections.map((section) => (
             <div key={section.heading} className={styles.docSection}>
