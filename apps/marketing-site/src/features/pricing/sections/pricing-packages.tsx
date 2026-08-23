@@ -10,7 +10,7 @@ import styles from "./pricing-packages.module.css";
  * decided by `PRICING_SHOW_AMOUNTS` alone (see pricing-config.ts for why it is
  * currently off). `startingFrom` being null falls back to the label even when
  * the flag is on, so turning the flag on with an unfilled tier degrades to
- * "Custom Quote" rather than rendering "Starting from ₹NaN".
+ * "Scoped engagement" rather than rendering "Starting from ₹NaN".
  */
 function InvestmentSlot({ tier }: { tier: PricingPackage }) {
   const showFigure = PRICING_SHOW_AMOUNTS && tier.startingFrom !== null;
@@ -56,8 +56,8 @@ export function PricingPackages() {
             Three ways to start.
           </h2>
           <p className={styles.subheading}>
-            Each tier is a starting shape, not a fixed menu — every engagement is scoped to what your
-            business actually needs before anything is agreed.
+            Three starting points, not three fixed menus. Each one describes a different depth of
+            engagement — the real scope is agreed with you in Discover, before anything is built.
           </p>
 
           <ul className={styles.grid}>
