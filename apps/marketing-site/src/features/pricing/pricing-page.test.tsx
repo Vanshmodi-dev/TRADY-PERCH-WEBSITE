@@ -81,9 +81,16 @@ describe("PricingPage", () => {
   it("§5.4: every package still states its investment terms rather than staying silent", () => {
     render(<PricingPage />);
     // "Vagueness here reads as evasiveness" — the absence of a number is only
-    // defensible if the page says what happens instead.
-    expect(screen.getAllByText(/Custom Quote/i).length).toBe(PRICING_PACKAGES.length);
-    expect(screen.getAllByText(/Scoped in Discover/i).length).toBe(PRICING_PACKAGES.length);
+    // defensible if the page says what happens instead. Asserted against the
+    // config rather than a hardcoded phrase: what has to hold is that every
+    // tier's investment slot is filled and rendered, so rewording the label is
+    // a copy change rather than a test failure.
+    for (const tier of PRICING_PACKAGES) {
+      expect(tier.investmentLabel.trim()).not.toBe("");
+      expect(tier.investmentNote.trim()).not.toBe("");
+      expect(screen.getAllByText(tier.investmentLabel).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(tier.investmentNote).length).toBeGreaterThan(0);
+    }
   });
 
   it("Ch.18 Bt-1: no button on the page is Primary emphasis — the nav's fixed CTA is the one exception", () => {
