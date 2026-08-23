@@ -96,11 +96,42 @@ function requestHeaders(accept: string): HeadersInit {
   };
 
   const token = env.MARKETING_SITE_GITHUB_TOKEN;
-  if (token) {
+  if (token && !tokenRejected) {
     headers.Authorization = `Bearer ${token}`;
   }
   return headers;
 }
+
+/**
+ * Set once GitHub has rejected the configured token, after which every request
+ * from this server instance goes out unauthenticated.
+ *
+ * ── Why this exists ───────────────────────────────────────────────────────
+ *
+ * A personal access token expires. That is not an edge case, it is the
+ * documented behaviour of the credential — GitHub offers 7, 30, 60 and 90-day
+ * options and warns about the date in advance, which does not help a token
+ * sitting in a hosting dashboard nobody is looking at.
+ *
+ * Before this, an expired token took the entire Work section down and replaced
+ * it with "our connection to GitHub needs attention" — even though every
+ * endpoint this module reads is PUBLIC and answers perfectly well with no
+ * credential at all. The token buys a higher rate limit (5,000/hour against
+ * 60) and the GraphQL contribution graph; it is not what makes the feed
+ * possible. Failing closed on its expiry traded a small degradation for a
+ * total outage, which is exactly backwards.
+ *
+ * So a 401 demotes the client to the unauthenticated path rather than ending
+ * the request. The feed keeps working on a smaller budget, the contribution
+ * graph disappears (it has no unauthenticated tier), and the log says plainly
+ * that the token needs rotating.
+ *
+ * Module-level rather than per-request: once the credential is known bad,
+ * re-sending it on every subsequent call would waste a round trip per request
+ * to learn the same thing. It resets when the instance restarts, which is what
+ * a redeploy after fixing the token does anyway.
+ */
+let tokenRejected = false;
 
 /**
  * Maps an HTTP status onto a failure reason.
@@ -230,6 +261,23 @@ async function githubRequest<T>(
     if (!response.ok) {
       if (response.status === 404 && options.allowMissing) {
         return { status: "ok", data: null, headers: response.headers };
+      }
+
+      /* An expired or revoked token, on endpoints that are public anyway.
+         Drop the credential and try again immediately — see `tokenRejected`.
+         `attempt` is rewound because this is not a transient retry: nothing
+         was flaky, and spending the backoff budget on it would leave a genuine
+         5xx afterwards with fewer attempts than it should have. */
+      if (response.status === 401 && env.MARKETING_SITE_GITHUB_TOKEN && !tokenRejected) {
+        tokenRejected = true;
+        console.error(
+          `[github-api] GitHub rejected the configured token on ${path}: ` +
+            `${await readBodySafely(response)} — continuing without it. ` +
+            `The feed now runs on the 60/hour unauthenticated limit and the ` +
+            `contribution graph is unavailable until MARKETING_SITE_GITHUB_TOKEN is replaced.`,
+        );
+        attempt -= 1;
+        continue;
       }
 
       const reason = reasonForStatus(response.status, response.headers);
